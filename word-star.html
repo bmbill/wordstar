@@ -254,7 +254,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="exp-label"><span id="exp-text">0/30</span><span>Next Level</span></div></div>
   <div class="stats-row">
     <div class="stat-card"><div class="stat-num" style="color:var(--secondary)" id="s-cards">0</div><div class="stat-lbl">小卡</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--mint)" id="s-master">0</div><div class="stat-lbl">精通</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--mint)" id="s-master">0</div><div class="stat-lbl">精通字</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--accent)" id="s-streak">1</div><div class="stat-lbl">連續</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--primary)" id="s-groups">0</div><div class="stat-lbl">集滿組</div></div>
   </div>
@@ -269,6 +269,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('spell')"><div class="action-icon">✍️</div><div class="action-title">拼字挑戰</div><div class="action-desc">拼出單字</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('reverse')"><div class="action-icon">🔄</div><div class="action-title">反向聯想</div><div class="action-desc">中文選英文</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">Boss 挑戰</div></div></div>
+  <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');updateGachaScreen()">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
+  <div class="section-title">🔥 本週挑戰</div>
+  <div id="weekly-challenge" class="daily-quest" onclick="startWeekly()" style="border-left:3px solid var(--secondary)">
+    <div class="quest-header"><div class="quest-title" id="wk-title">📌 載入中...</div><div class="quest-reward" id="wk-reward">🎁 ???</div></div>
+    <div style="color:var(--text-dim);font-size:.7rem" id="wk-desc">...</div>
+    <div class="quest-bar-bg" style="margin-top:4px"><div class="quest-bar-fill" id="wk-bar" style="width:0%;background:var(--secondary)"></div></div>
+    <div style="color:var(--text-dim);font-size:.6rem;margin-top:2px" id="wk-progress">0/0</div></div>
   <div class="section-title">🎭 偶像團體收集</div>
   <div class="group-scroll" id="group-scroll"></div>
   <div style="height:.6rem"></div>
@@ -821,11 +829,16 @@ function updateHome(){
   document.getElementById('p-rank').textContent=RANKS[ri];
   document.getElementById('coins').textContent=S.stars;
   document.getElementById('s-cards').textContent=cardCount;
-  document.getElementById('s-master').textContent=Object.values(S.cards).filter(c=>c.stars>=3).length;
+  document.getElementById('s-master').textContent=Object.values(S.wordsAnswered).filter(w=>(w.lv||0)>=2).length;
   document.getElementById('s-streak').textContent=S.streak;
   document.getElementById('s-groups').textContent=completedGroups;
   document.getElementById('d-count').textContent=S.dailyNew;
   document.getElementById('q-bar').style.width=Math.min(S.dailyNew/10*100,100)+'%';
+  // Limited event banner
+  const ltdEv=getLimitedEvent();
+  const ltdBanner=document.getElementById('ltd-banner');
+  if(ltdEv){ltdBanner.style.display='block';document.getElementById('ltd-badge').textContent=ltdEv.badge;document.getElementById('ltd-name').textContent=ltdEv.name;document.getElementById('ltd-desc').textContent=ltdEv.desc+'（抽卡15%機率出現）'}else{ltdBanner.style.display='none'}
+  updateWeeklyUI();
   const aura=calcCardAura();
   const ab=document.getElementById('aura-bar');
   if(aura>0){ab.style.display='block';document.getElementById('aura-pct').textContent=aura}else{ab.style.display='none'}
@@ -970,14 +983,27 @@ function handleRes(ok){
   const q=Q.qs[Q.cur];upDot(Q.cur,ok);
   if(ok){Q.combo++;const cb=Math.min(Q.combo,5);
     const bossBonus=Q.mode==='boss'?2:0;
-    const aura=calcCardAura();
+    // Limited event banner
+  const ltdEv=getLimitedEvent();
+  const ltdBanner=document.getElementById('ltd-banner');
+  if(ltdEv){ltdBanner.style.display='block';document.getElementById('ltd-badge').textContent=ltdEv.badge;document.getElementById('ltd-name').textContent=ltdEv.name;document.getElementById('ltd-desc').textContent=ltdEv.desc+'（抽卡15%機率出現）'}else{ltdBanner.style.display='none'}
+  updateWeeklyUI();
+  const aura=calcCardAura();
     const baseReward=1+Math.floor(cb/2)+Math.floor(q.lv/2)+bossBonus;
     const starReward=baseReward+Math.floor(baseReward*aura/100);
     const er=3+q.lv*2+(Q.mode==='boss'?5:0);
     S.stars+=starReward;S.exp+=er;Q.coins+=starReward;
-    if(!S.wordsAnswered[q.w])S.wordsAnswered[q.w]={rv:0,m:false};
-    S.wordsAnswered[q.w].rv++;if(S.wordsAnswered[q.w].rv>=5)S.wordsAnswered[q.w].m=true;
+    if(!S.wordsAnswered[q.w])S.wordsAnswered[q.w]={rv:0,m:false,sp:0,ch:0,re:0,lv:0};
+    const wa=S.wordsAnswered[q.w];wa.rv++;
+    if(q._t==='spell')wa.sp=(wa.sp||0)+1;
+    else if(q._t==='reverse')wa.re=(wa.re||0)+1;
+    else wa.ch=(wa.ch||0)+1;
+    // Mastery levels: 0=初見 1=熟悉 2=精通 3=大師
+    const wlv=Math.min(3,(wa.ch>=2?1:0)+(wa.sp>=2?1:0)+(wa.re>=2?1:0));
+    if(wlv>wa.lv){wa.lv=wlv;const mlbl=['','熟悉！','精通！✨','大師！🏆'][wlv];floatTxt('單字'+mlbl,'var(--mint)')}
+    wa.m=wlv>=2;
     S.dailyNew++;chkLv();saveState();
+    trackWeekly(Q.mode,Q.combo);
     floatTxt('+'+starReward+'⭐','var(--accent)');
     setTimeout(()=>{Q.cur++;showQ()},700)}
   else{Q.combo=0;document.getElementById('combo').classList.remove('active');
@@ -1022,13 +1048,14 @@ function showColl(fv=0,gid=''){
               ${chibiSVG(mem,40,g)}</div>
             <div class="gmc-name">${card?mem.name:'???'}</div>
             <div style="font-size:.35rem;color:${card?g.theme:'var(--text-muted)'}">${starStr||'未解鎖'}</div>
-            ${card&&card.dupes>0?`<div style="font-size:.3rem;color:var(--text-dim)">x${card.dupes+1}</div>`:''}</div>`}).join('')}</div>
+            ${card&&card.dupes>0?`<div style="font-size:.3rem;color:var(--text-dim)">x${card.dupes+1}</div>`:''}${hasLtd?'<div style="font-size:.3rem;color:#ffd700">限</div>':''}</div>`}).join('')}</div>
         ${complete?`<div class="group-bonus" style="background:${g.theme}22;color:${g.theme}">✦ SET COMPLETE! 全團收齊！</div>`:''}</div>`}).join('');
     return}
 
   // All cards grid
   body.innerHTML=`<div class="card-grid">${ALL_MEMBERS.map((m,i)=>{
     const key=m.groupId+'_'+m.memberIdx;const card=S.cards[key];
+    const ltdKeys=Object.keys(S.cards).filter(k=>k.endsWith('_'+key)&&k.startsWith('ltd_'));const hasLtd=ltdKeys.length>0;
     const g=m.group;
     if(card){
       const starStr='★'.repeat(card.stars);
@@ -1098,11 +1125,76 @@ function closeMod(e){if(!e||e.target===document.getElementById('det-modal'))docu
 function showReview(){const list=document.getElementById('rlist');const es=Object.entries(S.wordsAnswered);
   if(!es.length){list.innerHTML='<div class="empty-state">還沒有練習紀錄<br>快去打歌！</div>';return}
   list.innerHTML=es.slice(-30).reverse().map(([word,d])=>{const w=W.find(x=>x.w===word);if(!w)return'';
-    let sc,st;if(d.m){sc='mastered';st='精通✨'}else if(d.rv<2){sc='needs';st='需要練習'}else{sc='growing';st='成長中'}
+    const wlv=d.lv||0;
+    let sc,st;if(wlv>=3){sc='mastered';st='大師🏆'}else if(wlv>=2){sc='mastered';st='精通✨'}else if(wlv>=1){sc='growing';st='熟悉📖'}else if(d.rv>=1){sc='needs';st='初見👀'}else{sc='needs';st='需要練習'}
     return`<div class="review-card fade-in">
       <div style="width:30px;font-size:1.2rem">📝</div>
       <div class="rv-info"><div class="rv-word">${w.w}</div><div class="rv-meaning">${w.m}</div></div>
       <div class="rv-status ${sc}">${st}</div></div>`}).join('')}
+
+// ===== WEEKLY CHALLENGE SYSTEM =====
+function getWeekNum(){const d=new Date();const s=new Date(d.getFullYear(),0,1);return Math.floor((d-s)/604800000)}
+function getWeeklyChallenge(){
+  const wn=getWeekNum();
+  const challenges=[
+    {id:'spell20',title:'📝 拼字達人週',desc:'在拼字模式答對 20 題',mode:'spell',goal:20,reward:30,rewardTxt:'30⭐'},
+    {id:'boss15',title:'👑 大賞衝刺週',desc:'在年末大賞答對 15 題',mode:'boss',goal:15,reward:40,rewardTxt:'40⭐'},
+    {id:'reverse25',title:'🔄 反向聯想週',desc:'在反向聯想答對 25 題',mode:'reverse',goal:25,reward:30,rewardTxt:'30⭐'},
+    {id:'combo10',title:'🔥 連擊之王週',desc:'單場達成 10 連擊',mode:'mixed',goal:10,reward:35,rewardTxt:'35⭐',type:'combo'},
+    {id:'master5',title:'📚 精通學者週',desc:'讓 5 個單字達到精通等級',mode:'any',goal:5,reward:40,rewardTxt:'40⭐',type:'mastery'},
+    {id:'lv4_20',title:'💎 高難度週',desc:'答對 20 題 Level 4+ 單字',mode:'boss',goal:20,reward:45,rewardTxt:'45⭐'},
+    {id:'mixed30',title:'🎤 打歌馬拉松週',desc:'在打歌舞台答對 30 題',mode:'mixed',goal:30,reward:35,rewardTxt:'35⭐'},
+    {id:'allmode',title:'🌈 全能偶像週',desc:'每種模式各答對 5 題',mode:'any',goal:4,reward:50,rewardTxt:'50⭐',type:'allmode'},
+  ];
+  return challenges[wn%challenges.length]}
+function getWeeklyState(){
+  if(!S.weekly)S.weekly={};
+  const c=getWeeklyChallenge();const wn=getWeekNum();
+  if(S.weekly.wn!==wn){S.weekly={wn:wn,prog:0,done:false,modes:{}}}
+  return S.weekly}
+function updateWeeklyUI(){
+  const c=getWeeklyChallenge();const ws=getWeeklyState();
+  document.getElementById('wk-title').textContent=c.title;
+  document.getElementById('wk-desc').textContent=ws.done?'✅ 已完成！獎勵已領取':c.desc;
+  document.getElementById('wk-reward').textContent=ws.done?'✅ 完成':'🎁 '+c.rewardTxt;
+  const prog=Math.min(ws.prog,c.goal);
+  document.getElementById('wk-bar').style.width=(prog/c.goal*100)+'%';
+  document.getElementById('wk-progress').textContent=ws.done?'已完成':prog+'/'+c.goal}
+function startWeekly(){
+  const c=getWeeklyChallenge();const ws=getWeeklyState();
+  if(ws.done){floatTxt('本週已完成！','var(--mint)');return}
+  if(c.mode!=='any'){goTo('quiz-screen');startQuiz(c.mode)}
+  else{goTo('quiz-screen');startQuiz('mixed')}}
+function trackWeekly(mode,combo){
+  const c=getWeeklyChallenge();const ws=getWeeklyState();
+  if(ws.done)return;
+  if(c.type==='combo'){if(combo>=c.goal&&!ws.done){ws.prog=c.goal}}
+  else if(c.type==='mastery'){ws.prog=Object.values(S.wordsAnswered).filter(w=>(w.lv||0)>=2).length}
+  else if(c.type==='allmode'){
+    if(!ws.modes)ws.modes={};ws.modes[mode]=(ws.modes[mode]||0)+1;
+    ws.prog=Object.keys(ws.modes).filter(m=>ws.modes[m]>=5).length}
+  else if(c.mode===mode||c.mode==='any'){ws.prog++}
+  if(ws.prog>=c.goal&&!ws.done){ws.done=true;S.stars+=c.reward;
+    floatTxt('週挑戰完成！+'+c.reward+'⭐','var(--secondary)')}
+  saveState()}
+
+// ===== LIMITED EDITION CARDS =====
+function getLimitedEvent(){
+  const now=new Date();const m=now.getMonth()+1;const d=now.getDate();
+  // Seasonal limited events
+  if(m===1&&d<=14)return{id:'newyear',name:'🎍 新年限定',badge:'🎍',outfitColor:'#c62828',accent:'#ffd700',desc:'新年和服造型'};
+  if(m===2&&d>=1&&d<=28)return{id:'valentine',name:'💝 情人節限定',badge:'💝',outfitColor:'#e91e63',accent:'#f8bbd0',desc:'甜蜜粉色造型'};
+  if((m===3&&d>=20)||(m===4&&d<=10))return{id:'spring',name:'🌸 春日限定',badge:'🌸',outfitColor:'#f48fb1',accent:'#81c784',desc:'櫻花浪漫造型'};
+  if(m===6&&d>=15&&d<=30)return{id:'summer',name:'🏖️ 夏日限定',badge:'🏖️',outfitColor:'#00bcd4',accent:'#ffeb3b',desc:'海灘清涼造型'};
+  if(m===10&&d>=20&&d<=31)return{id:'halloween',name:'🎃 萬聖限定',badge:'🎃',outfitColor:'#ff6f00',accent:'#7c4dff',desc:'萬聖派對造型'};
+  if(m===12&&d>=15&&d<=31)return{id:'xmas',name:'🎄 聖誕限定',badge:'🎄',outfitColor:'#c62828',accent:'#2e7d32',desc:'聖誕精靈造型'};
+  if(m===4&&d>=15&&d<=30)return{id:'debut',name:'💫 出道紀念',badge:'💫',outfitColor:'#7c4dff',accent:'#ffd700',desc:'閃耀出道造型'};
+  if(m===8&&d>=1&&d<=20)return{id:'summer2',name:'🌊 盛夏回歸',badge:'🌊',outfitColor:'#0288d1',accent:'#4fc3f7',desc:'夏日回歸造型'};
+  return null}
+function isLimitedActive(){return !!getLimitedEvent()}
+function getLimitedKey(baseKey){const ev=getLimitedEvent();return ev?'ltd_'+ev.id+'_'+baseKey:null}
+function getLimitedCardData(member,ev){
+  return{...member,outfitColor:ev.outfitColor,acc:ev.badge==='🎃'?'flame':ev.badge==='🎄'?'star':ev.badge==='💝'?'heart':ev.badge==='🌸'?'butterfly':member.acc}}
 
 // ===== GACHA SYSTEM =====
 function showGacha(){
@@ -1186,12 +1278,19 @@ function showPullResult(results){
     const key=m.groupId+'_'+m.memberIdx;
     const isDupe=!!S.cards[key];
 
-    if(!isDupe){
-      S.cards[key]={stars:r.rarity==='SSR'?3:r.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now()};saveState();
+    // Check for limited edition
+    const ltdEv=getLimitedEvent();
+    const ltdKey=ltdEv?getLimitedKey(key):null;
+    const isLtd=ltdEv&&Math.random()<0.15;
+    const actualKey=isLtd?ltdKey:key;
+    const isDupeActual=!!S.cards[actualKey];
+
+    if(!isDupeActual){
+      S.cards[actualKey]={stars:r.rarity==='SSR'?3:r.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:isLtd?ltdEv.id:null};saveState();
     }else{
-      S.cards[key].dupes++;
+      S.cards[actualKey].dupes++;
       const fragReward=r.rarity==='SSR'?5:r.rarity==='SR'?3:r.rarity==='R'?2:1;
-      S.cards[key].fragments+=fragReward;
+      S.cards[actualKey].fragments+=fragReward;
       saveState();
     }
 
@@ -1207,7 +1306,8 @@ function showPullResult(results){
         <div style="position:relative;z-index:3;font-size:${results.length>1?'.35rem':'.5rem'};font-weight:700">${m.name}</div></div>
       <div style="font-size:.5rem;font-weight:700;color:${rarityColors[r.rarity]};margin-top:.2rem">${r.rarity}</div>
       <div style="font-size:.4rem;color:var(--text-dim)">${g.name}</div>
-      ${isDupe?'<div style="font-size:.35rem;color:var(--accent)">重複 → 💫碎片</div>':
+      ${isLtd?'<div style="font-size:.35rem;color:#ffd700;font-weight:700">'+ltdEv.badge+' 限定版！</div>':''}
+      ${isDupeActual?'<div style="font-size:.35rem;color:var(--accent)">重複 → 💫碎片</div>':
         '<div style="font-size:.35rem;color:var(--mint)">✦ NEW!</div>'}</div>`;
   }).join('');
 
