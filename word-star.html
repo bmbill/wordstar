@@ -1200,7 +1200,28 @@ function hexToRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),1
 // === PWA SERVICE WORKER REGISTRATION ===
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      // Check for updates every 30 minutes while app is open
+      setInterval(()=>reg.update(),30*60*1000);
+    }).catch(()=>{});
+    // Listen for update notification from service worker
+    navigator.serviceWorker.addEventListener('message',e=>{
+      if(e.data&&e.data.type==='UPDATE_AVAILABLE'){
+        // Show a subtle update banner
+        if(!document.getElementById('update-banner')){
+          const b=document.createElement('div');
+          b.id='update-banner';
+          b.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),var(--secondary));color:#fff;padding:12px 24px;border-radius:20px;font-size:14px;z-index:9999;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;animation:floatUp .5s ease';
+          b.innerHTML='✨ 有新版本！點擊更新';
+          b.onclick=()=>location.reload();
+          document.body.appendChild(b);
+          // Add animation
+          const style=document.createElement('style');
+          style.textContent='@keyframes floatUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+          document.head.appendChild(style);
+        }
+      }
+    });
   });
 }
 </script>
