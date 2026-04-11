@@ -475,12 +475,17 @@ const ALL_MEMBERS=[];
 GROUPS.forEach(g=>{g.members.forEach((mem,mi)=>{
   ALL_MEMBERS.push({...mem,groupId:g.id,groupName:g.name,memberIdx:mi,group:g});
 })});
-// Rarity weights per member (based on group size — larger groups = rarer individual members)
+// Fixed rarity per member - deterministic based on position in group
+// Each group: leader=SSR, ~20% SR, ~30% R, rest N
 ALL_MEMBERS.forEach((m,i)=>{
   const g=GROUPS.find(x=>x.id===m.groupId);
-  // Base rarity: normal=60%, rare=25%, SR=12%, SSR=3%
-  m.rarity=i%10===0?'SSR':i%4===0?'SR':i%2===0?'R':'N';
+  const mi=m.memberIdx,total=g.members.length;
+  if(mi===0)m.rarity='SSR';
+  else if(mi===1||(total>=8&&mi===2))m.rarity='SR';
+  else if(mi%3===0)m.rarity='R';
+  else m.rarity=mi%2===0?'R':'N';
 });
+const RARITY_ORDER={SSR:4,SR:3,R:2,N:1};
 
 
 // Enhanced Chibi SVG generator
@@ -1068,25 +1073,31 @@ function showColl(fv=0,gid=''){
 }
 
 function showCardDet(key){
-  const [gid,mi]=key.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return;
+  // Handle limited card keys like 'ltd_spring_bt7_0'
+  const baseKey=key.startsWith('ltd_')?key.split('_').slice(2).join('_'):key;
+  const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return;
   const mem=g.members[parseInt(mi)];if(!mem)return;
   const card=S.cards[key];if(!card)return;
   const starStr='★'.repeat(card.stars)+'☆'.repeat(Math.max(0,5-card.stars));
   const chibi=chibiSVG(mem,55,g);
   document.getElementById('mod-content').innerHTML=`<div class="modal-handle"></div>
-    <div style="width:90px;height:125px;border-radius:8px;background:${g.bg};margin:0 auto .8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 4px 20px ${g.theme}44">
+    <div style="width:90px;height:125px;border-radius:8px;background:${card.ltd?getSeasonalBg(card.ltd):g.bg};margin:0 auto .8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 4px 20px ${g.theme}44">
       <div class="ci-shine"></div><div style="position:relative;z-index:2">${chibi}</div>
       <div style="position:relative;z-index:3;font-size:.45rem;font-weight:700">${mem.name}</div></div>
     <div style="font-size:1.2rem;font-weight:900;text-align:center">${mem.name}</div>
+    ${card.ltd?'<div style="text-align:center;font-size:.6rem;color:#ffd700;margin:.1rem 0">'+getEvBadge(card.ltd)+' '+getEvName(card.ltd)+'</div>':''}
     <div style="text-align:center;color:${g.theme};font-size:.85rem;margin:.2rem 0">${starStr}</div>
     <div style="text-align:center;font-size:.75rem;color:var(--text-dim);margin-bottom:.6rem">${g.name} · ${g.concept}</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.6rem">
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700;color:${g.theme}">${card.stars}★</div><div style="font-size:.55rem;color:var(--text-dim)">星等</div></div>
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">x${card.dupes+1}</div><div style="font-size:.55rem;color:var(--text-dim)">持有</div></div>
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">${card.fragments}</div><div style="font-size:.55rem;color:var(--text-dim)">碎片💫</div></div></div>
+    <div style="background:var(--card);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:${({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||mem.rarity||'N']}">稀有度 ${card.rarity||mem.rarity||'N'}</span></div>
     ${card.stars>=3?`<div style="background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:var(--mint)">應援加成</span> 答題星星 +${getCardBonus(card.stars)}%⭐</div>`:''}
     ${card.stars>=5?`<div style="background:linear-gradient(135deg,#ffd70022,#ff6ec722);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem;color:#ffd700">🏆 滿星精通 · 最強應援</div>`:''}
     ${card.fragments>=10&&card.stars<5?`<button class="btn btn-primary btn-sm" style="width:100%;margin-bottom:.4rem" onclick="upgradeCard('${key}')">升星 ⬆ (10💫)</button>`:''}
+    ${getLtdVersions(key).length?`<div style="margin-bottom:.4rem"><div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.3rem">🎨 限定版本：</div>${getLtdVersions(key).map(lk=>{const lc=S.cards[lk];const evName=lk.split('_')[1];return`<div style="display:flex;align-items:center;gap:.4rem;background:var(--card);border-radius:.4rem;padding:.3rem .5rem;margin-bottom:.2rem;cursor:pointer" onclick="showCardDet('${lk}')"><span style="font-size:.7rem">${getEvBadge(evName)}</span><span style="font-size:.6rem">${getEvName(evName)}</span><span style="font-size:.5rem;color:var(--text-dim);margin-left:auto">${lc.stars}★</span></div>`}).join('')}</div>`:''}
+    ${key.startsWith('ltd_')?`<div style="margin-bottom:.4rem"><button class="btn btn-secondary btn-sm" style="width:100%;font-size:.6rem" onclick="showCardDet('${key.split('_').slice(2).join('_')}')">查看原版 →</button></div>`:''}
     <button class="btn btn-secondary btn-sm" style="width:100%" onclick="closeMod()">關閉</button>`;
   document.getElementById('det-modal').classList.add('active')}
 
@@ -1101,8 +1112,9 @@ function upgradeCard(key){
   const ov=document.getElementById('pull-overlay');ov.style.display='flex';
   const ct=document.getElementById('pull-result');
   const starIcons='✦'.repeat(card.stars);
-  const parts=key.split('_');const gIdx=parseInt(parts[0]),mIdx=parseInt(parts[1]);
-  const g=K[gIdx],mem=g.members[mIdx];
+  const baseKey=key.startsWith('ltd_')?key.split('_').slice(2).join('_'):key;
+  const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);const mem=g?g.members[parseInt(mi)]:null;
+  if(!g||!mem){closeMod();showColl(-1);return}
   const maxNote=card.stars>=5?'<div style="font-size:.6rem;color:#ffd700;margin-top:.3rem;text-shadow:0 0 10px #ffd70066">🏆 滿星達成！應援效果全開！</div>':'';
   const bonusNote=card.stars>=3?`<div style="font-size:.5rem;color:var(--mint);margin-top:.2rem">答題應援加成 +${getCardBonus(card.stars)}%⭐</div>`:'';
   ct.innerHTML=`<div style="text-align:center">
@@ -1196,6 +1208,24 @@ function getLimitedKey(baseKey){const ev=getLimitedEvent();return ev?'ltd_'+ev.i
 function getLimitedCardData(member,ev){
   return{...member,outfitColor:ev.outfitColor,acc:ev.badge==='🎃'?'flame':ev.badge==='🎄'?'star':ev.badge==='💝'?'heart':ev.badge==='🌸'?'butterfly':member.acc}}
 
+function getLtdVersions(baseKey){
+  const k=baseKey.startsWith('ltd_')?baseKey.split('_').slice(2).join('_'):baseKey;
+  return Object.keys(S.cards).filter(ck=>ck.startsWith('ltd_')&&ck.endsWith('_'+k))}
+function getEvBadge(evId){return{newyear:'🎍',valentine:'💝',spring:'🌸',summer:'🏖️',halloween:'🎃',xmas:'🎄',debut:'💫',summer2:'🌊'}[evId]||'✨'}
+function getEvName(evId){return{newyear:'新年限定',valentine:'情人節限定',spring:'春日限定',summer:'夏日限定',halloween:'萬聖限定',xmas:'聖誕限定',debut:'出道紀念',summer2:'盛夏回歸'}[evId]||'限定版'}
+function getSeasonalBg(evId){
+  const bgs={
+    newyear:'linear-gradient(135deg,#1a0000,#8b0000,#ffd700)',
+    valentine:'linear-gradient(135deg,#2d0a1e,#e91e63,#f8bbd0)',
+    spring:'linear-gradient(135deg,#1a0f1e,#f48fb1,#81c784)',
+    summer:'linear-gradient(135deg,#00151a,#00bcd4,#ffeb3b)',
+    halloween:'linear-gradient(135deg,#1a0a00,#ff6f00,#7c4dff)',
+    xmas:'linear-gradient(135deg,#0a1a0a,#c62828,#2e7d32)',
+    debut:'linear-gradient(135deg,#0a001a,#7c4dff,#ffd700)',
+    summer2:'linear-gradient(135deg,#001a2d,#0288d1,#4fc3f7)'
+  };
+  return bgs[evId]||'linear-gradient(135deg,#1a0033,#4a148c)'}
+
 // ===== GACHA SYSTEM =====
 function showGacha(){
   document.getElementById('g-stars').textContent=S.stars;
@@ -1214,7 +1244,7 @@ function showGacha(){
         <div style="display:flex;gap:.3rem">
           <button class="btn btn-primary btn-sm" style="flex:1" onclick="doPull('standard',1)">抽 1 次</button>
           <button class="btn btn-primary btn-sm" style="flex:1" onclick="doPull('standard',5)">抽 5 次 <span style="font-size:.55rem">(45⭐)</span></button></div>
-        <div style="font-size:.45rem;color:var(--text-muted);margin-top:.3rem;text-align:center">N 60% · R 25% · SR 12% · SSR 3%</div></div>
+        <div style="font-size:.45rem;color:var(--text-muted);margin-top:.3rem;text-align:center">N · R · SR · SSR（角色固定稀有度）</div></div>
 
       <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid var(--secondary)33">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
@@ -1230,7 +1260,7 @@ function showGacha(){
             <div style="font-size:.55rem;color:var(--text-dim)">SR/SSR 機率大幅提升！</div></div>
           <div style="font-size:.65rem;color:var(--accent)">25⭐/次</div></div>
         <button class="btn btn-sm" style="flex:1;width:100%;background:linear-gradient(135deg,var(--accent),var(--secondary));color:var(--bg);font-weight:700" onclick="doPull('premium',1)">豪華抽卡</button>
-        <div style="font-size:.45rem;color:var(--text-muted);margin-top:.3rem;text-align:center">N 30% · R 35% · SR 25% · SSR 10%</div></div>
+        <div style="font-size:.45rem;color:var(--text-muted);margin-top:.3rem;text-align:center">高稀有度角色出現機率大幅提升！</div></div>
     </div>`;
 }
 
@@ -1240,29 +1270,41 @@ function doPull(pool,count,groupId){
   if(S.stars<cost){floatTxt('星星不夠！去答題賺⭐','var(--danger)');return}
   S.stars-=Math.floor(cost);S.totalPulls+=count;saveState();
 
-  // Rarity rates
+  // Rarity rates control which rarity tiers can appear
   const rates=pool==='premium'
     ?{SSR:.10,SR:.25,R:.35,N:.30}
     :{SSR:.03,SR:.12,R:.25,N:.60};
 
-  const results=[];
-  for(let i=0;i<count;i++){
-    const roll=Math.random();
-    let rarity;
-    if(roll<rates.SSR)rarity='SSR';
-    else if(roll<rates.SSR+rates.SR)rarity='SR';
-    else if(roll<rates.SSR+rates.SR+rates.R)rarity='R';
-    else rarity='N';
+  let candidates;
+  if(groupId){candidates=ALL_MEMBERS.filter(m=>m.groupId===groupId)}
+  else{candidates=[...ALL_MEMBERS]}
 
-    // Pick a member
-    let candidates;
-    if(groupId){
-      candidates=ALL_MEMBERS.filter(m=>m.groupId===groupId);
-    }else{
-      candidates=ALL_MEMBERS;
+  const results=[];const used=new Set();
+  for(let i=0;i<count;i++){
+    // Roll rarity tier
+    const roll=Math.random();
+    let tier;
+    if(roll<rates.SSR)tier='SSR';
+    else if(roll<rates.SSR+rates.SR)tier='SR';
+    else if(roll<rates.SSR+rates.SR+rates.R)tier='R';
+    else tier='N';
+
+    // Find candidates of this rarity or lower, not yet picked in this pull
+    let pool2=candidates.filter(m=>m.rarity===tier&&!used.has(m.groupId+'_'+m.memberIdx));
+    // Fallback: try lower rarity if no match
+    if(!pool2.length){
+      const tiers=['SSR','SR','R','N'];
+      const ti=tiers.indexOf(tier);
+      for(let t=ti+1;t<tiers.length&&!pool2.length;t++){
+        pool2=candidates.filter(m=>m.rarity===tiers[t]&&!used.has(m.groupId+'_'+m.memberIdx));
+      }
+      // Last resort: pick anyone not used
+      if(!pool2.length)pool2=candidates.filter(m=>!used.has(m.groupId+'_'+m.memberIdx));
+      if(!pool2.length)pool2=candidates;
     }
-    const picked=candidates[Math.floor(Math.random()*candidates.length)];
-    results.push({member:picked,rarity});
+    const picked=pool2[Math.floor(Math.random()*pool2.length)];
+    used.add(picked.groupId+'_'+picked.memberIdx);
+    results.push({member:picked,rarity:picked.rarity});
   }
 
   showPullResult(results);
@@ -1286,10 +1328,10 @@ function showPullResult(results){
     const isDupeActual=!!S.cards[actualKey];
 
     if(!isDupeActual){
-      S.cards[actualKey]={stars:r.rarity==='SSR'?3:r.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:isLtd?ltdEv.id:null};saveState();
+      S.cards[actualKey]={stars:r.member.rarity==='SSR'?3:r.member.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:isLtd?ltdEv.id:null,rarity:r.member.rarity};saveState();
     }else{
       S.cards[actualKey].dupes++;
-      const fragReward=r.rarity==='SSR'?5:r.rarity==='SR'?3:r.rarity==='R'?2:1;
+      const fragReward=r.member.rarity==='SSR'?5:r.member.rarity==='SR'?3:r.member.rarity==='R'?2:1;
       S.cards[actualKey].fragments+=fragReward;
       saveState();
     }
