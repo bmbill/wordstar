@@ -234,8 +234,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   font-size:.5rem;cursor:pointer;font-family:inherit;padding:.2rem .6rem;transition:color .2s}
 .nav-item.active{color:var(--secondary)}.nav-icon{font-size:1.1rem;margin-bottom:.03rem}
 
-.float-text{position:fixed;z-index:200;font-weight:900;font-size:1.1rem;pointer-events:none;animation:floatAway .8s ease forwards}
-@keyframes floatAway{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(1.3)}}
+.float-text{position:fixed;z-index:200;font-weight:900;font-size:1.1rem;pointer-events:none;animation:floatAway 1.6s ease forwards}
+@keyframes floatAway{0%{opacity:1;transform:translateY(0) scale(1)}40%{opacity:1;transform:translateY(-25px) scale(1.15)}100%{opacity:0;transform:translateY(-50px) scale(1.3)}}
 .fade-in{animation:fadeIn .3s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .empty-state{text-align:center;color:var(--text-dim);padding:2rem 1rem;font-size:.8rem}
@@ -902,9 +902,34 @@ function startQuiz(mode){
   Q.qs.forEach((q,i)=>{
     if(mode==='spell')q._t='spell';else if(mode==='reverse')q._t='reverse';
     else{const ts=['choice','choice','spell','reverse','choice'];q._t=ts[i%ts.length]}});
+  Q.mistakes=[];
   document.getElementById('dots').innerHTML=Q.qs.map((_,i)=>`<div class="pdot${i===0?' cur':''}" id="d${i}"></div>`).join('');
   showQ()}
-function endQuiz(){goTo('home-screen');updateHome()}
+function endQuiz(){
+  if(Q.mistakes&&Q.mistakes.length>0){showQuizReview()}
+  else{goTo('home-screen');updateHome();floatTxt('全對！太厲害了！✨','var(--mint)')}}
+function showQuizReview(){
+  const ov=document.getElementById('pull-overlay');ov.style.display='flex';
+  const ct=document.getElementById('pull-result');
+  const total=Q.qs.length,wrong=Q.mistakes.length,right=total-wrong;
+  const pct=Math.round(right/total*100);
+  const grade=pct>=90?'S':pct>=80?'A':pct>=70?'B':pct>=60?'C':'D';
+  const gradeColor={S:'#ffd700',A:'#7ff5dc',B:'#60a5fa',C:'#e879f9',D:'#ff4d6d'}[grade];
+  const lvLabels=['','Lv1','Lv2','Lv3','Lv4','Lv5','Lv6'];
+  const mistakeCards=Q.mistakes.map(m=>`<div style="background:var(--card);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="min-width:40px;text-align:center"><div style="font-size:.6rem;color:var(--danger);font-weight:700">✗</div>
+      <div style="font-size:.45rem;color:var(--text-dim)">${lvLabels[m.lv]||''}</div></div>
+    <div style="flex:1"><div style="font-weight:700;font-size:.85rem;color:var(--danger)">${m.w}</div>
+      <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">${m.m}</div></div>
+    <div style="font-size:.45rem;color:var(--text-dim)">${m.type==='spell'?'拼字':m.type==='reverse'?'反向':'選擇'}</div></div>`).join('');
+  ct.innerHTML=`<div style="text-align:center;margin-bottom:.8rem">
+    <div style="font-size:1.8rem;font-weight:900;color:${gradeColor};text-shadow:0 0 20px ${gradeColor}44">${grade}</div>
+    <div style="font-size:.7rem;color:var(--text-dim);margin:.2rem 0">答對 ${right}/${total} 題（${pct}%）</div>
+    <div style="font-size:.85rem;font-weight:700;margin-top:.3rem">📝 錯題複習</div>
+    <div style="font-size:.6rem;color:var(--text-dim)">記住這些單字，下次答對它們！</div></div>
+  <div style="display:flex;flex-direction:column;gap:6px;max-height:250px;overflow-y:auto;margin-bottom:.8rem;padding:0 2px">${mistakeCards}</div>
+  <button class="btn btn-primary btn-sm" style="display:block;margin:0 auto" onclick="closePull();goTo('home-screen');updateHome()">回首頁 ✦</button>`;
+}
 function upDot(i,ok){const d=document.getElementById('d'+i);if(d){d.classList.remove('cur');d.classList.add(ok?'done':'wrong')}
   const n=document.getElementById('d'+(i+1));if(n)n.classList.add('cur')}
 
@@ -1020,9 +1045,10 @@ function handleRes(ok){
     S.dailyNew++;chkLv();saveState();
     trackWeekly(Q.mode,Q.combo);
     floatTxt('+'+starReward+'⭐','var(--accent)');
-    setTimeout(()=>{Q.cur++;showQ()},700)}
+    setTimeout(()=>{Q.cur++;showQ()},1200)}
   else{Q.combo=0;document.getElementById('combo').classList.remove('active');
-    floatTxt('再加油！','var(--danger)');setTimeout(()=>{Q.cur++;showQ()},1000)}}
+    const q2=Q.qs[Q.cur];Q.mistakes.push({w:q2.w,m:q2.m,lv:q2.lv,type:q2._t});
+    floatTxt('再加油！','var(--danger)');setTimeout(()=>{Q.cur++;showQ()},1500)}}
 
 
 function burst(){const cs=['#ffe66d','#ff6ec7','#c77dff','#7ff5dc','#fff'];
@@ -1033,7 +1059,7 @@ function burst(){const cs=['#ffe66d','#ff6ec7','#c77dff','#7ff5dc','#fff'];
 function chkLv(){const nd=S.level*30;if(S.exp>=nd){S.exp-=nd;S.level++;floatTxt('LEVEL UP!✦','var(--secondary)')}}
 function floatTxt(t,c){const e=document.createElement('div');e.className='float-text';e.style.color=c;
   e.textContent=t;e.style.left='50%';e.style.top='35%';e.style.transform='translateX(-50%)';
-  document.body.appendChild(e);setTimeout(()=>e.remove(),800)}
+  document.body.appendChild(e);setTimeout(()=>e.remove(),1600)}
 
 // Collection - gacha card view
 function showColl(fv=0,gid=''){
@@ -1409,6 +1435,16 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').then(reg=>{
       // Check for updates every 30 minutes while app is open
       setInterval(()=>reg.update(),30*60*1000);
+      // Request notification permission
+      if('Notification' in window&&Notification.permission==='default'){
+        setTimeout(()=>{
+          if(S.level>=2||Object.keys(S.cards).length>=3){
+            const nb=document.createElement('div');nb.id='notif-ask';
+            nb.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--text);padding:12px 20px;border-radius:16px;font-size:.7rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;border:1px solid var(--accent)33;max-width:320px';
+            nb.innerHTML='<div>🔔 開啟通知提醒每天來練習？</div><button onclick="enableNotif()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:.6rem;cursor:pointer;white-space:nowrap">開啟</button><button onclick="this.parentElement.remove()" style="background:none;color:var(--text-dim);border:none;font-size:.6rem;cursor:pointer">不用</button>';
+            document.body.appendChild(nb);
+            setTimeout(()=>{const el=document.getElementById('notif-ask');if(el)el.remove()},15000)}
+        },5000)}
     }).catch(()=>{});
     // Listen for update notification from service worker
     navigator.serviceWorker.addEventListener('message',e=>{
@@ -1430,6 +1466,37 @@ if('serviceWorker' in navigator){
     });
   });
 }
+
+// === NOTIFICATION SYSTEM ===
+function enableNotif(){
+  const ask=document.getElementById('notif-ask');if(ask)ask.remove();
+  if(!('Notification' in window))return;
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){
+      floatTxt('通知已開啟！🔔','var(--mint)');
+      scheduleReminder();
+      localStorage.setItem('wordstar_notif','on')}
+    else{floatTxt('通知未開啟','var(--text-dim)')}
+  })}
+function scheduleReminder(){
+  // Schedule daily check - uses setTimeout loop since SW scheduling is limited
+  const check=()=>{
+    const now=new Date();
+    const lastPlay=localStorage.getItem('wordstar_lastplay');
+    const today=now.toDateString();
+    if(lastPlay!==today&&now.getHours()>=17&&Notification.permission==='granted'){
+      try{new Notification('WordStar ✦ 韓語星光',{body:'今天還沒練習喔！快來打歌賺星星 ⭐',icon:'icon-192.png',badge:'icon-192.png',tag:'daily-remind'})}catch(e){}
+    }
+    setTimeout(check,30*60*1000)};
+  setTimeout(check,60*1000)}
+// Track daily play
+function markPlayed(){localStorage.setItem('wordstar_lastplay',new Date().toDateString())}
+// Call markPlayed when answering questions (patch into handleRes via existing saveState)
+const _origSave=saveState;
+function saveState(){_origSave();markPlayed()}
+// Start reminder if previously enabled
+if(localStorage.getItem('wordstar_notif')==='on'&&'Notification' in window&&Notification.permission==='granted'){scheduleReminder()}
+
 </script>
 </body>
 </html>
