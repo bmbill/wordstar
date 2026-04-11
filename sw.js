@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wordstar-v2';
+const CACHE_NAME = 'wordstar-v3';
 const ASSETS = [
   './word-star.html',
   './manifest.json',
