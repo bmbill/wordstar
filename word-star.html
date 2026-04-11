@@ -892,12 +892,13 @@ function showQ(){
         <div class="pc-name">${rm.name}</div></div>
       <div class="enc-word" style="font-size:1.3rem">${q.m}</div><div class="enc-pos">${q.p}</div>`}
   else{
+    const wordDisplay=q._t==='spell'?q.w[0]+'···'+q.w[q.w.length-1]:q.w;
     stg.innerHTML=`<div class="stage-lights"></div>
       <div class="photocard" style="background:${cardBg};box-shadow:0 5px 20px ${cardGlow}">
         <div class="pc-shine"></div><div class="holo"></div>
         <div style="position:relative;z-index:2">${chibi}</div>
         <div class="pc-name">${rm.name}</div></div>
-      <div class="enc-word">${q.w}</div><div class="enc-pos">${q.p}</div>`}
+      <div class="enc-word">${wordDisplay}</div><div class="enc-pos">${q.p}</div>`}
 
   const ct=document.getElementById('qcontent');
   if(q._t==='spell')renderSpell(ct,q);else if(q._t==='reverse')renderRev(ct,q);else renderChoice(ct,q);
@@ -921,26 +922,43 @@ function chk(btn,sel,cor){if(Q.done)return;Q.done=true;const ok=sel===cor;
 
 function renderSpell(el,q){
   const lt=q.w.split('');if(lt.length>12){renderChoice(el,q);return}
-  const ex='abcdefghijklmnopqrstuvwxyz'.split('').filter(c=>!lt.includes(c));
-  const dist=shuf(ex).slice(0,Math.min(3,Math.max(0,8-lt.length)));
-  const bank=shuf([...shuf([...lt]),...dist]);
+  const first=lt[0],last=lt[lt.length-1];
+  // Middle letters the student must fill in
+  const mid=lt.slice(1,-1);
+  const ex='abcdefghijklmnopqrstuvwxyz'.split('').filter(c=>!mid.includes(c));
+  const dist=shuf(ex).slice(0,Math.min(3,Math.max(0,8-mid.length)));
+  const bank=shuf([...shuf([...mid]),...dist]);
   el.innerHTML=`<div class="quiz-prompt">✦ 拼出「${q.m}」的英文</div>
     <div class="spell-area">
-      <div class="spell-display">${lt.map((_,i)=>`<div class="spell-slot" id="ss${i}"></div>`).join('')}</div>
+      <div class="spell-display">${lt.map((_,i)=>{
+        if(i===0)return`<div class="spell-slot filled hint" id="ss${i}" style="color:var(--mint);font-weight:700">${first}</div>`;
+        if(i===lt.length-1)return`<div class="spell-slot filled hint" id="ss${i}" style="color:var(--mint);font-weight:700">${last}</div>`;
+        return`<div class="spell-slot" id="ss${i}"></div>`}).join('')}</div>
       <div class="letter-bank">${bank.map((c,i)=>`<button class="letter-btn" id="lb${i}" onclick="pickL(this,'${c}')">${c}</button>`).join('')}</div>
       <div style="display:flex;gap:.3rem;margin-top:.3rem">
         <button class="btn btn-secondary btn-xs" onclick="clrS()">清除</button>
         <button class="btn btn-primary btn-xs" id="sbtn" onclick="subS()" style="opacity:.3;pointer-events:none">確認</button></div></div>`;
-  window._st=q.w;window._si=[]}
-function pickL(b,c){if(Q.done)return;const t=window._st,inp=window._si;if(inp.length>=t.length)return;
+  window._st=q.w;window._si=[];window._hinted=[0,lt.length-1]}
+function pickL(b,c){if(Q.done)return;const t=window._st,inp=window._si,h=window._hinted||[];
+  const midLen=t.length-h.length;if(inp.length>=midLen)return;
   inp.push({c,id:b.id});b.classList.add('used');
-  const s=document.getElementById('ss'+(inp.length-1));if(s){s.textContent=c;s.classList.add('filled')}
-  if(inp.length>=t.length){document.getElementById('sbtn').style.opacity='1';document.getElementById('sbtn').style.pointerEvents='auto'}}
+  // Fill the next available non-hinted slot
+  const slotIdx=inp.length;// 1-based middle slot index
+  const s=document.getElementById('ss'+slotIdx);if(s){s.textContent=c;s.classList.add('filled')}
+  if(inp.length>=midLen){document.getElementById('sbtn').style.opacity='1';document.getElementById('sbtn').style.pointerEvents='auto'}}
 function clrS(){if(Q.done)return;window._si.forEach(x=>document.getElementById(x.id)?.classList.remove('used'));
-  window._si=[];for(let i=0;i<window._st.length;i++){const s=document.getElementById('ss'+i);if(s){s.textContent='';s.className='spell-slot'}}
+  window._si=[];const h=window._hinted||[];
+  for(let i=0;i<window._st.length;i++){if(h.includes(i))continue;
+    const s=document.getElementById('ss'+i);if(s){s.textContent='';s.className='spell-slot'}}
   document.getElementById('sbtn').style.opacity='.3';document.getElementById('sbtn').style.pointerEvents='none'}
-function subS(){if(Q.done)return;Q.done=true;const t=window._st,inp=window._si.map(x=>x.c).join(''),ok=inp===t;
-  for(let i=0;i<t.length;i++){const s=document.getElementById('ss'+i);if(s)s.classList.add(inp[i]===t[i]?'ok':'bad')}
+function subS(){if(Q.done)return;Q.done=true;const t=window._st,h=window._hinted||[];
+  // Build full answer: hinted letters + user input
+  const full=[];let mi=0;
+  for(let i=0;i<t.length;i++){
+    if(h.includes(i))full.push(t[i]);
+    else{full.push(window._si[mi]?window._si[mi].c:'');mi++}}
+  const inp=full.join(''),ok=inp===t;
+  for(let i=0;i<t.length;i++){if(h.includes(i))continue;const s=document.getElementById('ss'+i);if(s)s.classList.add(full[i]===t[i]?'ok':'bad')}
   if(!ok)setTimeout(()=>{for(let i=0;i<t.length;i++){const s=document.getElementById('ss'+i);if(s){s.textContent=t[i];s.className='spell-slot ok'}}},500);
   handleRes(ok)}
 
