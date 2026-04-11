@@ -965,8 +965,9 @@ function subS(){if(Q.done)return;Q.done=true;const t=window._st,h=window._hinted
 function handleRes(ok){
   const q=Q.qs[Q.cur];upDot(Q.cur,ok);
   if(ok){Q.combo++;const cb=Math.min(Q.combo,5);
-    const starReward=1+Math.floor(cb/2)+Math.floor(q.lv/2);
-    const er=3+q.lv*2;
+    const bossBonus=Q.mode==='boss'?2:0;
+    const starReward=1+Math.floor(cb/2)+Math.floor(q.lv/2)+bossBonus;
+    const er=3+q.lv*2+(Q.mode==='boss'?5:0);
     S.stars+=starReward;S.exp+=er;Q.coins+=starReward;
     if(!S.wordsAnswered[q.w])S.wordsAnswered[q.w]={rv:0,m:false};
     S.wordsAnswered[q.w].rv++;if(S.wordsAnswered[q.w].rv>=5)S.wordsAnswered[q.w].m=true;
