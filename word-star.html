@@ -190,6 +190,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .card-item .ci-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent 50%);pointer-events:none;z-index:4}
 .card-item .ci-lv{position:absolute;top:.1rem;right:.1rem;font-size:.32rem;background:rgba(0,0,0,.5);padding:.04rem .14rem;border-radius:.3rem;z-index:5}
 .card-item .holo{position:absolute;inset:0;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.04) 40%,transparent 50%);animation:holoShift 4s linear infinite;pointer-events:none;z-index:4}
+.shiny-card{position:relative;overflow:hidden}
+.shiny-card::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,215,0,.15) 30%,rgba(255,110,199,.15) 40%,rgba(127,245,220,.15) 50%,rgba(199,125,255,.15) 60%,transparent 70%);animation:shinyShift 3s ease-in-out infinite;z-index:6;pointer-events:none;border-radius:inherit}
+.shiny-card::after{content:'✦';position:absolute;top:3px;right:5px;font-size:10px;color:#ffd700;z-index:7;animation:shinyStar 2s ease-in-out infinite;text-shadow:0 0 6px #ffd700}
+@keyframes shinyShift{0%{transform:translateX(-100%) rotate(15deg)}50%{transform:translateX(100%) rotate(15deg)}100%{transform:translateX(-100%) rotate(15deg)}}
+@keyframes shinyStar{0%,100%{opacity:.6;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.shiny-badge{display:inline-block;background:linear-gradient(90deg,#ffd700,#ff6ec7,#7ff5dc,#c77dff,#ffd700);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:rainbowText 3s linear infinite;font-weight:900}
+@keyframes rainbowText{0%{background-position:0%}100%{background-position:200%}}
+.seasonal-deco{position:absolute;pointer-events:none;z-index:3;opacity:.5;font-size:8px}
 
 /* Group collection view */
 .group-section{background:var(--card);border-radius:.8rem;padding:.8rem;margin-bottom:.8rem}
@@ -257,6 +265,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="stat-card"><div class="stat-num" style="color:var(--mint)" id="s-master">0</div><div class="stat-lbl">精通字</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--accent)" id="s-streak">1</div><div class="stat-lbl">連續</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--primary)" id="s-groups">0</div><div class="stat-lbl">集滿組</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#ffd700" id="s-shiny">0</div><div class="stat-lbl">閃卡</div></div>
   </div>
   <div id="aura-bar" style="display:none;background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:12px;padding:6px 14px;margin-bottom:8px;text-align:center;font-size:.65rem;color:var(--mint)">💫 小卡應援加成：答題星星 +<span id="aura-pct">0</span>%</div>
   <div class="daily-quest" onclick="goTo('quiz-screen');startQuiz('mixed')">
@@ -837,6 +846,7 @@ function updateHome(){
   document.getElementById('s-master').textContent=Object.values(S.wordsAnswered).filter(w=>(w.lv||0)>=2).length;
   document.getElementById('s-streak').textContent=S.streak;
   document.getElementById('s-groups').textContent=completedGroups;
+  document.getElementById('s-shiny').textContent=Object.values(S.cards).filter(c=>c.shiny).length;
   document.getElementById('d-count').textContent=S.dailyNew;
   document.getElementById('q-bar').style.width=Math.min(S.dailyNew/10*100,100)+'%';
   // Limited event banner
@@ -1064,9 +1074,11 @@ function showColl(fv=0,gid=''){
     const g=m.group;
     if(card){
       const starStr='★'.repeat(card.stars);
-      return`<div class="card-item fade-in" style="background:${g.bg};box-shadow:0 1px 5px ${g.theme}33" onclick="showCardDet('${key}')">
-        <div class="ci-shine"></div><div class="holo"></div>
-        <div class="ci-lv" style="font-size:.3rem;color:${g.theme}">${starStr}</div>
+      const isSh=card.shiny;const isLtdCard=!!card.ltd;
+      const cBg=isLtdCard?getSeasonalBg(card.ltd):g.bg;
+      return`<div class="card-item fade-in${isSh?' shiny-card':''}" style="background:${cBg};box-shadow:${isSh?'0 2px 10px #ffd70066':'0 1px 5px '+g.theme+'33'}" onclick="showCardDet('${key}')">
+        <div class="ci-shine"></div>${isSh||card.rarity==='SSR'||card.rarity==='SR'?'<div class="holo"></div>':''}${isLtdCard?getSeasonalDecoSVG(card.ltd,55,72):''}
+        <div class="ci-lv" style="font-size:.3rem;color:${isSh?'#ffd700':g.theme}">${isSh?'✦'+starStr:starStr}</div>
         <div class="ci-content">${chibiSVG(m,18,g)}<div class="ci-word">${m.name}</div></div></div>`}
     return`<div class="card-item locked" style="background:var(--card)">
       <div class="ci-content"><div style="font-size:.5rem;color:var(--text-muted)">?</div></div></div>`}).join('')}</div>`;
@@ -1081,8 +1093,8 @@ function showCardDet(key){
   const starStr='★'.repeat(card.stars)+'☆'.repeat(Math.max(0,5-card.stars));
   const chibi=chibiSVG(mem,55,g);
   document.getElementById('mod-content').innerHTML=`<div class="modal-handle"></div>
-    <div style="width:90px;height:125px;border-radius:8px;background:${card.ltd?getSeasonalBg(card.ltd):g.bg};margin:0 auto .8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 4px 20px ${g.theme}44">
-      <div class="ci-shine"></div><div style="position:relative;z-index:2">${chibi}</div>
+    <div class="${card.shiny?'shiny-card':''}" style="width:90px;height:125px;border-radius:8px;background:${card.ltd?getSeasonalBg(card.ltd):g.bg};margin:0 auto .8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:${card.shiny?'0 4px 20px #ffd70066':'0 4px 20px '+g.theme+'44'}">
+      <div class="ci-shine"></div>${card.ltd?getSeasonalDecoSVG(card.ltd,90,125):''}<div style="position:relative;z-index:2">${chibi}</div>
       <div style="position:relative;z-index:3;font-size:.45rem;font-weight:700">${mem.name}</div></div>
     <div style="font-size:1.2rem;font-weight:900;text-align:center">${mem.name}</div>
     ${card.ltd?'<div style="text-align:center;font-size:.6rem;color:#ffd700;margin:.1rem 0">'+getEvBadge(card.ltd)+' '+getEvName(card.ltd)+'</div>':''}
@@ -1092,7 +1104,7 @@ function showCardDet(key){
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700;color:${g.theme}">${card.stars}★</div><div style="font-size:.55rem;color:var(--text-dim)">星等</div></div>
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">x${card.dupes+1}</div><div style="font-size:.55rem;color:var(--text-dim)">持有</div></div>
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">${card.fragments}</div><div style="font-size:.55rem;color:var(--text-dim)">碎片💫</div></div></div>
-    <div style="background:var(--card);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:${({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||mem.rarity||'N']}">稀有度 ${card.rarity||mem.rarity||'N'}</span></div>
+    <div style="background:var(--card);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:${({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||mem.rarity||'N']}">稀有度 ${card.rarity||mem.rarity||'N'}</span>${card.shiny?' <span class="shiny-badge">✦ SHINY</span>':''}</div>
     ${card.stars>=3?`<div style="background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:var(--mint)">應援加成</span> 答題星星 +${getCardBonus(card.stars)}%⭐</div>`:''}
     ${card.stars>=5?`<div style="background:linear-gradient(135deg,#ffd70022,#ff6ec722);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem;color:#ffd700">🏆 滿星精通 · 最強應援</div>`:''}
     ${card.fragments>=10&&card.stars<5?`<button class="btn btn-primary btn-sm" style="width:100%;margin-bottom:.4rem" onclick="upgradeCard('${key}')">升星 ⬆ (10💫)</button>`:''}
@@ -1225,6 +1237,18 @@ function getSeasonalBg(evId){
     summer2:'linear-gradient(135deg,#001a2d,#0288d1,#4fc3f7)'
   };
   return bgs[evId]||'linear-gradient(135deg,#1a0033,#4a148c)'}
+function getSeasonalDecoSVG(evId,w,h){
+  const decos={
+    newyear:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.4"><circle cx="${w*.2}" cy="${h*.15}" r="4" fill="#ffd700"/><circle cx="${w*.8}" cy="${h*.1}" r="3" fill="#ff4444"/><path d="M${w*.1} ${h*.85} Q${w*.3} ${h*.7} ${w*.5} ${h*.85} Q${w*.7} ${h} ${w*.9} ${h*.85}" stroke="#ffd700" fill="none" stroke-width="1" opacity=".5"/><text x="${w*.75}" y="${h*.25}" fill="#ffd700" font-size="8" opacity=".6">🎍</text><text x="${w*.15}" y="${h*.9}" fill="#ff4444" font-size="6" opacity=".5">🧧</text></svg>`,
+    valentine:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.45"><path d="M${w*.5} ${h*.2} C${w*.5-6} ${h*.2-8} ${w*.5-14} ${h*.2+2} ${w*.5} ${h*.2+12} C${w*.5+14} ${h*.2+2} ${w*.5+6} ${h*.2-8} ${w*.5} ${h*.2}" fill="#ff69b4" opacity=".3"/><circle cx="${w*.15}" cy="${h*.3}" r="2" fill="#f8bbd0" opacity=".5"/><circle cx="${w*.85}" cy="${h*.7}" r="2.5" fill="#f48fb1" opacity=".4"/><circle cx="${w*.25}" cy="${h*.8}" r="1.5" fill="#ff69b4" opacity=".3"/><text x="${w*.05}" y="${h*.15}" fill="#ff69b4" font-size="7" opacity=".5">♥</text><text x="${w*.7}" y="${h*.9}" fill="#f8bbd0" font-size="6" opacity=".4">♥</text></svg>`,
+    spring:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5"><circle cx="${w*.2}" cy="${h*.15}" r="4" fill="#f8bbd0" opacity=".5"/><circle cx="${w*.22}" cy="${h*.13}" r="3.5" fill="#f48fb1" opacity=".3"/><circle cx="${w*.8}" cy="${h*.8}" r="3.5" fill="#f8bbd0" opacity=".4"/><circle cx="${w*.78}" cy="${h*.82}" r="3" fill="#f48fb1" opacity=".3"/><circle cx="${w*.6}" cy="${h*.12}" r="2.5" fill="#ffb7c5" opacity=".3"/><path d="M${w*.1} ${h*.5} Q${w*.2} ${h*.45} ${w*.15} ${h*.55}" stroke="#81c784" fill="none" stroke-width=".8" opacity=".4"/><text x="${w*.05}" y="${h*.95}" fill="#f8bbd0" font-size="7" opacity=".4">🌸</text><text x="${w*.7}" y="${h*.2}" fill="#81c784" font-size="5" opacity=".4">🍃</text></svg>`,
+    summer:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.45"><circle cx="${w*.8}" cy="${h*.12}" r="6" fill="#ffeb3b" opacity=".3"/><path d="M0 ${h*.75} Q${w*.15} ${h*.68} ${w*.3} ${h*.75} Q${w*.45} ${h*.82} ${w*.6} ${h*.75} Q${w*.75} ${h*.68} ${w} ${h*.75} L${w} ${h} L0 ${h} Z" fill="#00bcd4" opacity=".15"/><text x="${w*.1}" y="${h*.65}" fill="#ffeb3b" font-size="6" opacity=".5">☀</text><text x="${w*.65}" y="${h*.92}" fill="#00bcd4" font-size="6" opacity=".4">🌊</text></svg>`,
+    halloween:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.45"><circle cx="${w*.8}" cy="${h*.1}" r="5" fill="#ffd700" opacity=".2"/><text x="${w*.05}" y="${h*.2}" fill="#ff6f00" font-size="8" opacity=".5">🎃</text><text x="${w*.7}" y="${h*.85}" fill="#7c4dff" font-size="7" opacity=".4">🦇</text><text x="${w*.15}" y="${h*.9}" fill="#ff6f00" font-size="5" opacity=".3">🕷</text><circle cx="${w*.5}" cy="${h*.05}" r="2" fill="#7c4dff" opacity=".3"/><circle cx="${w*.3}" cy="${h*.5}" r="1.5" fill="#ff6f00" opacity=".2"/></svg>`,
+    xmas:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5"><circle cx="${w*.15}" cy="${h*.1}" r="2.5" fill="#fff" opacity=".4"/><circle cx="${w*.5}" cy="${h*.05}" r="2" fill="#fff" opacity=".3"/><circle cx="${w*.85}" cy="${h*.15}" r="1.8" fill="#fff" opacity=".35"/><circle cx="${w*.3}" cy="${h*.25}" r="1.5" fill="#fff" opacity=".25"/><text x="${w*.05}" y="${h*.85}" fill="#2e7d32" font-size="7" opacity=".4">🎄</text><text x="${w*.7}" y="${h*.2}" fill="#c62828" font-size="6" opacity=".4">🎁</text><circle cx="${w*.7}" cy="${h*.6}" r="2" fill="#fff" opacity=".3"/></svg>`,
+    debut:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.45"><text x="${w*.1}" y="${h*.15}" fill="#ffd700" font-size="6" opacity=".5">✦</text><text x="${w*.75}" y="${h*.25}" fill="#c77dff" font-size="5" opacity=".4">✦</text><text x="${w*.5}" y="${h*.9}" fill="#ffd700" font-size="7" opacity=".4">✦</text><text x="${w*.2}" y="${h*.6}" fill="#ff6ec7" font-size="4" opacity=".3">✧</text><circle cx="${w*.85}" cy="${h*.75}" r="2" fill="#ffd700" opacity=".2"/></svg>`,
+    summer2:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.45"><path d="M0 ${h*.8} Q${w*.2} ${h*.72} ${w*.4} ${h*.8} Q${w*.6} ${h*.88} ${w*.8} ${h*.8} Q${w*.9} ${h*.72} ${w} ${h*.8} L${w} ${h} L0 ${h} Z" fill="#4fc3f7" opacity=".2"/><text x="${w*.1}" y="${h*.15}" fill="#4fc3f7" font-size="7" opacity=".4">🐚</text><text x="${w*.7}" y="${h*.7}" fill="#0288d1" font-size="6" opacity=".3">🌊</text><circle cx="${w*.8}" cy="${h*.1}" r="5" fill="#ffeb3b" opacity=".15"/></svg>`
+  };
+  return decos[evId]||''}
 
 // ===== GACHA SYSTEM =====
 function showGacha(){
@@ -1324,13 +1348,15 @@ function showPullResult(results){
     const ltdEv=getLimitedEvent();
     const ltdKey=ltdEv?getLimitedKey(key):null;
     const isLtd=ltdEv&&Math.random()<0.15;
+    const isShiny=Math.random()<0.03;
     const actualKey=isLtd?ltdKey:key;
     const isDupeActual=!!S.cards[actualKey];
 
     if(!isDupeActual){
-      S.cards[actualKey]={stars:r.member.rarity==='SSR'?3:r.member.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:isLtd?ltdEv.id:null,rarity:r.member.rarity};saveState();
+      S.cards[actualKey]={stars:r.member.rarity==='SSR'?3:r.member.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:isLtd?ltdEv.id:null,rarity:r.member.rarity,shiny:isShiny};saveState();
     }else{
       S.cards[actualKey].dupes++;
+      if(isShiny&&!S.cards[actualKey].shiny)S.cards[actualKey].shiny=true;
       const fragReward=r.member.rarity==='SSR'?5:r.member.rarity==='SR'?3:r.member.rarity==='R'?2:1;
       S.cards[actualKey].fragments+=fragReward;
       saveState();
@@ -1339,14 +1365,19 @@ function showPullResult(results){
     const rarityColors={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
     const rarityGlow={SSR:'0 0 20px #ffd70066',SR:'0 0 15px #e879f944',R:'0 0 10px #60a5fa33',N:'none'};
 
-    return `<div style="width:${results.length>1?'60px':'100px'};text-align:center;animation:fadeInUp .5s ease-out both;animation-delay:${Math.random()*.3}s">
-      <div style="width:${results.length>1?'60px':'100px'};height:${results.length>1?'80px':'130px'};border-radius:8px;background:${g.bg};
+    const cw=results.length>1?60:100,ch=results.length>1?80:130;
+    const shinyClass=isShiny?' shiny-card':'';
+    const shinyGlow=isShiny?'0 0 15px #ffd70088,0 0 30px #ff6ec744':'';
+    const cardBg=isLtd&&ltdEv?getSeasonalBg(ltdEv.id):g.bg;
+    const decoSvg=isLtd&&ltdEv?getSeasonalDecoSVG(ltdEv.id,cw,ch):'';
+    return `<div style="width:${cw}px;text-align:center;animation:fadeInUp .5s ease-out both;animation-delay:${Math.random()*.3}s">
+      <div class="${shinyClass}" style="width:${cw}px;height:${ch}px;border-radius:8px;background:${cardBg};
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;
-        box-shadow:${rarityGlow[r.rarity]};border:2px solid ${rarityColors[r.rarity]}44">
-        <div class="ci-shine"></div>${r.rarity==='SSR'||r.rarity==='SR'?'<div class="holo"></div>':''}
+        box-shadow:${shinyGlow||rarityGlow[r.rarity]};border:2px solid ${isShiny?'#ffd700':rarityColors[r.rarity]+'44'}">
+        <div class="ci-shine"></div>${r.rarity==='SSR'||r.rarity==='SR'||isShiny?'<div class="holo"></div>':''}${decoSvg}
         <div style="position:relative;z-index:2">${chibiSVG(m,results.length>1?30:55,g)}</div>
         <div style="position:relative;z-index:3;font-size:${results.length>1?'.35rem':'.5rem'};font-weight:700">${m.name}</div></div>
-      <div style="font-size:.5rem;font-weight:700;color:${rarityColors[r.rarity]};margin-top:.2rem">${r.rarity}</div>
+      <div style="font-size:.5rem;font-weight:700;margin-top:.2rem">${isShiny?'<span class="shiny-badge">✦ SHINY</span>':'<span style="color:'+rarityColors[r.rarity]+'">'+r.rarity+'</span>'}</div>
       <div style="font-size:.4rem;color:var(--text-dim)">${g.name}</div>
       ${isLtd?'<div style="font-size:.35rem;color:#ffd700;font-weight:700">'+ltdEv.badge+' 限定版！</div>':''}
       ${isDupeActual?'<div style="font-size:.35rem;color:var(--accent)">重複 → 💫碎片</div>':
