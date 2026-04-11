@@ -258,6 +258,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="stat-card"><div class="stat-num" style="color:var(--accent)" id="s-streak">1</div><div class="stat-lbl">連續</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--primary)" id="s-groups">0</div><div class="stat-lbl">集滿組</div></div>
   </div>
+  <div id="aura-bar" style="display:none;background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:12px;padding:6px 14px;margin-bottom:8px;text-align:center;font-size:.65rem;color:var(--mint)">💫 小卡應援加成：答題星星 +<span id="aura-pct">0</span>%</div>
   <div class="daily-quest" onclick="goTo('quiz-screen');startQuiz('mixed')">
     <div class="quest-header"><div class="quest-title">📋 今日打歌</div><div class="quest-reward">🎁 抽卡幣</div></div>
     <div style="color:var(--text-dim);font-size:.7rem">答對 10 題獲得星星 (<span id="d-count">0</span>/10)</div>
@@ -825,6 +826,9 @@ function updateHome(){
   document.getElementById('s-groups').textContent=completedGroups;
   document.getElementById('d-count').textContent=S.dailyNew;
   document.getElementById('q-bar').style.width=Math.min(S.dailyNew/10*100,100)+'%';
+  const aura=calcCardAura();
+  const ab=document.getElementById('aura-bar');
+  if(aura>0){ab.style.display='block';document.getElementById('aura-pct').textContent=aura}else{ab.style.display='none'}
   const nd=S.level*30;
   document.getElementById('exp-bar').style.width=(S.exp/nd*100)+'%';
   document.getElementById('exp-text').textContent=S.exp+'/'+nd;
@@ -966,7 +970,9 @@ function handleRes(ok){
   const q=Q.qs[Q.cur];upDot(Q.cur,ok);
   if(ok){Q.combo++;const cb=Math.min(Q.combo,5);
     const bossBonus=Q.mode==='boss'?2:0;
-    const starReward=1+Math.floor(cb/2)+Math.floor(q.lv/2)+bossBonus;
+    const aura=calcCardAura();
+    const baseReward=1+Math.floor(cb/2)+Math.floor(q.lv/2)+bossBonus;
+    const starReward=baseReward+Math.floor(baseReward*aura/100);
     const er=3+q.lv*2+(Q.mode==='boss'?5:0);
     S.stars+=starReward;S.exp+=er;Q.coins+=starReward;
     if(!S.wordsAnswered[q.w])S.wordsAnswered[q.w]={rv:0,m:false};
@@ -1051,14 +1057,41 @@ function showCardDet(key){
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700;color:${g.theme}">${card.stars}★</div><div style="font-size:.55rem;color:var(--text-dim)">星等</div></div>
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">x${card.dupes+1}</div><div style="font-size:.55rem;color:var(--text-dim)">持有</div></div>
       <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">${card.fragments}</div><div style="font-size:.55rem;color:var(--text-dim)">碎片💫</div></div></div>
+    ${card.stars>=3?`<div style="background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:var(--mint)">應援加成</span> 答題星星 +${getCardBonus(card.stars)}%⭐</div>`:''}
+    ${card.stars>=5?`<div style="background:linear-gradient(135deg,#ffd70022,#ff6ec722);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem;color:#ffd700">🏆 滿星精通 · 最強應援</div>`:''}
     ${card.fragments>=10&&card.stars<5?`<button class="btn btn-primary btn-sm" style="width:100%;margin-bottom:.4rem" onclick="upgradeCard('${key}')">升星 ⬆ (10💫)</button>`:''}
     <button class="btn btn-secondary btn-sm" style="width:100%" onclick="closeMod()">關閉</button>`;
   document.getElementById('det-modal').classList.add('active')}
 
 function upgradeCard(key){
   const card=S.cards[key];if(!card||card.fragments<10||card.stars>=5)return;
-  card.fragments-=10;card.stars++;saveState();closeMod();showColl(-1);
-  floatTxt('升星成功！✦','var(--accent)')}
+  card.fragments-=10;card.stars++;
+  // Star upgrade rewards
+  const rewards={2:5,3:10,4:20,5:50};
+  const starBonus=rewards[card.stars]||5;
+  S.stars+=starBonus;saveState();closeMod();
+  // Show upgrade celebration overlay
+  const ov=document.getElementById('pull-overlay');ov.style.display='flex';
+  const ct=document.getElementById('pull-result');
+  const starIcons='✦'.repeat(card.stars);
+  const parts=key.split('_');const gIdx=parseInt(parts[0]),mIdx=parseInt(parts[1]);
+  const g=K[gIdx],mem=g.members[mIdx];
+  const maxNote=card.stars>=5?'<div style="font-size:.6rem;color:#ffd700;margin-top:.3rem;text-shadow:0 0 10px #ffd70066">🏆 滿星達成！應援效果全開！</div>':'';
+  const bonusNote=card.stars>=3?`<div style="font-size:.5rem;color:var(--mint);margin-top:.2rem">答題應援加成 +${getCardBonus(card.stars)}%⭐</div>`:'';
+  ct.innerHTML=`<div style="text-align:center">
+    <div style="font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,#ffe66d,#ff6ec7,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.6rem">⬆ 升星成功！</div>
+    <div style="font-size:1.5rem;letter-spacing:4px;margin:.4rem 0;text-shadow:0 0 12px var(--accent)">${starIcons}</div>
+    <div style="font-size:.85rem;font-weight:700">${mem.name}</div>
+    <div style="font-size:.6rem;color:var(--text-dim)">${g.name}</div>
+    <div style="font-size:.7rem;color:var(--accent);margin-top:.5rem;font-weight:700">+${starBonus}⭐ 星星獎勵！</div>
+    ${bonusNote}${maxNote}
+    <button class="btn btn-primary btn-sm" style="margin-top:.8rem" onclick="closePull();showColl(-1)">太棒了！✦</button></div>`;
+  burst()}
+function getCardBonus(stars){return stars>=5?15:stars>=4?10:stars>=3?5:0}
+function calcCardAura(){
+  const entries=Object.values(S.cards||{});if(!entries.length)return 0;
+  let bonus=0;entries.forEach(c=>{bonus+=getCardBonus(c.stars)});
+  return Math.min(Math.floor(bonus/entries.length),20)}
 
 function closeMod(e){if(!e||e.target===document.getElementById('det-modal'))document.getElementById('det-modal').classList.remove('active')}
 
