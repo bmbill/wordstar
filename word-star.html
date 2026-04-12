@@ -125,7 +125,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .photocard .pc-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 50%);pointer-events:none;z-index:5}
 .photocard .holo{position:absolute;inset:0;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.06) 40%,transparent 50%);animation:holoShift 3s linear infinite;pointer-events:none;z-index:5}
 @keyframes holoShift{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.photocard .pc-name{position:absolute;bottom:4px;font-size:.45rem;font-weight:700;z-index:6;background:rgba(0,0,0,.4);padding:1px 4px;border-radius:3px}
+.photocard .pc-name{position:absolute;bottom:4px;font-size:.6rem;font-weight:700;z-index:6;background:rgba(0,0,0,.4);padding:2px 6px;border-radius:4px}
 
 .enc-word{font-size:1.6rem;font-weight:900;margin-bottom:.1rem}.enc-pos{color:var(--primary);font-size:.7rem;margin-bottom:.3rem}
 .quiz-prompt{color:var(--text-dim);font-size:.8rem;margin-bottom:.6rem;font-weight:700;text-align:center}
@@ -158,6 +158,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 /* Capture */
 #pull-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes specialRevealIn{0%{opacity:0;transform:scale(.3) rotateY(90deg)}40%{opacity:1;transform:scale(1.1) rotateY(-5deg)}70%{transform:scale(.95) rotateY(3deg)}100%{transform:scale(1) rotateY(0deg)}}
 .capture-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .capture-overlay.active{display:flex}
 .capture-card{width:130px;height:180px;border-radius:10px;margin-bottom:1rem;position:relative;overflow:hidden;
@@ -185,18 +186,179 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .card-item{aspect-ratio:1/1.2;border-radius:4px;position:relative;overflow:hidden;cursor:pointer;transition:transform .2s;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;max-height:72px}
 .card-item:active{transform:scale(.95)}.card-item.locked{opacity:.2;filter:grayscale(1)}
+.card-item.flash-card{animation:flashGlowP 3s ease-in-out infinite;border:2px solid #b388ff !important}
+.card-item.flash-card::before{content:'';position:absolute;inset:0;background:
+  linear-gradient(var(--flash-angle,135deg),transparent 15%,rgba(124,77,255,.2) 25%,rgba(0,229,255,.18) 35%,rgba(255,110,199,.15) 45%,rgba(124,77,255,.12) 55%,transparent 65%),
+  repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%,transparent 0% 50%);
+  background-size:200% 200%,6px 6px;animation:flashPrism 3s ease-in-out infinite;z-index:6;pointer-events:none;border-radius:inherit}
+.card-item.flash-card::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at var(--flash-x,30%) var(--flash-y,30%),rgba(124,77,255,.3) 0%,transparent 50%),
+  radial-gradient(2px 2px at 25% 25%,#b388ff88,transparent),radial-gradient(2px 2px at 55% 70%,#00e5ff88,transparent),
+  radial-gradient(1.5px 1.5px at 70% 20%,#ff6ec766,transparent),radial-gradient(1.5px 1.5px at 80% 75%,#b388ff88,transparent),
+  radial-gradient(1px 1px at 15% 60%,#00e5ff88,transparent),radial-gradient(1.5px 1.5px at 45% 40%,#fff6,transparent);
+  z-index:7;pointer-events:none;border-radius:inherit;animation:flashDust 5s ease-in-out infinite;mix-blend-mode:screen}
+.card-item.flash-card .ci-content{animation:chibiDanceSm 3s ease-in-out infinite}
+.card-item.ltd-newyear .ci-content{animation:chibiSmBounce 2.5s ease-in-out infinite}
+.card-item.ltd-valentine .ci-content{animation:chibiSmPulse 2s ease-in-out infinite}
+.card-item.ltd-spring .ci-content{animation:chibiSmSway 3.5s ease-in-out infinite}
+.card-item.ltd-summer .ci-content,.card-item.ltd-summer2 .ci-content{animation:chibiSmWave 2.5s ease-in-out infinite}
+.card-item.ltd-halloween .ci-content{animation:chibiSmShake 1.8s ease-in-out infinite}
+.card-item.ltd-xmas .ci-content{animation:chibiSmBounce 2.5s ease-in-out infinite}
+.card-item.ltd-debut .ci-content{animation:chibiSmSpin 3s ease-in-out infinite}
+@keyframes chibiDanceSm{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-3px) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}75%{transform:translateY(-2px) rotate(-1deg)}}
+@keyframes chibiSmBounce{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-5px) scale(1.03)}60%{transform:translateY(-1px) scale(.98)}80%{transform:translateY(-4px) scale(1.02)}}
+@keyframes chibiSmPulse{0%,100%{transform:scale(1)}25%{transform:scale(1.05) translateY(-2px)}50%{transform:scale(.97)}75%{transform:scale(1.04) translateY(-3px)}}
+@keyframes chibiSmSway{0%,100%{transform:rotate(0deg)}25%{transform:rotate(3deg) translateY(-3px)}50%{transform:rotate(-3deg)}75%{transform:rotate(2deg) translateY(-4px)}}
+@keyframes chibiSmWave{0%,100%{transform:translateX(0) translateY(0)}25%{transform:translateX(2px) translateY(-3px)}50%{transform:translateX(-2px) translateY(-1px)}75%{transform:translateX(2px) translateY(-4px)}}
+@keyframes chibiSmShake{0%,100%{transform:rotate(0deg)}20%{transform:rotate(3deg) translateY(-2px)}40%{transform:rotate(-4deg)}60%{transform:rotate(3deg) translateY(-4px)}80%{transform:rotate(-2deg) translateY(-1px)}}
+@keyframes chibiSmSpin{0%,100%{transform:translateY(0) rotate(0deg)}20%{transform:translateY(-5px) rotate(-3deg)}40%{transform:translateY(-2px) rotate(2deg)}60%{transform:translateY(-4px) rotate(-2deg)}80%{transform:translateY(-1px) rotate(3deg)}}
 .card-item .ci-content{position:relative;z-index:1;padding:.1rem}
-.card-item .ci-word{font-size:.42rem;font-weight:700;line-height:1.1}.card-item .ci-meaning{font-size:.35rem;color:rgba(255,255,255,.7);margin-top:.01rem;line-height:1.1}
-.card-item .ci-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent 50%);pointer-events:none;z-index:4}
-.card-item .ci-lv{position:absolute;top:.1rem;right:.1rem;font-size:.32rem;background:rgba(0,0,0,.5);padding:.04rem .14rem;border-radius:.3rem;z-index:5}
-.card-item .holo{position:absolute;inset:0;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.04) 40%,transparent 50%);animation:holoShift 4s linear infinite;pointer-events:none;z-index:4}
-.shiny-card{position:relative;overflow:hidden}
-.shiny-card::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,215,0,.15) 30%,rgba(255,110,199,.15) 40%,rgba(127,245,220,.15) 50%,rgba(199,125,255,.15) 60%,transparent 70%);animation:shinyShift 3s ease-in-out infinite;z-index:6;pointer-events:none;border-radius:inherit}
-.shiny-card::after{content:'✦';position:absolute;top:3px;right:5px;font-size:10px;color:#ffd700;z-index:7;animation:shinyStar 2s ease-in-out infinite;text-shadow:0 0 6px #ffd700}
-@keyframes shinyShift{0%{transform:translateX(-100%) rotate(15deg)}50%{transform:translateX(100%) rotate(15deg)}100%{transform:translateX(-100%) rotate(15deg)}}
-@keyframes shinyStar{0%,100%{opacity:.6;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.card-item .ci-word{font-size:.55rem;font-weight:700;line-height:1.15}.card-item .ci-meaning{font-size:.42rem;color:rgba(255,255,255,.7);margin-top:.03rem;line-height:1.15}
+.card-item .ci-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 50%);pointer-events:none;z-index:4}
+.card-item .ci-lv{position:absolute;top:.1rem;right:.1rem;font-size:.4rem;background:rgba(0,0,0,.5);padding:.06rem .18rem;border-radius:.3rem;z-index:5}
+.card-item .holo{position:absolute;inset:0;background:linear-gradient(45deg,transparent 25%,rgba(255,215,0,.06) 32%,rgba(255,110,199,.05) 38%,rgba(127,245,220,.06) 44%,transparent 52%);animation:holoShift 3s linear infinite;pointer-events:none;z-index:4}
+.shiny-card{position:relative;overflow:hidden;border:2px solid #c9a44c !important;box-shadow:0 0 8px #ffd70055,0 0 20px #ffd70022,inset 0 0 15px rgba(255,215,0,.08) !important}
+.shiny-card::before{content:'';position:absolute;inset:0;background:
+  linear-gradient(var(--shiny-angle,135deg),transparent 20%,rgba(255,215,0,.18) 28%,rgba(255,110,199,.15) 35%,rgba(127,245,220,.18) 42%,rgba(199,125,255,.15) 50%,rgba(255,215,0,.12) 58%,transparent 70%),
+  repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%,transparent 0% 50%);
+  background-size:200% 200%,8px 8px;animation:shinyPrism 4s ease-in-out infinite;z-index:6;pointer-events:none;border-radius:inherit}
+.shiny-card::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at var(--shiny-x,30%) var(--shiny-y,30%),rgba(255,255,255,.25) 0%,transparent 50%),
+  radial-gradient(2px 2px at 20% 30%,#fff8,transparent),radial-gradient(2px 2px at 40% 65%,#ffd70088,transparent),
+  radial-gradient(1.5px 1.5px at 60% 15%,#ff6ec788,transparent),radial-gradient(1.5px 1.5px at 75% 80%,#7ff5dc88,transparent),
+  radial-gradient(2px 2px at 15% 70%,#c77dff88,transparent),radial-gradient(1px 1px at 85% 40%,#fff8,transparent),
+  radial-gradient(1.5px 1.5px at 50% 50%,#ffd70066,transparent),radial-gradient(1px 1px at 30% 85%,#fff6,transparent),
+  radial-gradient(1.5px 1.5px at 90% 20%,#ff6ec766,transparent),radial-gradient(1px 1px at 10% 45%,#7ff5dc66,transparent);
+  z-index:7;pointer-events:none;border-radius:inherit;animation:shinyDust 6s ease-in-out infinite;mix-blend-mode:screen}
+.shiny-card .ci-word,.shiny-card [style*="font-weight:700"]{text-shadow:0 0 6px #ffd70066,0 1px 2px rgba(0,0,0,.5)}
+@keyframes shinyPrism{0%{--shiny-angle:120deg;background-position:0% 0%,0 0}25%{--shiny-angle:150deg;background-position:60% 40%,0 0}50%{--shiny-angle:180deg;background-position:100% 100%,0 0}75%{--shiny-angle:210deg;background-position:40% 60%,0 0}100%{--shiny-angle:120deg;background-position:0% 0%,0 0}}
+@keyframes shinyDust{0%,100%{--shiny-x:25%;--shiny-y:20%;opacity:.7}33%{--shiny-x:70%;--shiny-y:40%;opacity:1}66%{--shiny-x:40%;--shiny-y:75%;opacity:.8}}
+@property --shiny-angle{syntax:'<angle>';initial-value:135deg;inherits:false}
+@property --shiny-x{syntax:'<percentage>';initial-value:30%;inherits:false}
+@property --shiny-y{syntax:'<percentage>';initial-value:30%;inherits:false}
 .shiny-badge{display:inline-block;background:linear-gradient(90deg,#ffd700,#ff6ec7,#7ff5dc,#c77dff,#ffd700);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:rainbowText 3s linear infinite;font-weight:900}
+.shiny-card .ci-lv{background:linear-gradient(135deg,#ffd700,#c9a44c) !important;color:#1a1a2e !important;font-weight:900;border:1px solid #ffd70066;text-shadow:none}
+.flash-card{position:relative;overflow:hidden;border:2px solid #b388ff !important;box-shadow:0 0 8px #7c4dff55,0 0 20px #00e5ff22,inset 0 0 15px rgba(124,77,255,.08) !important;animation:flashGlowP 3s ease-in-out infinite}
+.flash-card::before{content:'';position:absolute;inset:0;background:
+  linear-gradient(var(--flash-angle,135deg),transparent 15%,rgba(124,77,255,.2) 25%,rgba(0,229,255,.18) 35%,rgba(255,110,199,.15) 45%,rgba(124,77,255,.12) 55%,transparent 65%),
+  repeating-conic-gradient(rgba(255,255,255,.03) 0% 25%,transparent 0% 50%);
+  background-size:200% 200%,6px 6px;animation:flashPrism 3s ease-in-out infinite;z-index:6;pointer-events:none;border-radius:inherit}
+.flash-card::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at var(--flash-x,30%) var(--flash-y,30%),rgba(124,77,255,.3) 0%,transparent 50%),
+  radial-gradient(2px 2px at 25% 25%,#b388ff88,transparent),radial-gradient(2px 2px at 55% 70%,#00e5ff88,transparent),
+  radial-gradient(1.5px 1.5px at 70% 20%,#ff6ec766,transparent),radial-gradient(1.5px 1.5px at 80% 75%,#b388ff88,transparent),
+  radial-gradient(1px 1px at 15% 60%,#00e5ff88,transparent),radial-gradient(1.5px 1.5px at 45% 40%,#fff6,transparent);
+  z-index:7;pointer-events:none;border-radius:inherit;animation:flashDust 5s ease-in-out infinite;mix-blend-mode:screen}
+.flash-card .ci-word,.flash-card [style*="font-weight:700"]{text-shadow:0 0 6px #7c4dff66,0 1px 2px rgba(0,0,0,.5)}
+.flash-card .ci-lv{background:linear-gradient(135deg,#b388ff,#7c4dff) !important;color:#fff !important;font-weight:900;border:1px solid #b388ff66;text-shadow:none}
+@keyframes flashPrism{0%{--flash-angle:120deg;background-position:0% 0%,0 0}25%{--flash-angle:155deg;background-position:60% 40%,0 0}50%{--flash-angle:190deg;background-position:100% 100%,0 0}75%{--flash-angle:225deg;background-position:40% 60%,0 0}100%{--flash-angle:120deg;background-position:0% 0%,0 0}}
+@keyframes flashDust{0%,100%{--flash-x:20%;--flash-y:25%;opacity:.7}33%{--flash-x:75%;--flash-y:35%;opacity:1}66%{--flash-x:35%;--flash-y:80%;opacity:.8}}
+@keyframes flashGlowP{0%,100%{box-shadow:0 0 8px #7c4dff55,0 0 20px #00e5ff22,inset 0 0 15px rgba(124,77,255,.08)}50%{box-shadow:0 0 15px #7c4dff88,0 0 30px #00e5ff44,0 0 45px #b388ff22,inset 0 0 20px rgba(124,77,255,.12)}}
+@keyframes chibiDance{
+0%{transform:translateY(0) rotate(0deg) scale(1)}
+10%{transform:translateY(-6px) rotate(-3deg) scale(1.03)}
+20%{transform:translateY(-2px) rotate(2deg) scale(1)}
+30%{transform:translateY(-8px) rotate(0deg) scale(1.05)}
+40%{transform:translateY(-1px) rotate(-2deg) scale(.98)}
+50%{transform:translateY(-5px) rotate(3deg) scale(1.02)}
+60%{transform:translateY(0px) rotate(-1deg) scale(1)}
+70%{transform:translateY(-7px) rotate(0deg) scale(1.04)}
+80%{transform:translateY(-2px) rotate(2deg) scale(.99)}
+90%{transform:translateY(-4px) rotate(-2deg) scale(1.02)}
+100%{transform:translateY(0) rotate(0deg) scale(1)}}
+@property --flash-angle{syntax:'<angle>';initial-value:135deg;inherits:false}
+@property --flash-x{syntax:'<percentage>';initial-value:30%;inherits:false}
+@property --flash-y{syntax:'<percentage>';initial-value:30%;inherits:false}
 @keyframes rainbowText{0%{background-position:0%}100%{background-position:200%}}
+/* === Seasonal Limited Card Effects === */
+.ltd-card{position:relative;overflow:hidden}
+.ltd-card::before{content:'';position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit}
+.ltd-card::after{content:'';position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;mix-blend-mode:screen}
+/* 新年 - 金紅光暈從右上角照射 */
+.ltd-newyear{border:2px solid #ffd700 !important;animation:ltdGlowNY 3s ease-in-out infinite}
+.ltd-newyear::before{background:linear-gradient(315deg,rgba(255,215,0,.2) 0%,rgba(183,28,28,.12) 40%,transparent 70%);animation:ltdShimmer 4s ease-in-out infinite}
+.ltd-newyear::after{background:radial-gradient(ellipse at 80% 15%,rgba(255,215,0,.25) 0%,transparent 55%),radial-gradient(2px 2px at 30% 20%,#ffd70066,transparent),radial-gradient(2px 2px at 70% 60%,#ff444466,transparent);animation:ltdSparkle 5s ease-in-out infinite}
+@keyframes ltdGlowNY{0%,100%{box-shadow:0 0 8px #ffd70044,0 0 20px #8b000022}50%{box-shadow:0 0 15px #ffd70066,0 0 30px #8b000044}}
+/* 情人節 - 粉紅心跳脈動從中心擴散 */
+.ltd-valentine{border:2px solid #f48fb1 !important;animation:ltdGlowVL 2.5s ease-in-out infinite}
+.ltd-valentine::before{background:radial-gradient(ellipse at 50% 50%,rgba(233,30,99,.18) 0%,rgba(248,187,208,.1) 40%,transparent 70%);animation:ltdPulseVL 2.5s ease-in-out infinite}
+.ltd-valentine::after{background:radial-gradient(3px 3px at 20% 30%,#ff69b466,transparent),radial-gradient(2px 2px at 75% 25%,#f8bbd066,transparent),radial-gradient(2.5px 2.5px at 50% 80%,#e91e6366,transparent),radial-gradient(2px 2px at 85% 65%,#ff69b444,transparent);animation:ltdSparkle 4s ease-in-out infinite}
+@keyframes ltdGlowVL{0%,100%{box-shadow:0 0 8px #e91e6344,0 0 18px #f8bbd022}50%{box-shadow:0 0 16px #e91e6366,0 0 35px #f8bbd044}}
+@keyframes ltdPulseVL{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}
+/* 春天 - 櫻花飄落，光從左下角 */
+.ltd-spring{border:2px solid #f48fb1 !important;animation:ltdGlowSP 3.5s ease-in-out infinite}
+.ltd-spring::before{background:linear-gradient(135deg,transparent 30%,rgba(244,143,177,.15) 50%,rgba(129,199,132,.1) 70%,transparent 90%);animation:ltdDriftSP 5s ease-in-out infinite}
+.ltd-spring::after{background:radial-gradient(ellipse at 20% 85%,rgba(248,187,208,.2) 0%,transparent 50%),radial-gradient(2px 2px at 15% 20%,#f8bbd066,transparent),radial-gradient(2px 2px at 65% 40%,#ffb7c566,transparent),radial-gradient(1.5px 1.5px at 40% 75%,#81c78466,transparent);animation:ltdSparkle 6s ease-in-out infinite}
+@keyframes ltdGlowSP{0%,100%{box-shadow:0 0 8px #f48fb144,0 0 18px #81c78422}50%{box-shadow:0 0 14px #f48fb166,0 0 28px #81c78444}}
+@keyframes ltdDriftSP{0%{background-position:0% 0%}50%{background-position:100% 100%}100%{background-position:0% 0%}}
+/* 夏天 - 波浪光線從底部湧上 */
+.ltd-summer,.ltd-summer2{border:2px solid #00bcd4 !important;animation:ltdGlowSM 3s ease-in-out infinite}
+.ltd-summer::before,.ltd-summer2::before{background:linear-gradient(0deg,rgba(0,188,212,.2) 0%,rgba(255,235,59,.08) 30%,transparent 60%);animation:ltdWave 3s ease-in-out infinite}
+.ltd-summer::after,.ltd-summer2::after{background:radial-gradient(ellipse at 80% 10%,rgba(255,235,59,.2) 0%,transparent 45%),radial-gradient(2px 2px at 20% 70%,#4fc3f766,transparent),radial-gradient(2px 2px at 60% 85%,#00bcd466,transparent),radial-gradient(1.5px 1.5px at 85% 50%,#ffeb3b44,transparent);animation:ltdSparkle 5s ease-in-out infinite}
+@keyframes ltdGlowSM{0%,100%{box-shadow:0 0 8px #00bcd444,0 0 18px #ffeb3b22}50%{box-shadow:0 0 15px #00bcd466,0 0 30px #ffeb3b44}}
+@keyframes ltdWave{0%,100%{opacity:.7;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
+/* 萬聖節 - 詭異紫橘光從四周閃爍 */
+.ltd-halloween{border:2px solid #ff6f00 !important;animation:ltdGlowHW 2s ease-in-out infinite}
+.ltd-halloween::before{background:conic-gradient(from var(--ltd-hw-angle,0deg) at 50% 50%,rgba(255,111,0,.15),rgba(124,77,255,.12),rgba(255,111,0,.15),rgba(124,77,255,.12));animation:ltdFlicker 4s linear infinite}
+.ltd-halloween::after{background:radial-gradient(2.5px 2.5px at 15% 15%,#ff6f0066,transparent),radial-gradient(2px 2px at 80% 20%,#7c4dff66,transparent),radial-gradient(3px 3px at 25% 85%,#7c4dff44,transparent),radial-gradient(2px 2px at 75% 75%,#ff6f0066,transparent);animation:ltdSparkle 3s ease-in-out infinite}
+@keyframes ltdGlowHW{0%,100%{box-shadow:0 0 10px #ff6f0055,0 0 22px #7c4dff33}40%{box-shadow:0 0 18px #7c4dff55,0 0 35px #ff6f0033}70%{box-shadow:0 0 14px #ff6f0066,0 0 28px #7c4dff44}}
+@keyframes ltdFlicker{0%{--ltd-hw-angle:0deg}100%{--ltd-hw-angle:360deg}}
+@property --ltd-hw-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+/* 聖誕節 - 雪花閃爍，紅綠光暈從頂部 */
+.ltd-xmas{border:2px solid #c62828 !important;animation:ltdGlowXM 3s ease-in-out infinite}
+.ltd-xmas::before{background:linear-gradient(180deg,rgba(198,40,40,.15) 0%,rgba(46,125,50,.1) 40%,transparent 70%);animation:ltdShimmer 4s ease-in-out infinite}
+.ltd-xmas::after{background:radial-gradient(2.5px 2.5px at 20% 10%,#ffffff55,transparent),radial-gradient(2px 2px at 50% 5%,#ffffff44,transparent),radial-gradient(2px 2px at 80% 15%,#ffffff55,transparent),radial-gradient(1.5px 1.5px at 35% 25%,#ffffff33,transparent),radial-gradient(2px 2px at 65% 50%,#c6282844,transparent),radial-gradient(2px 2px at 30% 70%,#2e7d3244,transparent);animation:ltdSnow 4s ease-in-out infinite}
+@keyframes ltdGlowXM{0%,100%{box-shadow:0 0 8px #c6282844,0 0 18px #2e7d3222}50%{box-shadow:0 0 15px #c6282866,0 0 30px #2e7d3244}}
+@keyframes ltdSnow{0%,100%{opacity:.6;background-position:0% 0%}50%{opacity:1;background-position:5% 10%}}
+/* 出道紀念 - 金紫星光四散 */
+.ltd-debut{border:2px solid #c77dff !important;animation:ltdGlowDB 3s ease-in-out infinite}
+.ltd-debut::before{background:linear-gradient(var(--shiny-angle,135deg),transparent 20%,rgba(199,125,255,.15) 35%,rgba(255,215,0,.12) 50%,rgba(255,110,199,.1) 65%,transparent 80%);background-size:200% 200%;animation:shinyPrism 5s ease-in-out infinite}
+.ltd-debut::after{background:radial-gradient(2px 2px at 20% 20%,#ffd70066,transparent),radial-gradient(2.5px 2.5px at 75% 30%,#c77dff66,transparent),radial-gradient(2px 2px at 50% 85%,#ffd70066,transparent),radial-gradient(1.5px 1.5px at 30% 55%,#ff6ec744,transparent),radial-gradient(2px 2px at 85% 70%,#c77dff44,transparent);animation:ltdSparkle 4s ease-in-out infinite}
+@keyframes ltdGlowDB{0%,100%{box-shadow:0 0 8px #c77dff44,0 0 18px #ffd70022}50%{box-shadow:0 0 15px #c77dff66,0 0 30px #ffd70044}}
+/* Shared seasonal keyframes */
+@keyframes ltdShimmer{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes ltdSparkle{0%,100%{opacity:.5}25%{opacity:.9}50%{opacity:.6}75%{opacity:1}}
+/* Per-season chibi animations */
+.ltd-chibi-newyear{animation:chibiNewYear 2.5s ease-in-out infinite}
+@keyframes chibiNewYear{0%,100%{transform:translateY(0) rotate(0deg) scale(1)}20%{transform:translateY(-12px) rotate(-3deg) scale(1.05)}40%{transform:translateY(-2px) rotate(2deg) scale(.98)}60%{transform:translateY(-10px) rotate(0deg) scale(1.03)}80%{transform:translateY(-4px) rotate(-2deg) scale(1)}}
+.ltd-chibi-valentine{animation:chibiValentine 2s ease-in-out infinite}
+@keyframes chibiValentine{0%,100%{transform:scale(1) translateY(0)}15%{transform:scale(1.08) translateY(-5px)}30%{transform:scale(.97) translateY(0)}45%{transform:scale(1.06) translateY(-4px)}60%{transform:scale(1) translateY(0)}80%{transform:scale(1.03) translateY(-2px)}}
+.ltd-chibi-spring{animation:chibiSpring 3.5s ease-in-out infinite}
+@keyframes chibiSpring{0%,100%{transform:translateY(0) rotate(0deg)}20%{transform:translateY(-8px) rotate(5deg)}40%{transform:translateY(-3px) rotate(-4deg)}60%{transform:translateY(-10px) rotate(3deg)}80%{transform:translateY(-2px) rotate(-2deg)}}
+.ltd-chibi-summer,.ltd-chibi-summer2{animation:chibiSummer 2.5s ease-in-out infinite}
+@keyframes chibiSummer{0%,100%{transform:translateX(0) translateY(0) rotate(0deg)}25%{transform:translateX(5px) translateY(-6px) rotate(3deg)}50%{transform:translateX(-4px) translateY(-2px) rotate(-3deg)}75%{transform:translateX(3px) translateY(-8px) rotate(2deg)}}
+.ltd-chibi-halloween{animation:chibiHalloween 1.8s ease-in-out infinite}
+@keyframes chibiHalloween{0%,100%{transform:translateY(0) rotate(0deg) scale(1)}15%{transform:translateY(-3px) rotate(5deg) scale(1.02)}30%{transform:translateY(0) rotate(-6deg) scale(.98)}50%{transform:translateY(-10px) rotate(3deg) scale(1.05)}70%{transform:translateY(-2px) rotate(-4deg) scale(1)}85%{transform:translateY(-6px) rotate(2deg) scale(1.03)}}
+.ltd-chibi-xmas{animation:chibiXmas 2.5s ease-in-out infinite}
+@keyframes chibiXmas{0%,100%{transform:translateY(0) scale(1)}20%{transform:translateY(-12px) scale(1.04)}35%{transform:translateY(-2px) scale(.98)}50%{transform:translateY(-10px) scale(1.03)}65%{transform:translateY(0) scale(1)}80%{transform:translateY(-8px) scale(1.02)}}
+.ltd-chibi-debut{animation:chibiDebut 3s ease-in-out infinite}
+@keyframes chibiDebut{0%,100%{transform:translateY(0) rotate(0deg) scale(1)}15%{transform:translateY(-14px) rotate(-5deg) scale(1.06)}30%{transform:translateY(-4px) rotate(4deg) scale(.98)}50%{transform:translateY(-10px) rotate(-3deg) scale(1.04)}70%{transform:translateY(-2px) rotate(5deg) scale(1)}85%{transform:translateY(-12px) rotate(-2deg) scale(1.05)}}
+/* Seasonal floating particles */
+.ltd-floaters{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.ltd-float{position:absolute;animation-timing-function:ease-in-out;animation-iteration-count:infinite;opacity:.7;font-size:12px}
+.f0{left:8%;animation:floatA 4s infinite;animation-delay:0s}.f1{left:30%;animation:floatB 3.5s infinite;animation-delay:.8s}
+.f2{left:55%;animation:floatC 4.5s infinite;animation-delay:1.5s}.f3{left:78%;animation:floatA 3.8s infinite;animation-delay:.4s}
+.f4{left:42%;animation:floatB 4.2s infinite;animation-delay:2s}.f5{left:65%;animation:floatC 3.2s infinite;animation-delay:1.2s}
+@keyframes floatA{0%{bottom:-10%;opacity:0;transform:translateX(0) rotate(0deg)}15%{opacity:.8}50%{transform:translateX(8px) rotate(15deg)}85%{opacity:.6}100%{bottom:105%;opacity:0;transform:translateX(-5px) rotate(-10deg)}}
+@keyframes floatB{0%{bottom:-10%;opacity:0;transform:translateX(0) rotate(0deg)}15%{opacity:.7}50%{transform:translateX(-10px) rotate(-20deg)}85%{opacity:.5}100%{bottom:105%;opacity:0;transform:translateX(6px) rotate(15deg)}}
+@keyframes floatC{0%{bottom:-10%;opacity:0;transform:translateX(0) scale(.8)}15%{opacity:.8}50%{transform:translateX(6px) scale(1.1)}85%{opacity:.6}100%{bottom:105%;opacity:0;transform:translateX(-8px) scale(.9)}}
+.flash-chibi-anim{animation:chibiDanceBig 3s ease-in-out infinite}
+@keyframes chibiDanceBig{
+0%{transform:translateY(0) rotate(0deg) scale(1)}
+10%{transform:translateY(-10px) rotate(-4deg) scale(1.04)}
+20%{transform:translateY(-3px) rotate(3deg) scale(1)}
+30%{transform:translateY(-14px) rotate(0deg) scale(1.06)}
+40%{transform:translateY(-2px) rotate(-3deg) scale(.97)}
+50%{transform:translateY(-8px) rotate(4deg) scale(1.03)}
+60%{transform:translateY(0px) rotate(-2deg) scale(1)}
+70%{transform:translateY(-12px) rotate(1deg) scale(1.05)}
+80%{transform:translateY(-3px) rotate(3deg) scale(.98)}
+90%{transform:translateY(-6px) rotate(-3deg) scale(1.03)}
+100%{transform:translateY(0) rotate(0deg) scale(1)}}
+.card-badge{position:absolute;top:.1rem;left:.1rem;font-size:.3rem;font-weight:900;padding:.06rem .2rem;border-radius:.25rem;z-index:10;line-height:1;letter-spacing:.02rem}
+.card-badge-new{background:linear-gradient(135deg,#ff1744,#ff6d00);color:#fff;box-shadow:0 0 6px #ff174466;animation:badgePulse 1.5s ease-in-out infinite}
+.card-badge-up{background:linear-gradient(135deg,#00e676,#76ff03);color:#1a1a2e;box-shadow:0 0 6px #00e67666}
+@keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .seasonal-deco{position:absolute;pointer-events:none;z-index:3;opacity:.5;font-size:8px}
 
 /* Group collection view */
@@ -208,6 +370,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .group-member-card:active{transform:scale(.95)}
 .group-member-card .gmc-chibi{width:50px;height:55px;border-radius:8px;margin:0 auto .2rem;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .group-member-card .gmc-chibi.locked{opacity:.3;filter:grayscale(1)}
+.group-member-card .gmc-chibi.flash-card svg{animation:chibiDanceSm 3s ease-in-out infinite}
+.group-member-card .gmc-chibi.ltd-newyear svg{animation:chibiSmBounce 2.5s ease-in-out infinite}
+.group-member-card .gmc-chibi.ltd-valentine svg{animation:chibiSmPulse 2s ease-in-out infinite}
+.group-member-card .gmc-chibi.ltd-spring svg{animation:chibiSmSway 3.5s ease-in-out infinite}
+.group-member-card .gmc-chibi.ltd-summer svg,.group-member-card .gmc-chibi.ltd-summer2 svg{animation:chibiSmWave 2.5s ease-in-out infinite}
+.group-member-card .gmc-chibi.ltd-halloween svg{animation:chibiSmShake 1.8s ease-in-out infinite}
+.group-member-card .gmc-chibi.ltd-xmas svg{animation:chibiSmBounce 2.5s ease-in-out infinite}
+.group-member-card .gmc-chibi.ltd-debut svg{animation:chibiSmSpin 3s ease-in-out infinite}
 .group-member-card .gmc-name{font-size:.5rem;color:var(--text-dim)}
 .group-bonus{margin-top:.4rem;padding:.3rem .6rem;border-radius:2rem;font-size:.6rem;display:inline-block}
 
@@ -240,6 +410,137 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .empty-state{text-align:center;color:var(--text-dim);padding:2rem 1rem;font-size:.8rem}
 ::-webkit-scrollbar{width:2px}::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:2px}
+
+/* ===== PROFILE & TITLES ===== */
+#profile-screen{padding:.8rem;padding-bottom:5rem}
+.profile-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+.profile-avatar-lg{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#ff6ec7,#c77dff);display:flex;align-items:center;justify-content:center;font-size:2rem;border:3px solid var(--accent)}
+.profile-info{flex:1;margin-left:.8rem}
+.profile-name{font-weight:900;font-size:1.1rem}
+.profile-title-active{color:var(--secondary);font-size:.75rem;margin-top:.2rem;padding:.3rem .6rem;background:rgba(255,110,199,.1);border-radius:.5rem;width:fit-content;display:inline-block}
+.profile-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-bottom:1rem}
+.profile-stat{background:var(--card);padding:.6rem;border-radius:.7rem;text-align:center}
+.profile-stat-val{font-size:1.3rem;font-weight:900;color:var(--accent)}
+.profile-stat-lbl{color:var(--text-dim);font-size:.65rem;margin-top:.2rem}
+.title-wall{margin-top:1rem}
+.title-wall-title{font-weight:700;font-size:.95rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.3rem}
+.title-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.title-badge{padding:.6rem .5rem;border-radius:.8rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;border:2px solid transparent}
+.title-badge:active{transform:scale(.95)}
+.title-badge-icon{font-size:1.8rem;margin-bottom:.2rem}
+.title-badge-name{font-weight:700;font-size:.65rem;margin-bottom:.1rem}
+.title-badge-tier{font-size:.55rem;color:var(--text-dim)}
+.title-badge-locked{opacity:.4;color:var(--text-muted)}
+
+/* Title tiers */
+.title-bronze{background:rgba(205,127,50,.1);border-color:#cd7f32;color:#cd7f32}
+.title-silver{background:rgba(192,192,192,.1);border-color:#c0c0c0;color:#c0c0c0;box-shadow:inset 0 0 10px rgba(192,192,192,.1)}
+.title-gold{background:rgba(255,215,0,.1);border-color:#ffd700;color:#ffd700;box-shadow:inset 0 0 10px rgba(255,215,0,.1),0 0 15px rgba(255,215,0,.2);animation:titleGoldGlow 2s ease-in-out infinite}
+@keyframes titleGoldGlow{0%,100%{box-shadow:inset 0 0 10px rgba(255,215,0,.1),0 0 15px rgba(255,215,0,.2)}50%{box-shadow:inset 0 0 15px rgba(255,215,0,.2),0 0 25px rgba(255,215,0,.4)}}
+.title-diamond{background:rgba(200,100,255,.1);border-color:#e879f9;color:#e879f9;box-shadow:inset 0 0 10px rgba(232,121,249,.1),0 0 20px rgba(232,121,249,.3);animation:titleDiamondGlow 2s ease-in-out infinite}
+@keyframes titleDiamondGlow{0%,100%{box-shadow:inset 0 0 10px rgba(232,121,249,.1),0 0 20px rgba(232,121,249,.3)}50%{box-shadow:inset 0 0 15px rgba(232,121,249,.2),0 0 30px rgba(232,121,249,.5)}}
+
+/* ===== DUET MODE (一起演出) ===== */
+#pk-screen.active{padding:0;flex-direction:column;justify-content:space-between;padding-bottom:0}
+.pk-container{display:flex;flex-direction:column;height:100dvh;position:relative}
+.pk-p1-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:1rem;transform:rotate(180deg);background:linear-gradient(180deg,rgba(199,125,255,.08),transparent)}
+.pk-p2-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:1rem;background:linear-gradient(0deg,rgba(255,110,199,.08),transparent)}
+.pk-player-name{font-weight:700;font-size:.7rem;color:var(--text-dim)}
+.pk-player-score{display:flex;gap:.2rem;align-items:center;font-size:.8rem;font-weight:900;color:var(--accent)}
+.pk-word-local{font-size:1.15rem;font-weight:900;color:var(--accent);text-align:center;margin:.4rem 0;letter-spacing:1px}
+.pk-timer-bar{width:120px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin:.3rem auto 0;overflow:hidden}
+.pk-timer-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--accent));border-radius:2px;transition:width .1s linear;width:100%}
+.pk-round-info{font-size:.65rem;color:var(--text-dim)}
+.pk-combo-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.4rem;font-weight:900;color:var(--mint);text-shadow:0 0 15px rgba(127,245,220,.6);z-index:15;pointer-events:none;opacity:0}
+.pk-combo-center.active{opacity:1;animation:comboPopIn .5s ease forwards}
+@keyframes comboPopIn{0%{transform:translate(-50%,-50%) scale(.5);opacity:0}60%{transform:translate(-50%,-50%) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.pk-answers{display:grid;grid-template-columns:repeat(2,1fr);gap:.3rem;width:100%}
+.pk-answer-btn{padding:.45rem .3rem;border:1px solid rgba(255,255,255,.1);background:var(--card);color:var(--text);border-radius:.6rem;font-size:.65rem;cursor:pointer;font-weight:700;transition:all .15s;font-family:inherit;min-height:36px}
+.pk-answer-btn:active{transform:scale(.93)}
+.pk-answer-btn.pk-correct{background:var(--mint);color:var(--bg);border-color:var(--mint)}
+.pk-answer-btn.pk-wrong{background:var(--danger);color:white;border-color:var(--danger)}
+.pk-answer-btn.pk-timeout{background:var(--card2);color:var(--text-muted);border-color:var(--text-muted);opacity:.5}
+/* ===== PK Style Card — Duet Performance Stage ===== */
+.pk-style-card{position:relative;overflow:hidden;border:2px solid #00e5ff !important;
+  animation:pkGlow 5s ease-in-out infinite;
+  background:linear-gradient(180deg,#0a0a2e,#1a0a3e 50%,#0d1b3e) !important}
+/* Edge-traveling light trails: Trail 1 along top edge, Trail 2 up right edge → converge top-right */
+.pk-style-card::before{content:'';position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit;
+  background:
+    radial-gradient(ellipse 22px 5px at var(--pk-t1x,5%) 6%,#00e5ff 0%,rgba(0,229,255,.5) 35%,transparent 100%),
+    radial-gradient(ellipse 5px 22px at 94% var(--pk-t2y,95%),#00e5ff 0%,rgba(0,229,255,.5) 35%,transparent 100%),
+    radial-gradient(ellipse 50px 12px at var(--pk-t1x,5%) 6%,rgba(0,229,255,.1) 0%,transparent 100%),
+    radial-gradient(ellipse 12px 50px at 94% var(--pk-t2y,95%),rgba(0,229,255,.1) 0%,transparent 100%);
+  opacity:var(--pk-to,0);animation:pkTrails 5s ease-in-out infinite}
+/* Light burst at convergence point → expands into full-card flash */
+.pk-style-card::after{content:'';position:absolute;top:6%;right:6%;z-index:11;pointer-events:none;
+  width:var(--pk-ss,0px);height:var(--pk-ss,0px);border-radius:50%;
+  background:radial-gradient(circle,#fff,rgba(0,229,255,.6) 40%,transparent 70%);
+  opacity:var(--pk-so,0);transform:translate(50%,-50%);
+  box-shadow:0 0 var(--pk-fg,0px) var(--pk-fg,0px) rgba(255,255,255,var(--pk-fo,0));
+  animation:pkStarFlash 5s ease-in-out infinite}
+.pk-style-card .ci-lv{background:linear-gradient(135deg,#00e5ff,#0097a7) !important;color:#fff !important;font-weight:900}
+/* Trail dots travel along card edges then fade at convergence */
+@keyframes pkTrails{
+  0%{--pk-t1x:5%;--pk-t2y:95%;--pk-to:0}
+  4%{--pk-to:1}
+  34%{--pk-t1x:82%;--pk-t2y:20%;--pk-to:1}
+  42%{--pk-t1x:92%;--pk-t2y:8%;--pk-to:.5}
+  48%{--pk-to:0}
+  100%{--pk-t1x:5%;--pk-t2y:95%;--pk-to:0}}
+/* Glow forms at convergence → swells → erupts into full-card flash */
+@keyframes pkStarFlash{
+  0%,40%{--pk-ss:0px;--pk-so:0;--pk-fo:0;--pk-fg:0px}
+  46%{--pk-ss:10px;--pk-so:.4;--pk-fo:0;--pk-fg:0px}
+  52%{--pk-ss:20px;--pk-so:.8;--pk-fo:0;--pk-fg:6px}
+  57%{--pk-ss:28px;--pk-so:1;--pk-fo:.05;--pk-fg:12px}
+  62%{--pk-ss:14px;--pk-so:1;--pk-fo:.95;--pk-fg:180px}
+  68%{--pk-ss:6px;--pk-so:.3;--pk-fo:.3;--pk-fg:120px}
+  75%{--pk-ss:0px;--pk-so:0;--pk-fo:0;--pk-fg:0px}
+  100%{--pk-ss:0px;--pk-so:0;--pk-fo:0;--pk-fg:0px}}
+/* Outer card glow synced with the flash moment */
+@keyframes pkGlow{
+  0%,42%{box-shadow:0 0 6px #00e5ff33}
+  50%{box-shadow:0 0 10px #00e5ff55,0 0 20px #00e5ff22}
+  61%{box-shadow:0 0 30px #00e5ffaa,0 0 60px #00e5ff55,0 0 100px #fff3}
+  72%{box-shadow:0 0 10px #00e5ff44}
+  100%{box-shadow:0 0 6px #00e5ff33}}
+@property --pk-t1x{syntax:'<percentage>';initial-value:5%;inherits:false}
+@property --pk-t2y{syntax:'<percentage>';initial-value:95%;inherits:false}
+@property --pk-to{syntax:'<number>';initial-value:0;inherits:false}
+@property --pk-ss{syntax:'<length>';initial-value:0px;inherits:false}
+@property --pk-so{syntax:'<number>';initial-value:0;inherits:false}
+@property --pk-fo{syntax:'<number>';initial-value:0;inherits:false}
+@property --pk-fg{syntax:'<length>';initial-value:0px;inherits:false}
+/* Duet Stage — two equal-sized performers side by side */
+.pk-duet-stage{display:flex;align-items:flex-end;justify-content:center;gap:2px;position:relative;z-index:8}
+.pk-performer{position:relative}
+.pk-perf-l{animation:pkSingL 2.5s ease-in-out infinite}
+.pk-perf-r{animation:pkSingR 2.5s ease-in-out infinite}
+.pk-mic{position:absolute;bottom:28%;right:-4px;font-size:7px;transform:rotate(-25deg);filter:drop-shadow(0 0 3px rgba(0,229,255,.6));z-index:2}
+.pk-mic-r{right:auto;left:-4px;transform:rotate(25deg) scaleX(-1)}
+@keyframes pkSingL{0%,100%{transform:translateY(0) rotate(0)}20%{transform:translateY(-7px) rotate(3deg)}50%{transform:translateY(-3px) rotate(-2deg)}75%{transform:translateY(-9px) rotate(1deg)}}
+@keyframes pkSingR{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-8px) rotate(-3deg)}55%{transform:translateY(-2px) rotate(2deg)}80%{transform:translateY(-7px) rotate(-1deg)}}
+/* Stage spotlight glow beneath performers */
+.pk-stage-glow{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:85%;height:8px;
+  background:radial-gradient(ellipse,rgba(0,229,255,.25),transparent);border-radius:50%;z-index:1}
+/* Sparkle overlay on stage */
+.pk-outfit-sparkle{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden}
+.pk-outfit-sparkle span{position:absolute;font-size:6px;animation:outfitStar 2.2s ease-in-out infinite;opacity:0}
+.pk-outfit-sparkle .os0{top:28%;left:18%;animation-delay:0s}
+.pk-outfit-sparkle .os1{top:48%;right:16%;animation-delay:.55s}
+.pk-outfit-sparkle .os2{top:38%;left:48%;animation-delay:1.1s}
+.pk-outfit-sparkle .os3{top:58%;right:28%;animation-delay:.3s}
+.pk-outfit-sparkle .os4{top:22%;right:38%;animation-delay:.85s}
+.pk-outfit-sparkle .os5{top:52%;left:28%;animation-delay:1.4s}
+@keyframes outfitStar{0%,100%{opacity:0;transform:scale(.5) rotate(0deg)}25%{opacity:.9;transform:scale(1.3) rotate(72deg)}50%{opacity:.3;transform:scale(.7) rotate(144deg)}75%{opacity:.8;transform:scale(1.1) rotate(216deg)}}
+/* Small partner indicator for grid-sized cards */
+.pk-partner-sm{position:absolute;bottom:12%;right:0;z-index:3;opacity:.65;transform:scale(.4);animation:pkPartnerSm 2.5s ease-in-out infinite}
+@keyframes pkPartnerSm{0%,100%{transform:scale(.4) translateY(0)}40%{transform:scale(.4) translateY(-2px)}70%{transform:scale(.4) translateY(-1px)}}
+/* Small grid card version */
+.card-item.pk-style-card .ci-content{animation:chibiSmDuet 2.8s ease-in-out infinite}
+@keyframes chibiSmDuet{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-4px) rotate(2deg)}50%{transform:translateY(-2px) rotate(-2deg)}75%{transform:translateY(-5px) rotate(1deg)}}
+
 </style>
 </head>
 <body>
@@ -257,15 +558,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   <div class="home-header">
     <div class="player-info"><div class="player-avatar">🎤</div>
       <div><div class="player-name">WordStar</div><div class="player-level">Lv.<span id="p-lv">1</span> <span id="p-rank">練習生</span></div></div></div>
-    <div class="coin-box">⭐ <span id="coins">30</span></div></div>
+    <div style="display:flex;gap:.4rem;align-items:center">
+      <div class="coin-box" style="font-size:.7rem;color:#00e5ff;cursor:pointer" onclick="goTo('profile-screen');showProfile()">🏆 <span id="pk-pts-home">0</span></div>
+      <div class="coin-box" onclick="cheatTap()">⭐ <span id="coins">30</span></div></div></div>
   <div class="exp-wrap"><div class="exp-bar"><div class="exp-fill" id="exp-bar"></div></div>
     <div class="exp-label"><span id="exp-text">0/30</span><span>Next Level</span></div></div>
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-num" style="color:var(--secondary)" id="s-cards">0</div><div class="stat-lbl">小卡</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--mint)" id="s-master">0</div><div class="stat-lbl">精通字</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--accent)" id="s-streak">1</div><div class="stat-lbl">連續</div></div>
+    <div class="stat-card" onclick="cheatCardTap()"><div class="stat-num" style="color:var(--secondary)" id="s-cards">0</div><div class="stat-lbl">小卡</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--primary)" id="s-groups">0</div><div class="stat-lbl">集滿組</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:#ffd700" id="s-shiny">0</div><div class="stat-lbl">閃卡</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--accent)" id="s-pulls">0</div><div class="stat-lbl">總抽數</div></div>
+    <div class="stat-card"><div id="s-special" style="display:flex;align-items:center;justify-content:center;gap:.2rem;font-size:1.1rem;font-weight:900"><span style="color:#ffd700">0</span><span style="font-size:.5rem;color:#ffd700;font-weight:400">✦</span><span style="color:#b388ff">0</span><span style="font-size:.5rem;color:#b388ff;font-weight:400">⚡</span></div><div class="stat-lbl">閃卡/動態</div></div>
   </div>
   <div id="aura-bar" style="display:none;background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:12px;padding:6px 14px;margin-bottom:8px;text-align:center;font-size:.65rem;color:var(--mint)">💫 小卡應援加成：答題星星 +<span id="aura-pct">0</span>%</div>
   <div class="daily-quest" onclick="goTo('quiz-screen');startQuiz('mixed')">
@@ -277,8 +579,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('mixed')"><div class="action-icon">🎤</div><div class="action-title">打歌舞台</div><div class="action-desc">混合挑戰</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('spell')"><div class="action-icon">✍️</div><div class="action-title">拼字挑戰</div><div class="action-desc">拼出單字</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('reverse')"><div class="action-icon">🔄</div><div class="action-title">反向聯想</div><div class="action-desc">中文選英文</div></div>
-    <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">Boss 挑戰</div></div></div>
-  <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');updateGachaScreen()">
+    <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">Boss 挑戰</div></div>
+    <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">一起演出</div><div class="action-desc">雙人合作答題</div></div></div>
+  <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
   <div class="section-title">🔥 本週挑戰</div>
   <div id="weekly-challenge" class="daily-quest" onclick="startWeekly()" style="border-left:3px solid var(--secondary)">
@@ -318,6 +621,85 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 
 <!-- capture overlay removed - replaced by gacha system -->
 
+<div class="screen" id="profile-screen">
+  <div class="screen-header"><button class="back-btn" onclick="goTo('home-screen');updateHome()">←</button>
+    <div style="font-weight:700;font-size:.95rem">個人檔案</div>
+    <div style="width:40px"></div></div>
+  <div style="padding:.8rem">
+    <div style="display:flex;align-items:center;margin-bottom:1.2rem">
+      <div class="profile-avatar-lg">👤</div>
+      <div class="profile-info">
+        <div class="profile-name">玩家</div>
+        <div style="color:var(--text-dim);font-size:.7rem" id="prof-level">等級 1</div>
+        <div id="prof-active-title" class="profile-title-active" style="display:none"></div>
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="prof-cards">0</div>
+        <div class="profile-stat-lbl">小卡擁有</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="prof-groups">0</div>
+        <div class="profile-stat-lbl">團體完成</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="prof-pulls">0</div>
+        <div class="profile-stat-lbl">累計抽卡</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="prof-acc">0%</div>
+        <div class="profile-stat-lbl">答題準度</div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(255,110,199,.05));border:1px solid rgba(0,229,255,.2);border-radius:.8rem;padding:.7rem;margin-bottom:.8rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+        <div style="font-weight:700;font-size:.8rem">🎶 一起演出</div>
+        <div style="font-size:.7rem;color:#00e5ff;font-weight:700" id="prof-pkpts">🏆 0</div>
+      </div>
+      <div style="display:flex;gap:.6rem;font-size:.65rem;color:var(--text-dim)">
+        <span>演出 <span id="prof-duets" style="color:var(--text);font-weight:700">0</span> 場</span>
+        <span>造型卡 <span id="prof-pkstyle" style="color:#00e5ff;font-weight:700">0</span> 張</span>
+      </div>
+      <div style="margin-top:.4rem;font-size:.55rem;color:var(--text-muted)">消耗 🏆 為已擁有的小卡解鎖專屬演出造型</div>
+      <button class="btn btn-sm" style="margin-top:.4rem;width:100%;background:linear-gradient(135deg,#00e5ff,#0097a7);color:#fff;font-size:.7rem" onclick="showPKStyleShop()">🏆 解鎖演出造型</button>
+    </div>
+    <div class="title-wall">
+      <div class="title-wall-title">🏆 稱號牆</div>
+      <div class="title-grid" id="prof-titles"></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="pk-screen">
+  <button id="pk-bgm-toggle" onclick="togglePKBgm()" style="position:fixed;top:12px;right:12px;z-index:999;background:rgba(19,15,33,.85);border:1px solid #c77dff44;border-radius:50%;width:36px;height:36px;color:#c77dff;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;transition:all .2s">🔊</button>
+  <div class="pk-container">
+    <div class="pk-p1-area">
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:.3rem">
+        <div class="pk-player-name">🎤 演員 A</div>
+        <div class="pk-player-score">✓ <span id="pk-p1-score">0</span></div>
+      </div>
+      <div class="pk-answers" id="pk-p1-answers"></div>
+      <div class="pk-word-local" id="pk-word-p1">LOADING</div>
+    </div>
+    <div style="position:relative;height:50px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,rgba(199,125,255,.06),rgba(255,110,199,.06))">
+      <div style="text-align:center;z-index:10">
+        <div class="pk-round-info" id="pk-round-info">第 1 / 10 輪</div>
+        <div class="pk-timer-bar"><div class="pk-timer-fill" id="pk-timer-fill"></div></div>
+      </div>
+      <div class="pk-combo-center" id="pk-combo"></div>
+    </div>
+    <div class="pk-p2-area">
+      <div class="pk-word-local" id="pk-word-p2">LOADING</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:.3rem">
+        <div class="pk-player-name">🎤 演員 B</div>
+        <div class="pk-player-score">✓ <span id="pk-p2-score">0</span></div>
+      </div>
+      <div class="pk-answers" id="pk-p2-answers"></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="det-modal" onclick="closeMod(event)"><div class="modal-content" id="mod-content"></div></div>
 
 <div class="screen" id="gacha-screen">
@@ -328,7 +710,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div id="gacha-pools"></div>
     <div style="margin-top:.8rem;text-align:center;color:var(--text-dim);font-size:.65rem">
       答題獲得 ⭐ → 用 ⭐ 抽卡 → 收集團體成員！<br>
-      重複角色會轉為碎片 💫，可升級卡片稀有度</div>
+      重複角色會轉為碎片 🔮，可升級卡片稀有度</div>
   </div>
 </div>
 
@@ -338,11 +720,12 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 
 <div class="bottom-nav" id="bnav" style="display:none">
   <button class="nav-item active" onclick="goTo('home-screen');updateHome()"><div class="nav-icon">🏠</div>首頁</button>
-  <button class="nav-item" onclick="goTo('quiz-screen');startQuiz('mixed')"><div class="nav-icon">🎤</div>舞台</button>
   <button class="nav-item" onclick="goTo('gacha-screen');showGacha()"><div class="nav-icon">🎰</div>抽卡</button>
   <button class="nav-item" onclick="goTo('collection-screen');showColl()"><div class="nav-icon">🃏</div>小卡</button>
+  <button class="nav-item" onclick="goTo('profile-screen');showProfile()"><div class="nav-icon">👤</div>個人</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script>
 // ============================================================
 // FULL WORD DATABASE: 6574 words from 大考中心高中英文參考詞彙表
@@ -512,6 +895,19 @@ const GROUPS=[
      {name:'乙組長',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'curtain',acc:'chain',skin:'#fce4ec',eyeColor:'#263238',outfitColor:'#1a1a2e',outfitStyle:'cross'},
      {name:'貝乞',gender:'m',hair:'#d4a76a',hair2:'#e6c88a',hairStyle:'short',acc:'star',skin:'#f5deb3',eyeColor:'#5d4037',outfitColor:'#795548',outfitStyle:'stripe'},
    ]},
+  // ========== 排球少年 (8人) ==========
+  {id:'haikyuu',cat:'anime',name:'烏野排球',concept:'飛翔的烏鴉',theme:'#ff6f00',
+   bg:'linear-gradient(135deg,#1a0f00,#e65100)',
+   members:[
+     {name:'日向',gender:'m',hair:'#ff6f00',hair2:'#ff9800',hairStyle:'messy',acc:'star',skin:'#f5deb3',eyeColor:'#5d4037',outfitColor:'#1a1a2e',outfitStyle:'cross'},
+     {name:'影山',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'short',acc:'bolt',skin:'#fce4ec',eyeColor:'#1565c0',outfitColor:'#1a1a2e',outfitStyle:'stripe'},
+     {name:'月島',gender:'m',hair:'#ffd54f',hair2:'#ffe082',hairStyle:'short',acc:'glasses',skin:'#fce4ec',eyeColor:'#ff8f00',outfitColor:'#1a1a2e',outfitStyle:'stripe'},
+     {name:'山口',gender:'m',hair:'#2e7d32',hair2:'#388e3c',hairStyle:'messy',acc:'sparkle',skin:'#fce4ec',eyeColor:'#4caf50',outfitColor:'#1a1a2e',outfitStyle:'sparkle'},
+     {name:'西谷',gender:'m',hair:'#1a1a2e',hair2:'#ffd54f',hairStyle:'spike',acc:'bolt',skin:'#f5deb3',eyeColor:'#5d4037',outfitColor:'#1a1a2e',outfitStyle:'cross'},
+     {name:'菅原',gender:'m',hair:'#bdbdbd',hair2:'#e0e0e0',hairStyle:'curtain',acc:'star',skin:'#fce4ec',eyeColor:'#795548',outfitColor:'#1a1a2e',outfitStyle:'sparkle'},
+     {name:'及川',gender:'m',hair:'#6d4c41',hair2:'#8d6e63',hairStyle:'curtain',acc:'earring',skin:'#fce4ec',eyeColor:'#5d4037',outfitColor:'#00838f',outfitStyle:'cross'},
+     {name:'木兔',gender:'m',hair:'#bdbdbd',hair2:'#1a1a2e',hairStyle:'spike',acc:'flame',skin:'#f5deb3',eyeColor:'#ffd700',outfitColor:'#1a1a2e',outfitStyle:'cross'},
+   ]},
   // ========== 我的英雄學院 (8人) ==========
   {id:'bnha',cat:'anime',name:'雄英A班',concept:'Plus Ultra',theme:'#2196f3',
    bg:'linear-gradient(135deg,#001a33,#0d47a1)',
@@ -524,6 +920,29 @@ const GROUPS=[
      {name:'蛙吹',gender:'f',hair:'#2e7d32',hair2:'#1b5e20',hairStyle:'long',acc:'ribbon',skin:'#fce4ec',eyeColor:'#1a1a2e',outfitColor:'#2e7d32',outfitStyle:'sparkle'},
      {name:'歐爾麥特',gender:'m',hair:'#ffd54f',hair2:'#ffe082',hairStyle:'spike',acc:'bolt',skin:'#f5deb3',eyeColor:'#1565c0',outfitColor:'#c62828',outfitStyle:'cross'},
      {name:'相澤',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'long',acc:'chain',skin:'#fce4ec',eyeColor:'#263238',outfitColor:'#1a1a2e',outfitStyle:'cross'},
+   ]},
+  {id:'slamdunk',cat:'anime',name:'湘北籃球',concept:'稱霸全國',theme:'#d32f2f',
+   bg:'linear-gradient(135deg,#1a0505,#c62828)',
+   members:[
+     {name:'櫻木',gender:'m',hair:'#e53935',hair2:'#f44336',hairStyle:'spike',acc:'flame',skin:'#f5deb3',eyeColor:'#5d4037',outfitColor:'#c62828',outfitStyle:'cross'},
+     {name:'流川',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'curtain',acc:'star',skin:'#fce4ec',eyeColor:'#1565c0',outfitColor:'#c62828',outfitStyle:'stripe'},
+     {name:'赤木',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'short',acc:'bolt',skin:'#d7a87e',eyeColor:'#1a1a2e',outfitColor:'#c62828',outfitStyle:'cross'},
+     {name:'宮城',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'messy',acc:'chain',skin:'#f5deb3',eyeColor:'#5d4037',outfitColor:'#c62828',outfitStyle:'stripe'},
+     {name:'三井',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'short',acc:'star',skin:'#fce4ec',eyeColor:'#263238',outfitColor:'#c62828',outfitStyle:'sparkle'},
+     {name:'仙道',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'spike',acc:'sparkle',skin:'#fce4ec',eyeColor:'#263238',outfitColor:'#1565c0',outfitStyle:'stripe'},
+     {name:'牧紳一',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'short',acc:'chain',skin:'#d7a87e',eyeColor:'#1a1a2e',outfitColor:'#2e7d32',outfitStyle:'cross'},
+     {name:'藤真',gender:'m',hair:'#8d6e63',hair2:'#a1887f',hairStyle:'curtain',acc:'star',skin:'#fce4ec',eyeColor:'#5d4037',outfitColor:'#1565c0',outfitStyle:'sparkle'},
+   ]},
+  {id:'hxh',cat:'anime',name:'獵人協會',concept:'貪婪之島',theme:'#4caf50',
+   bg:'linear-gradient(135deg,#0a1a0a,#1b5e20)',
+   members:[
+     {name:'小傑',gender:'m',hair:'#1a1a2e',hair2:'#2e7d32',hairStyle:'spike',acc:'star',skin:'#f5deb3',eyeColor:'#5d4037',outfitColor:'#2e7d32',outfitStyle:'sparkle'},
+     {name:'奇犽',gender:'m',hair:'#e0e0e0',hair2:'#bdbdbd',hairStyle:'messy',acc:'bolt',skin:'#fce4ec',eyeColor:'#7c4dff',outfitColor:'#1a1a2e',outfitStyle:'cross'},
+     {name:'酷拉皮卡',gender:'m',hair:'#ffd54f',hair2:'#ffe082',hairStyle:'curtain',acc:'chain',skin:'#fce4ec',eyeColor:'#c62828',outfitColor:'#1565c0',outfitStyle:'stripe'},
+     {name:'雷歐力',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'spike',acc:'glasses',skin:'#f5deb3',eyeColor:'#5d4037',outfitColor:'#37474f',outfitStyle:'stripe'},
+     {name:'西索',gender:'m',hair:'#e53935',hair2:'#ff5252',hairStyle:'spike',acc:'star',skin:'#fce4ec',eyeColor:'#ff8f00',outfitColor:'#e91e63',outfitStyle:'sparkle'},
+     {name:'幻影旅團長',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'short',acc:'chain',skin:'#fce4ec',eyeColor:'#263238',outfitColor:'#1a1a2e',outfitStyle:'cross'},
+     {name:'金',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'messy',acc:'sparkle',skin:'#d7a87e',eyeColor:'#5d4037',outfitColor:'#795548',outfitStyle:'stripe'},
    ]},
 ];
 
@@ -829,7 +1248,33 @@ const R={
 };
 const RANKS=['練習生','出道新人','舞台菜鳥','應援團長','音源強者','打歌一位','年末候選','大賞得主','傳說偶像'];
 
-let S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0};
+const TITLES=[
+  {id:'first-card',name:'初心者',desc:'獲得第一張小卡',tier:'bronze',check:s=>Object.keys(s.cards||{}).length>=1},
+  {id:'quiz10',name:'舞台新秀',desc:'答對10題',tier:'bronze',check:s=>s.totalCorrect>=10},
+  {id:'pull10',name:'抽卡入門',desc:'累計抽卡10次',tier:'bronze',check:s=>s.totalPulls>=10},
+  {id:'collect20',name:'小卡迷',desc:'收集20張小卡',tier:'silver',check:s=>Object.keys(s.cards||{}).length>=20},
+  {id:'group1',name:'追星達人',desc:'集滿一組團體',tier:'silver',check:s=>Object.values(s.cards||{}).filter((c,i,arr)=>arr.filter(x=>x.gid===c.gid).length===GROUPS.find(g=>g.id===c.gid)?.members.length).length>0},
+  {id:'shiny1',name:'閃光獵手',desc:'獲得一張閃卡',tier:'silver',check:s=>Object.values(s.cards||{}).some(c=>c.shiny)},
+  {id:'flash1',name:'動態大師',desc:'獲得一張動態卡',tier:'silver',check:s=>Object.values(s.cards||{}).some(c=>c.flash)},
+  {id:'quiz100',name:'打歌常客',desc:'答對100題',tier:'silver',check:s=>s.totalCorrect>=100},
+  {id:'lv5',name:'出道偶像',desc:'等級達到5',tier:'silver',check:s=>s.level>=5},
+  {id:'collect50',name:'收藏家',desc:'收集50張小卡',tier:'gold',check:s=>Object.keys(s.cards||{}).length>=50},
+  {id:'group3',name:'應援團長',desc:'集滿3組團體',tier:'gold',check:s=>{let cnt=0;const groups=new Set();Object.values(s.cards||{}).forEach(c=>{if(!groups.has(c.gid)&&Object.values(s.cards||{}).filter(x=>x.gid===c.gid).length===GROUPS.find(g=>g.id===c.gid)?.members.length){groups.add(c.gid);cnt++}}); return cnt>=3;}},
+  {id:'pull100',name:'歐洲人',desc:'累計抽卡100次',tier:'gold',check:s=>s.totalPulls>=100},
+  {id:'lv10',name:'頂級偶像',desc:'等級達到10',tier:'gold',check:s=>s.level>=10},
+  {id:'quiz500',name:'音源強者',desc:'答對500題',tier:'gold',check:s=>s.totalCorrect>=500},
+  {id:'collect-all',name:'完美收藏',desc:'收集所有小卡',tier:'diamond',check:s=>Object.keys(s.cards||{}).length===ALL_MEMBERS.length},
+  {id:'group-all',name:'全團制霸',desc:'集滿所有團體',tier:'diamond',check:s=>{const cnt=new Set();Object.values(s.cards||{}).forEach(c=>{if(Object.values(s.cards||{}).filter(x=>x.gid===c.gid).length===GROUPS.find(g=>g.id===c.gid)?.members.length)cnt.add(c.gid)});return cnt.size===GROUPS.length;}},
+  {id:'lv20',name:'傳說偶像',desc:'等級達到20',tier:'diamond',check:s=>s.level>=20},
+  {id:'shiny5',name:'閃光之王',desc:'收集5張閃卡',tier:'diamond',check:s=>Object.values(s.cards||{}).filter(c=>c.shiny).length>=5},
+  {id:'duet1',name:'初次登台',desc:'完成第一場演出',tier:'bronze',check:s=>(s.duetPlays||0)>=1},
+  {id:'duet10',name:'舞台搭檔',desc:'完成10場演出',tier:'silver',check:s=>(s.duetPlays||0)>=10},
+  {id:'duet50',name:'黃金拍檔',desc:'完成50場演出',tier:'gold',check:s=>(s.duetPlays||0)>=50},
+  {id:'duetperfect',name:'完美合唱',desc:'單場演出全部答對',tier:'diamond',check:s=>!!s.duetPerfect},
+  {id:'pkcard1',name:'演出造型師',desc:'解鎖第一張演出造型卡',tier:'silver',check:s=>Object.values(s.cards||{}).some(c=>c.pkStyle)}
+];
+
+let S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0};
 let Q={qs:[],cur:0,combo:0,coins:0,mode:'mixed',done:false};
 
 // === SAVE / LOAD STATE ===
@@ -851,7 +1296,7 @@ function loadState(){
 function resetGame(){
   if(!confirm('確定要重置所有進度嗎？這將清除所有收集的卡片和星星！'))return;
   localStorage.removeItem('wordstar_save');
-  S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0};
+  S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0};
   updateHome();
   floatTxt('進度已重置','var(--danger)');
 }
@@ -875,10 +1320,15 @@ function resetGame(){
 
 function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.getElementById('bnav').style.display=(id==='title-screen'||id==='quiz-screen')?'none':'flex';
+  document.getElementById('bnav').style.display=(id==='title-screen'||id==='quiz-screen'||id==='pk-screen')?'none':'flex';
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  const m={'home-screen':0,'quiz-screen':1,'gacha-screen':2,'collection-screen':3};
+  const m={'home-screen':0,'gacha-screen':1,'collection-screen':2,'profile-screen':3};
   if(m[id]!=null)document.querySelectorAll('.nav-item')[m[id]]?.classList.add('active')}
+let _cheatN=0,_cheatT=0,_cheatC=0,_cheatCT=0;
+function cheatTap(){const now=Date.now();if(now-_cheatT>2000){_cheatN=0}_cheatT=now;_cheatN++;
+  if(_cheatN>=5){_cheatN=0;S.stars+=9999;saveState();updateHome();floatTxt('🌟 +9999 測試星星！','#ffd700')}}
+function cheatCardTap(){const now=Date.now();if(now-_cheatCT>2000){_cheatC=0}_cheatCT=now;_cheatC++;
+  if(_cheatC>=5){_cheatC=0;S.cards={};S.totalPulls=0;saveState();updateHome();floatTxt('🗑️ 已清除全部小卡！','var(--danger)')}}
 function startGame(){loadState();goTo('home-screen');updateHome()}
 
 function updateHome(){
@@ -890,11 +1340,13 @@ function updateHome(){
   document.getElementById('p-lv').textContent=S.level;
   document.getElementById('p-rank').textContent=RANKS[ri];
   document.getElementById('coins').textContent=S.stars;
-  document.getElementById('s-cards').textContent=cardCount;
-  document.getElementById('s-master').textContent=Object.values(S.wordsAnswered).filter(w=>(w.lv||0)>=2).length;
-  document.getElementById('s-streak').textContent=S.streak;
+  document.getElementById('pk-pts-home').textContent=S.pkPoints||0;
+  document.getElementById('s-cards').textContent=cardCount+'/'+ALL_MEMBERS.length;
   document.getElementById('s-groups').textContent=completedGroups;
-  document.getElementById('s-shiny').textContent=Object.values(S.cards).filter(c=>c.shiny).length;
+  document.getElementById('s-pulls').textContent=S.totalPulls||0;
+  const shinyN=Object.values(S.cards).filter(c=>c.shiny).length;
+  const flashN=Object.values(S.cards).filter(c=>c.flash).length;
+  document.getElementById('s-special').innerHTML=`<span style="color:#ffd700">${shinyN}</span><span style="font-size:.5rem;color:#ffd700;font-weight:400">✦</span><span style="color:#b388ff">${flashN}</span><span style="font-size:.5rem;color:#b388ff;font-weight:400">⚡</span>`;
   document.getElementById('d-count').textContent=S.dailyNew;
   document.getElementById('q-bar').style.width=Math.min(S.dailyNew/10*100,100)+'%';
   // Limited event banner
@@ -977,21 +1429,52 @@ function showQuizReview(){
   const grade=pct>=90?'S':pct>=80?'A':pct>=70?'B':pct>=60?'C':'D';
   const gradeColor={S:'#ffd700',A:'#7ff5dc',B:'#60a5fa',C:'#e879f9',D:'#ff4d6d'}[grade];
   const lvLabels=['','Lv1','Lv2','Lv3','Lv4','Lv5','Lv6'];
-  const mistakeCards=Q.mistakes.map(m=>`<div style="background:var(--card);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px">
-    <div style="min-width:40px;text-align:center"><div style="font-size:.6rem;color:var(--danger);font-weight:700">✗</div>
+  const mistakeCards=Q.mistakes.map((m,i)=>`<div id="rv-${i}" style="background:var(--card);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;border:2px solid transparent;transition:all .3s" onclick="markReviewed(${i})">
+    <div style="min-width:40px;text-align:center"><div class="rv-icon" style="font-size:.6rem;color:var(--danger);font-weight:700">✗</div>
       <div style="font-size:.45rem;color:var(--text-dim)">${lvLabels[m.lv]||''}</div></div>
     <div style="flex:1"><div style="font-weight:700;font-size:.85rem;color:var(--danger)">${m.w}</div>
       <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">${m.m}</div></div>
-    <div style="font-size:.45rem;color:var(--text-dim)">${m.type==='spell'?'拼字':m.type==='reverse'?'反向':'選擇'}</div></div>`).join('');
+    <div class="rv-check" style="font-size:.7rem;color:var(--text-dim)">👆 點擊確認</div></div>`).join('');
+  window._rvTotal=Q.mistakes.length;window._rvDone=0;window._rvTimer=null;window._rvUnlocked=false;
   ct.innerHTML=`<div style="text-align:center;margin-bottom:.8rem">
     <div style="font-size:1.8rem;font-weight:900;color:${gradeColor};text-shadow:0 0 20px ${gradeColor}44">${grade}</div>
     <div style="font-size:.7rem;color:var(--text-dim);margin:.2rem 0">答對 ${right}/${total} 題（${pct}%）</div>
     ${Q.overtime?`<div style="font-size:.6rem;color:#ffd700;margin:.2rem 0">🔥 黃金延長賽 +${total-10} 題</div>`:''}
     <div style="font-size:.85rem;font-weight:700;margin-top:.3rem">📝 錯題複習</div>
-    <div style="font-size:.6rem;color:var(--text-dim)">記住這些單字，下次答對它們！</div></div>
+    <div style="font-size:.6rem;color:var(--text-dim)">點擊確認已複習，或等待 10 秒後可回首頁</div></div>
   <div style="display:flex;flex-direction:column;gap:6px;max-height:250px;overflow-y:auto;margin-bottom:.8rem;padding:0 2px">${mistakeCards}</div>
-  <button class="btn btn-primary btn-sm" style="display:block;margin:0 auto" onclick="closePull();goTo('home-screen');updateHome()">回首頁 ✦</button>`;
+  <div id="rv-progress" style="text-align:center;font-size:.6rem;color:var(--text-dim);margin-bottom:.4rem">已複習 0/${Q.mistakes.length} · <span id="rv-countdown">⏱ 10秒</span></div>
+  <button id="rv-home-btn" class="btn btn-sm" style="display:block;margin:0 auto;background:var(--card);color:var(--text-dim);pointer-events:none;opacity:.5" disabled>請先複習錯題或等待倒數</button>`;
+  startReviewCountdown();
 }
+function markReviewed(i){
+  const el=document.getElementById('rv-'+i);if(!el||el.dataset.done)return;
+  el.dataset.done='1';el.style.borderColor='var(--mint)';el.style.background='rgba(127,245,220,.08)';
+  el.querySelector('.rv-icon').textContent='✓';el.querySelector('.rv-icon').style.color='var(--mint)';
+  el.querySelector('.rv-check').textContent='✔ 已確認';el.querySelector('.rv-check').style.color='var(--mint)';
+  window._rvDone++;
+  const prog=document.getElementById('rv-progress');
+  const cd=document.getElementById('rv-countdown');
+  if(window._rvDone>=window._rvTotal){
+    if(prog){prog.innerHTML='✅ 全部複習完成！';prog.style.color='var(--mint)'}
+    unlockReviewBtn()}
+  else if(prog){prog.innerHTML=`已複習 ${window._rvDone}/${window._rvTotal}${cd?' · <span id="rv-countdown">'+cd.textContent+'</span>':''}`}}
+function unlockReviewBtn(){
+  if(window._rvUnlocked)return;window._rvUnlocked=true;
+  if(window._rvTimer)clearInterval(window._rvTimer);
+  const btn=document.getElementById('rv-home-btn');if(!btn)return;
+  btn.textContent='回首頁 ✦';btn.style.background='var(--primary)';btn.style.color='#fff';
+  btn.style.opacity='1';btn.style.pointerEvents='auto';btn.disabled=false;
+  btn.onclick=()=>{closePull();goTo('home-screen');updateHome()}}
+function startReviewCountdown(){
+  let sec=10;const btn=document.getElementById('rv-home-btn');if(!btn)return;
+  btn.textContent=`⏱ ${sec} 秒後可回首頁`;
+  window._rvTimer=setInterval(()=>{sec--;
+    const cd=document.getElementById('rv-countdown');
+    if(cd)cd.textContent=`⏱ ${sec}秒`;
+    if(sec>0){btn.textContent=`⏱ ${sec} 秒後可回首頁`}
+    else{clearInterval(window._rvTimer);unlockReviewBtn()}},1000)}
+
 function upDot(i,ok){const d=document.getElementById('d'+i);if(d){d.classList.remove('cur');d.classList.add(ok?'done':'wrong')}
   const n=document.getElementById('d'+(i+1));if(n)n.classList.add('cur')}
 
@@ -1109,7 +1592,7 @@ function subS(){if(Q.done)return;Q.done=true;const t=window._st,h=window._hinted
 
 function handleRes(ok){
   const q=Q.qs[Q.cur];upDot(Q.cur,ok);
-  if(ok){Q.combo++;const cb=Math.min(Q.combo,10);
+  if(ok){Q.combo++;S.totalCorrect++;const cb=Math.min(Q.combo,10);
     const bossBonus=Q.mode==='boss'?2:0;
     // Limited event banner
   const ltdEv=getLimitedEvent();
@@ -1151,7 +1634,9 @@ function floatTxt(t,c){const e=document.createElement('div');e.className='float-
   document.body.appendChild(e);setTimeout(()=>e.remove(),1600)}
 
 // Collection - gacha card view
+let _collFv=0,_collGid='';
 function showColl(fv=0,gid=''){
+  _collFv=fv;_collGid=gid;
   document.getElementById('ftabs').innerHTML=
     `<button class="filter-tab ${fv===0&&!gid?'active':''}" onclick="showColl(0)">全部</button>`+
     `<button class="filter-tab ${fv===-1?'active':''}" onclick="showColl(-1)">團體</button>`+
@@ -1176,10 +1661,15 @@ function showColl(fv=0,gid=''){
           const key=g.id+'_'+mi;const card=S.cards[key];
           const starStr=card?'★'.repeat(card.stars)+'☆'.repeat(Math.max(0,5-card.stars)):'';
           const hasLtd2=Object.keys(S.cards).some(k=>k.endsWith('_'+key)&&k.startsWith('ltd_'));
-          return`<div class="group-member-card" ${card?`onclick="showCardDet('${key}')"`:''}>
-            <div class="gmc-chibi ${card?'':'locked'}" style="background:${g.bg}">
-              ${chibiSVG(mem,40,g)}</div>
-            <div class="gmc-name">${card?mem.name:'???'}</div>
+          const dCls=card?getCardDisplayClass(card):'';const dBg=card?getCardDisplayBg(card,g):g.bg;
+          const dSh=card&&isCardDisplayShiny(card);
+          const isPKd=card&&isCardDisplayPK(card);
+          const styleTag=card?(card.displayStyle==='shiny'&&card.shiny?'✦':card.displayStyle==='flash'&&card.flash?'⚡':isPKd?'🎶':card.displayStyle&&card.displayStyle.startsWith('ltd_')?'🎨':''):'';
+          return`<div class="group-member-card" style="position:relative" ${card?`onclick="showCardDet('${key}')"`:''}>
+            ${card?getCardBadge(card):''}
+            <div class="gmc-chibi ${card?'':'locked'} ${dCls}" style="background:${dBg}">
+              ${card&&dSh?'<div class="ci-shine"></div>':''}${chibiSVG(mem,40,g)}${isPKd?`<div class="pk-partner-sm">${chibiSVG(getPKPartnerMem(g.id,mi)||mem,16,g)}</div>`:''}</div>
+            <div class="gmc-name">${card?(styleTag?styleTag+' ':'')+mem.name:'???'}</div>
             <div style="font-size:.35rem;color:${card?g.theme:'var(--text-muted)'}">${starStr||'未解鎖'}</div>
             ${card?`<div style="font-size:.3rem;color:${({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||'N']}">${card.rarity||'N'}</div>`:''}
             ${card&&card.dupes>0?`<div style="font-size:.3rem;color:var(--text-dim)">x${card.dupes+1}</div>`:''}${hasLtd2?'<div style="font-size:.3rem;color:#ffd700">限</div>':''}</div>`}).join('')}</div>
@@ -1197,11 +1687,11 @@ function showColl(fv=0,gid=''){
         <div style="font-size:.75rem;font-weight:700;color:${rarityColors[r]};margin-bottom:.3rem">${r} <span style="font-size:.55rem;color:var(--text-dim)">(${members.length}/${members.length+locked.length})</span></div>
         <div class="card-grid">${members.map(m=>{
           const key=m.groupId+'_'+m.memberIdx;const card=S.cards[key];const g=m.group;
-          const isSh=card.shiny;
-          return`<div class="card-item fade-in${isSh?' shiny-card':''}" style="background:${card.ltd?getSeasonalBg(card.ltd):g.bg};box-shadow:${isSh?'0 2px 10px #ffd70066':'0 1px 5px '+g.theme+'33'}" onclick="showCardDet('${key}')">
-            <div class="ci-shine"></div>${isSh||r==='SSR'||r==='SR'?'<div class="holo"></div>':''}${card.ltd?getSeasonalDecoSVG(card.ltd,55,72):''}
-            <div class="ci-lv" style="font-size:.3rem;color:${isSh?'#ffd700':g.theme}">${'★'.repeat(card.stars)}</div>
-            <div class="ci-content">${chibiSVG(m,18,g)}<div class="ci-word">${m.name}</div></div></div>`}).join('')}${locked.map(()=>`<div class="card-item locked" style="background:var(--card)"><div class="ci-content"><div style="font-size:.5rem;color:var(--text-muted)">?</div></div></div>`).join('')}</div></div>`}).join('');
+          const dCls=getCardDisplayClass(card);const dBg=getCardDisplayBg(card,g);const dDeco=getCardDisplayDeco(card,55,72);const dSh=isCardDisplayShiny(card);
+          return`<div class="card-item fade-in${dCls?' '+dCls:''}" style="background:${dBg};box-shadow:${getCardShadow(card,g)}" onclick="showCardDet('${key}')">
+            ${getCardBadge(card)}${getCardMiniFloaters(card)}${getPKMiniExtras(card,m)}<div class="ci-shine"></div>${dSh||r==='SSR'||r==='SR'?'<div class="holo"></div>':''}${dDeco}
+            <div class="ci-lv" style="font-size:.3rem;color:${dSh?'#ffd700':g.theme}">${'★'.repeat(card.stars)}</div>
+            <div class="ci-content">${chibiSVG(m,26,g)}<div class="ci-word">${m.name}</div></div></div>`}).join('')}${locked.map(()=>`<div class="card-item locked" style="background:var(--card)"><div class="ci-content"><div style="font-size:.5rem;color:var(--text-muted)">?</div></div></div>`).join('')}</div></div>`}).join('');
     return}
 
   // Star level filter view
@@ -1215,26 +1705,24 @@ function showColl(fv=0,gid=''){
         <div style="font-size:.75rem;font-weight:700;color:${starColors[s]};margin-bottom:.3rem">${'★'.repeat(s)} <span style="font-size:.55rem;color:var(--text-dim)">(${members.length}張)</span></div>
         <div class="card-grid">${members.map(m=>{
           const key=m.groupId+'_'+m.memberIdx;const card=S.cards[key];const g=m.group;
-          const isSh=card.shiny;
-          return`<div class="card-item fade-in${isSh?' shiny-card':''}" style="background:${card.ltd?getSeasonalBg(card.ltd):g.bg};box-shadow:${isSh?'0 2px 10px #ffd70066':'0 1px 5px '+g.theme+'33'}" onclick="showCardDet('${key}')">
-            <div class="ci-shine"></div>${isSh||card.rarity==='SSR'||card.rarity==='SR'?'<div class="holo"></div>':''}${card.ltd?getSeasonalDecoSVG(card.ltd,55,72):''}
-            <div class="ci-lv" style="font-size:.3rem;color:${isSh?'#ffd700':g.theme}">${card.rarity||'N'}</div>
-            <div class="ci-content">${chibiSVG(m,18,g)}<div class="ci-word">${m.name}</div></div></div>`}).join('')}</div></div>`}).join('');
+          const dCls=getCardDisplayClass(card);const dBg=getCardDisplayBg(card,g);const dDeco=getCardDisplayDeco(card,55,72);const dSh=isCardDisplayShiny(card);
+          return`<div class="card-item fade-in${dCls?' '+dCls:''}" style="background:${dBg};box-shadow:${getCardShadow(card,g)}" onclick="showCardDet('${key}')">
+            ${getCardBadge(card)}${getCardMiniFloaters(card)}${getPKMiniExtras(card,m)}<div class="ci-shine"></div>${dSh||card.rarity==='SSR'||card.rarity==='SR'?'<div class="holo"></div>':''}${dDeco}
+            <div class="ci-lv" style="font-size:.3rem;color:${dSh?'#ffd700':g.theme}">${card.rarity||'N'}</div>
+            <div class="ci-content">${chibiSVG(m,26,g)}<div class="ci-word">${m.name}</div></div></div>`}).join('')}</div></div>`}).join('');
     return}
 
   // All cards grid
   body.innerHTML=`<div class="card-grid">${ALL_MEMBERS.map((m,i)=>{
     const key=m.groupId+'_'+m.memberIdx;const card=S.cards[key];
-    const ltdKeys=Object.keys(S.cards).filter(k=>k.endsWith('_'+key)&&k.startsWith('ltd_'));const hasLtd=ltdKeys.length>0;
     const g=m.group;
     if(card){
       const starStr='★'.repeat(card.stars);
-      const isSh=card.shiny;const isLtdCard=!!card.ltd;
-      const cBg=isLtdCard?getSeasonalBg(card.ltd):g.bg;
-      return`<div class="card-item fade-in${isSh?' shiny-card':''}" style="background:${cBg};box-shadow:${isSh?'0 2px 10px #ffd70066':'0 1px 5px '+g.theme+'33'}" onclick="showCardDet('${key}')">
-        <div class="ci-shine"></div>${isSh||card.rarity==='SSR'||card.rarity==='SR'?'<div class="holo"></div>':''}${isLtdCard?getSeasonalDecoSVG(card.ltd,55,72):''}
-        <div class="ci-lv" style="font-size:.3rem;color:${isSh?'#ffd700':g.theme}">${isSh?'✦'+starStr:starStr}</div>
-        <div class="ci-content">${chibiSVG(m,18,g)}<div class="ci-word">${m.name}</div></div></div>`}
+      const dCls=getCardDisplayClass(card);const dBg=getCardDisplayBg(card,g);const dDeco=getCardDisplayDeco(card,55,72);const dSh=isCardDisplayShiny(card);
+      return`<div class="card-item fade-in${dCls?' '+dCls:''}" style="background:${dBg};box-shadow:${getCardShadow(card,g)}" onclick="showCardDet('${key}')">
+        ${getCardBadge(card)}${getCardMiniFloaters(card)}${getPKMiniExtras(card,m)}<div class="ci-shine"></div>${dSh||card.rarity==='SSR'||card.rarity==='SR'?'<div class="holo"></div>':''}${dDeco}
+        <div class="ci-lv" style="font-size:.3rem;color:${dSh?'#ffd700':g.theme}">${dSh?'✦'+starStr:starStr}</div>
+        <div class="ci-content">${chibiSVG(m,26,g)}<div class="ci-word">${m.name}</div></div></div>`}
     return`<div class="card-item locked" style="background:var(--card)">
       <div class="ci-content"><div style="font-size:.5rem;color:var(--text-muted)">?</div></div></div>`}).join('')}</div>`;
 }
@@ -1245,28 +1733,200 @@ function showCardDet(key){
   const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return;
   const mem=g.members[parseInt(mi)];if(!mem)return;
   const card=S.cards[key];if(!card)return;
+  // Clear new flags when viewing card detail
+  if(card.isNew||card.newShiny||card.newFlash){card.isNew=false;card.newShiny=false;card.newFlash=false;saveState()}
   const starStr='★'.repeat(card.stars)+'☆'.repeat(Math.max(0,5-card.stars));
-  const chibi=chibiSVG(mem,55,g);
+  // Build all available style variants
+  const variants=[];
+  const curDisplay=card.displayStyle||'normal';
+  // 1. Normal (for ltd cards, normal = their ltd appearance)
+  if(card.ltd){
+    variants.push({id:'normal',label:getEvBadge(card.ltd)+' '+getEvName(card.ltd)+' (預設)',cls:'ltd-card ltd-'+card.ltd,bg:getSeasonalBg(card.ltd),deco:card.ltd,selected:curDisplay==='normal'});
+    variants.push({id:'plain',label:'原始',cls:'',bg:g.bg,deco:'',selected:curDisplay==='plain'});
+  }else{
+    variants.push({id:'normal',label:'普通',cls:'',bg:g.bg,deco:'',selected:curDisplay==='normal'});
+  }
+  // 2. Shiny (only if owned)
+  if(card.shiny)variants.push({id:'shiny',label:'✦ 閃卡',cls:'shiny-card',bg:g.bg,deco:'',selected:curDisplay==='shiny'});
+  // 3. Flash (only if owned)
+  if(card.flash)variants.push({id:'flash',label:'⚡ 動態',cls:'flash-card',bg:g.bg,deco:'',selected:curDisplay==='flash'});
+  // 3.5. PK Style (if unlocked)
+  if(card.pkStyle)variants.push({id:'pkstyle',label:'🎶 演出',cls:'pk-style-card',bg:g.bg,deco:'',selected:curDisplay==='pkstyle'});
+  // 4. Limited versions
+  const ltdKeys=getLtdVersions(baseKey);
+  ltdKeys.forEach(lk=>{const evId=lk.split('_')[1];
+    variants.push({id:'ltd_'+evId,label:getEvBadge(evId)+' '+getEvName(evId),cls:'ltd-card ltd-'+evId,bg:getSeasonalBg(evId),deco:evId,ltdKey:lk,selected:curDisplay==='ltd_'+evId})});
+  // Gallery cards HTML - match collection grid style
+  const galleryCards=variants.map((v,i)=>{
+    const chibi=chibiSVG(mem,26,g);
+    const sel=v.selected?'border:2px solid #ffd700;box-shadow:0 0 12px #ffd70066':'border:2px solid transparent';
+    const showHolo=v.id==='shiny'||(card.rarity==='SSR'||card.rarity==='SR');
+    return`<div style="flex-shrink:0;text-align:center;cursor:pointer;scroll-snap-align:center" onclick="selectCardStyle('${baseKey}','${v.id}',${i})">
+      <div class="card-item ${v.cls}" style="width:70px;height:84px;margin:0;aspect-ratio:1/1.2;background:${v.bg};${sel};transition:all .2s">
+        <div class="ci-shine"></div>${showHolo?'<div class="holo"></div>':''}${v.deco?getSeasonalDecoSVG(v.deco,70,84):''}
+        <div class="ci-lv" style="font-size:.28rem;color:${v.id==='shiny'?'#ffd700':g.theme}">${card.rarity||'N'}</div>
+        <div class="ci-content">${chibi}<div class="ci-word" style="font-size:.4rem">${mem.name}</div></div></div>
+      <div style="font-size:.45rem;color:${v.selected?'#ffd700':'var(--text-dim)'};margin-top:.25rem;white-space:nowrap">${v.label}</div></div>`}).join('');
+  // Current display style for main preview
+  const selVar=variants.find(v=>v.selected)||variants[0];
+  const previewCls=selVar.cls;const previewBg=selVar.bg;
+  const previewDeco=selVar.deco?getSeasonalDecoSVG(selVar.deco,140,195):'';
+  const previewHolo=selVar.id==='shiny'||(card.rarity==='SSR'||card.rarity==='SR');
+  const previewBorder=selVar.id==='shiny'?'#c9a44c':selVar.id==='flash'?'#7c4dff':selVar.id==='pkstyle'?'#00e5ff':g.theme+'66';
+  const previewChibi=chibiSVG(mem,70,g);
+  const rarityClr=({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||'N'];
+
   document.getElementById('mod-content').innerHTML=`<div class="modal-handle"></div>
-    <div class="${card.shiny?'shiny-card':''}" style="width:90px;height:125px;border-radius:8px;background:${card.ltd?getSeasonalBg(card.ltd):g.bg};margin:0 auto .8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:${card.shiny?'0 4px 20px #ffd70066':'0 4px 20px '+g.theme+'44'}">
-      <div class="ci-shine"></div>${card.ltd?getSeasonalDecoSVG(card.ltd,90,125):''}<div style="position:relative;z-index:2">${chibi}</div>
-      <div style="position:relative;z-index:3;font-size:.45rem;font-weight:700">${mem.name}</div></div>
-    <div style="font-size:1.2rem;font-weight:900;text-align:center">${mem.name}</div>
-    ${card.ltd?'<div style="text-align:center;font-size:.6rem;color:#ffd700;margin:.1rem 0">'+getEvBadge(card.ltd)+' '+getEvName(card.ltd)+'</div>':''}
-    <div style="text-align:center;color:${g.theme};font-size:.85rem;margin:.2rem 0">${starStr}</div>
-    <div style="text-align:center;font-size:.75rem;color:var(--text-dim);margin-bottom:.6rem">${g.name} · ${g.concept}</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.6rem">
-      <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700;color:${g.theme}">${card.stars}★</div><div style="font-size:.55rem;color:var(--text-dim)">星等</div></div>
-      <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">x${card.dupes+1}</div><div style="font-size:.55rem;color:var(--text-dim)">持有</div></div>
-      <div style="background:var(--card);border-radius:.5rem;padding:.4rem;text-align:center"><div style="font-weight:700">${card.fragments}</div><div style="font-size:.55rem;color:var(--text-dim)">碎片💫</div></div></div>
-    <div style="background:var(--card);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:${({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||mem.rarity||'N']}">稀有度 ${card.rarity||mem.rarity||'N'}</span>${card.shiny?' <span class="shiny-badge">✦ SHINY</span>':''}</div>
-    ${card.stars>=3?`<div style="background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem"><span style="color:var(--mint)">應援加成</span> 答題星星 +${getCardBonus(card.stars)}%⭐</div>`:''}
-    ${card.stars>=5?`<div style="background:linear-gradient(135deg,#ffd70022,#ff6ec722);border-radius:.5rem;padding:.4rem;margin-bottom:.4rem;text-align:center;font-size:.6rem;color:#ffd700">🏆 滿星精通 · 最強應援</div>`:''}
-    ${card.fragments>=10&&card.stars<5?`<button class="btn btn-primary btn-sm" style="width:100%;margin-bottom:.4rem" onclick="upgradeCard('${key}')">升星 ⬆ (10💫)</button>`:''}
-    ${getLtdVersions(key).length?`<div style="margin-bottom:.4rem"><div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.3rem">🎨 限定版本：</div>${getLtdVersions(key).map(lk=>{const lc=S.cards[lk];const evName=lk.split('_')[1];return`<div style="display:flex;align-items:center;gap:.4rem;background:var(--card);border-radius:.4rem;padding:.3rem .5rem;margin-bottom:.2rem;cursor:pointer" onclick="showCardDet('${lk}')"><span style="font-size:.7rem">${getEvBadge(evName)}</span><span style="font-size:.6rem">${getEvName(evName)}</span><span style="font-size:.5rem;color:var(--text-dim);margin-left:auto">${lc.stars}★</span></div>`}).join('')}</div>`:''}
-    ${key.startsWith('ltd_')?`<div style="margin-bottom:.4rem"><button class="btn btn-secondary btn-sm" style="width:100%;font-size:.6rem" onclick="showCardDet('${key.split('_').slice(2).join('_')}')">查看原版 →</button></div>`:''}
-    <button class="btn btn-secondary btn-sm" style="width:100%" onclick="closeMod()">關閉</button>`;
+    <div style="display:flex;flex-direction:column;align-items:center">
+      <div id="det-preview" class="${previewCls}" style="width:140px;height:195px;border-radius:12px;background:${previewBg};
+        display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;
+        border:2px solid ${previewBorder};box-shadow:0 4px 25px ${previewBorder}44;transition:all .3s">
+        <div class="ci-shine"></div>${previewHolo?'<div class="holo"></div>':''}${previewDeco}
+        ${selVar.deco?getSeasonalFloaters(selVar.deco):''}
+        ${selVar.id==='pkstyle'?getPKDuetStage(mem,g,gid,mi,55):`<div style="position:relative;z-index:8" class="${selVar.id==='flash'?'flash-chibi-anim':selVar.id.startsWith('ltd_')?getLtdChibiClass(selVar.deco):''}">${previewChibi}</div>`}
+        <div style="position:relative;z-index:9;font-size:.65rem;font-weight:700">${mem.name}</div></div>
+      <div style="margin-top:.4rem;font-size:1.1rem;font-weight:900">${mem.name}</div>
+      <div style="display:flex;align-items:center;gap:.3rem;margin-top:.15rem">
+        <span style="color:${rarityClr};font-weight:700;font-size:.7rem">${card.rarity||'N'}</span>
+        <span style="color:${g.theme};font-size:.7rem">${starStr}</span>
+        ${card.shiny?'<span class="shiny-badge" style="font-size:.6rem">✦</span>':''}
+        ${card.flash?'<span style="font-size:.6rem;background:linear-gradient(90deg,#7c4dff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡</span>':''}
+        ${card.pkStyle?'<span style="font-size:.6rem;color:#00e5ff;font-weight:900">🎶</span>':''}
+      </div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-top:.1rem">${g.name} · ${g.concept}</div>
+      ${card.ltd?'<div style="font-size:.55rem;color:#ffd700;margin-top:.1rem">'+getEvBadge(card.ltd)+' '+getEvName(card.ltd)+'</div>':''}
+    </div>
+    ${variants.length>1?`<div style="margin-top:.5rem">
+      <div style="font-size:.5rem;color:var(--text-dim);text-align:center;margin-bottom:.25rem">← 滑動選擇展示樣式 →</div>
+      <div id="style-gallery" style="display:flex;gap:.4rem;overflow-x:auto;padding:.2rem .3rem;justify-content:${variants.length<=3?'center':'flex-start'};scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
+        ${galleryCards}</div></div>`:''}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;margin-top:.5rem">
+      <div style="background:var(--card);border-radius:.5rem;padding:.35rem;text-align:center"><div style="font-weight:700;color:${g.theme};font-size:.75rem">${card.stars}★</div><div style="font-size:.5rem;color:var(--text-dim)">星等</div></div>
+      <div style="background:var(--card);border-radius:.5rem;padding:.35rem;text-align:center"><div style="font-weight:700;font-size:.75rem">x${card.dupes+1}</div><div style="font-size:.5rem;color:var(--text-dim)">持有</div></div>
+      <div style="background:var(--card);border-radius:.5rem;padding:.35rem;text-align:center"><div style="font-weight:700;font-size:.75rem">${card.fragments}</div><div style="font-size:.5rem;color:var(--text-dim)">碎片🔮</div></div></div>
+    ${card.stars>=3?`<div style="background:linear-gradient(135deg,var(--accent)22,var(--secondary)22);border-radius:.5rem;padding:.35rem;margin-top:.35rem;text-align:center;font-size:.55rem"><span style="color:var(--mint)">應援加成</span> 答題星星 +${getCardBonus(card.stars)}%⭐</div>`:''}
+    ${card.stars>=5?`<div style="background:linear-gradient(135deg,#ffd70022,#ff6ec722);border-radius:.5rem;padding:.35rem;margin-top:.35rem;text-align:center;font-size:.55rem;color:#ffd700">🏆 滿星精通 · 最強應援</div>`:''}
+    ${card.fragments>=10&&card.stars<5?`<button class="btn btn-primary btn-sm" style="width:100%;margin-top:.35rem" onclick="upgradeCard('${key}')">升星 ⬆ (10🔮)</button>`:''}
+    <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:.35rem" onclick="closeMod()">關閉</button>`;
   document.getElementById('det-modal').classList.add('active')}
+
+function getSeasonalFloatersMini(evId){
+  const particles={
+    newyear:['✨','🧧','✨'],valentine:['💗','♥','💕'],spring:['🌸','🍃','🌸'],
+    summer:['💧','☀','🌊'],summer2:['🐚','💧','🌊'],halloween:['🦇','👻','🎃'],
+    xmas:['❄','⭐','❄'],debut:['🎵','♪','✦']
+  };
+  const p=particles[evId]||['✨','✦','✨'];
+  return`<div class="ltd-floaters" style="font-size:7px">${p.map((e,i)=>`<span class="ltd-float f${i}" style="opacity:.5">${e}</span>`).join('')}</div>`}
+function getSeasonalFloaters(evId){
+  const particles={
+    newyear:['🎍','🧧','✨','🎍','✨','🧧'],
+    valentine:['💗','💕','♥','💗','💕','♥'],
+    spring:['🌸','🍃','🌸','💮','🌸','🍃'],
+    summer:['🌊','☀','🐚','💧','☀','🌊'],
+    summer2:['🐚','🌊','💧','🌊','☀','🐚'],
+    halloween:['🦇','👻','🎃','🕷','👻','🦇'],
+    xmas:['❄','⭐','🎁','❄','✨','❄'],
+    debut:['🎵','♪','✦','🎶','♪','✦']
+  };
+  const p=particles[evId]||['✨','✦','✨','✦','✨','✦'];
+  return`<div class="ltd-floaters">${p.map((e,i)=>`<span class="ltd-float f${i}">${e}</span>`).join('')}</div>`}
+function getLtdChibiClass(evId){return'ltd-chibi-'+(evId||'debut')}
+function getCardBadge(card){
+  if(card.isNew||card.newShiny||card.newFlash)return'<div class="card-badge card-badge-new">NEW</div>';
+  if(card.fragments>=10&&card.stars<5)return'<div class="card-badge card-badge-up">UP</div>';
+  return''}
+function getCardDisplayClass(card){
+  const ds=card.displayStyle||'normal';
+  if(ds==='shiny'&&card.shiny)return'shiny-card';
+  if(ds==='flash'&&card.flash)return'flash-card';
+  if(ds==='pkstyle'&&card.pkStyle)return'pk-style-card';
+  if(ds.startsWith('ltd_')){const evId=ds.replace('ltd_','');return'ltd-card ltd-'+evId}
+  if(ds==='plain')return'';
+  if(card.ltd&&ds==='normal')return'ltd-card ltd-'+card.ltd;
+  return''}
+function getCardDisplayBg(card,g){
+  const ds=card.displayStyle||'normal';
+  if(ds==='plain')return g.bg;
+  if(ds.startsWith('ltd_')){const evId=ds.replace('ltd_','');return getSeasonalBg(evId)}
+  return card.ltd?getSeasonalBg(card.ltd):g.bg}
+function getCardDisplayDeco(card,w,h){
+  const ds=card.displayStyle||'normal';
+  if(ds==='plain')return'';
+  if(ds.startsWith('ltd_')){const evId=ds.replace('ltd_','');return getSeasonalDecoSVG(evId,w,h)}
+  return card.ltd?getSeasonalDecoSVG(card.ltd,w,h):''}
+function isCardDisplayShiny(card){
+  const ds=card.displayStyle||'normal';
+  return ds==='shiny'&&card.shiny}
+function isCardDisplayLtd(card){
+  const ds=card.displayStyle||'normal';
+  return ds.startsWith('ltd_')||(card.ltd&&ds==='normal')}
+function getCardLtdEvId(card){
+  const ds=card.displayStyle||'normal';
+  if(ds.startsWith('ltd_'))return ds.replace('ltd_','');
+  if(ds==='plain')return null;
+  return card.ltd||null}
+function getCardMiniFloaters(card){
+  const evId=getCardLtdEvId(card);
+  return evId?getSeasonalFloatersMini(evId):''}
+function getPKMiniExtras(card,m){
+  if(!isCardDisplayPK(card))return'';
+  const g=GROUPS.find(x=>x.id===m.groupId);if(!g)return'';
+  const partner=getPKPartnerMem(m.groupId,m.memberIdx);if(!partner)return'';
+  return`<div class="pk-partner-sm">${chibiSVG(partner,12,g)}</div>`}
+function isCardDisplayPK(card){const ds=card.displayStyle||'normal';return ds==='pkstyle'&&card.pkStyle}
+function getPKPartnerMem(gid,mi){
+  const g=GROUPS.find(x=>x.id===gid);if(!g||g.members.length<2)return null;
+  const pi=(parseInt(mi)+1)%g.members.length;return g.members[pi]}
+function getPKDuetStage(mem,g,gid,mi,chibiSize){
+  const partner=getPKPartnerMem(gid,mi);
+  if(!partner)return`<div style="position:relative;z-index:8" class="pk-perf-l">${chibiSVG(mem,chibiSize,g)}</div>`;
+  const sz=Math.round(chibiSize*.78);
+  return`<div class="pk-duet-stage">
+    <div class="pk-performer pk-perf-l">${chibiSVG(mem,sz,g)}<span class="pk-mic">🎤</span></div>
+    <div class="pk-performer pk-perf-r">${chibiSVG(partner,sz,g)}<span class="pk-mic pk-mic-r">🎤</span></div>
+    <div class="pk-stage-glow"></div></div>
+  <div class="pk-outfit-sparkle"><span class="os0">✦</span><span class="os1">✧</span><span class="os2">✦</span><span class="os3">✧</span><span class="os4">✦</span><span class="os5">✧</span></div>`}
+function getCardShadow(card,g){
+  if(isCardDisplayShiny(card))return'0 2px 10px #ffd70066';
+  if(isCardDisplayPK(card))return'none';
+  if(isCardDisplayLtd(card))return'none';
+  return'0 1px 5px '+g.theme+'33'}
+function selectCardStyle(baseKey,styleId,idx){
+  const card=S.cards[baseKey];if(!card)return;
+  card.displayStyle=styleId;saveState();
+  // Update gallery visual: highlight selected
+  const gallery=document.getElementById('style-gallery');if(!gallery)return;
+  const items=gallery.children;
+  for(let i=0;i<items.length;i++){
+    const ci=items[i].querySelector('.card-item');
+    const label=items[i].querySelector('div:last-child');
+    if(i===idx){if(ci){ci.style.border='2px solid #ffd700';ci.style.boxShadow='0 0 12px #ffd70066'}if(label)label.style.color='#ffd700'}
+    else{if(ci){ci.style.border='2px solid transparent';ci.style.boxShadow='none'}if(label)label.style.color='var(--text-dim)'}}
+  // Update preview card above immediately
+  const prev=document.getElementById('det-preview');
+  if(prev){
+    const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);
+    if(g){const mem=g.members[parseInt(mi)];if(mem){
+      const variants=[];const ltdBorders={newyear:'#ffd700',valentine:'#f48fb1',spring:'#f48fb1',summer:'#00bcd4',summer2:'#00bcd4',halloween:'#ff6f00',xmas:'#c62828',debut:'#c77dff'};
+      if(card.ltd){
+        variants.push({id:'normal',cls:'ltd-card ltd-'+card.ltd,bg:getSeasonalBg(card.ltd),deco:card.ltd,border:ltdBorders[card.ltd]||g.theme+'66'});
+        variants.push({id:'plain',cls:'',bg:g.bg,deco:'',border:g.theme+'66'});
+      }else{variants.push({id:'normal',cls:'',bg:g.bg,deco:'',border:g.theme+'66'})}
+      if(card.shiny)variants.push({id:'shiny',cls:'shiny-card',bg:g.bg,deco:'',border:'#c9a44c'});
+      if(card.flash)variants.push({id:'flash',cls:'flash-card',bg:g.bg,deco:'',border:'#b388ff'});
+      if(card.pkStyle)variants.push({id:'pkstyle',cls:'pk-style-card',bg:g.bg,deco:'',border:'#00e5ff'});
+      const ltdKeys=getLtdVersions(baseKey);
+      ltdKeys.forEach(lk=>{const evId=lk.split('_')[1];
+        variants.push({id:'ltd_'+evId,cls:'ltd-card ltd-'+evId,bg:getSeasonalBg(evId),deco:evId,border:ltdBorders[evId]||g.theme+'66'})});
+      const sel=variants.find(v=>v.id===styleId)||variants[0];
+      prev.className=sel.cls;prev.style.background=sel.bg;prev.style.borderColor=sel.border;prev.style.boxShadow='0 4px 25px '+sel.border+'44';
+      const showHolo=sel.id==='shiny'||(card.rarity==='SSR'||card.rarity==='SR');
+      const isFlash=sel.id==='flash';const isLtd=sel.id.startsWith('ltd_');const isPK=sel.id==='pkstyle';
+      prev.innerHTML=`<div class="ci-shine"></div>${showHolo?'<div class="holo"></div>':''}${sel.deco?getSeasonalDecoSVG(sel.deco,140,195):''}${sel.deco?getSeasonalFloaters(sel.deco):''}
+        ${isPK?getPKDuetStage(mem,g,gid,mi,55):`<div style="position:relative;z-index:8" class="${isFlash?'flash-chibi-anim':isLtd?getLtdChibiClass(sel.deco):''}">${chibiSVG(mem,70,g)}</div>`}
+        <div style="position:relative;z-index:9;font-size:.65rem;font-weight:700">${mem.name}</div>`}}}
+  floatTxt('已設為展示樣式 ✓','#ffd700')}
 
 function upgradeCard(key){
   const card=S.cards[key];if(!card||card.fragments<10||card.stars>=5)return;
@@ -1274,7 +1934,7 @@ function upgradeCard(key){
   // Star upgrade rewards
   const rewards={2:5,3:10,4:20,5:50};
   const starBonus=rewards[card.stars]||5;
-  S.stars+=starBonus;saveState();closeMod();
+  S.stars+=starBonus;saveState();document.getElementById('det-modal').classList.remove('active');
   // Show upgrade celebration overlay
   const ov=document.getElementById('pull-overlay');ov.style.display='flex';
   const ct=document.getElementById('pull-result');
@@ -1291,7 +1951,7 @@ function upgradeCard(key){
     <div style="font-size:.6rem;color:var(--text-dim)">${g.name}</div>
     <div style="font-size:.7rem;color:var(--accent);margin-top:.5rem;font-weight:700">+${starBonus}⭐ 星星獎勵！</div>
     ${bonusNote}${maxNote}
-    <button class="btn btn-primary btn-sm" style="margin-top:.8rem" onclick="closePull();showColl(-1)">太棒了！✦</button></div>`;
+    <button class="btn btn-primary btn-sm" style="margin-top:.8rem" onclick="closePull();showCardDet('${key}')">太棒了！✦</button></div>`;
   burst()}
 function getCardBonus(stars){return stars>=5?15:stars>=4?10:stars>=3?5:0}
 function calcCardAura(){
@@ -1299,7 +1959,8 @@ function calcCardAura(){
   let bonus=0;entries.forEach(c=>{bonus+=getCardBonus(c.stars)});
   return Math.min(Math.floor(bonus/entries.length),20)}
 
-function closeMod(e){if(!e||e.target===document.getElementById('det-modal'))document.getElementById('det-modal').classList.remove('active')}
+function closeMod(e){if(!e||e.target===document.getElementById('det-modal')){document.getElementById('det-modal').classList.remove('active');
+  if(document.getElementById('collection-screen').classList.contains('active'))showColl(_collFv,_collGid)}}
 
 function showReview(){const list=document.getElementById('rlist');const es=Object.entries(S.wordsAnswered);
   if(!es.length){list.innerHTML='<div class="empty-state">還沒有練習紀錄<br>快去打歌！</div>';return}
@@ -1360,16 +2021,19 @@ function trackWeekly(mode,combo){
 // ===== LIMITED EDITION CARDS =====
 function getLimitedEvent(){
   const now=new Date();const m=now.getMonth()+1;const d=now.getDate();
-  // Seasonal limited events
+  // Seasonal limited events - expanded coverage so there's almost always an event
   if(m===1&&d<=14)return{id:'newyear',name:'🎍 新年限定',badge:'🎍',outfitColor:'#c62828',accent:'#ffd700',desc:'新年和服造型'};
-  if(m===2&&d>=1&&d<=28)return{id:'valentine',name:'💝 情人節限定',badge:'💝',outfitColor:'#e91e63',accent:'#f8bbd0',desc:'甜蜜粉色造型'};
-  if((m===3&&d>=20)||(m===4&&d<=10))return{id:'spring',name:'🌸 春日限定',badge:'🌸',outfitColor:'#f48fb1',accent:'#81c784',desc:'櫻花浪漫造型'};
-  if(m===6&&d>=15&&d<=30)return{id:'summer',name:'🏖️ 夏日限定',badge:'🏖️',outfitColor:'#00bcd4',accent:'#ffeb3b',desc:'海灘清涼造型'};
-  if(m===10&&d>=20&&d<=31)return{id:'halloween',name:'🎃 萬聖限定',badge:'🎃',outfitColor:'#ff6f00',accent:'#7c4dff',desc:'萬聖派對造型'};
-  if(m===12&&d>=15&&d<=31)return{id:'xmas',name:'🎄 聖誕限定',badge:'🎄',outfitColor:'#c62828',accent:'#2e7d32',desc:'聖誕精靈造型'};
-  if(m===4&&d>=15&&d<=30)return{id:'debut',name:'💫 出道紀念',badge:'💫',outfitColor:'#7c4dff',accent:'#ffd700',desc:'閃耀出道造型'};
-  if(m===8&&d>=1&&d<=20)return{id:'summer2',name:'🌊 盛夏回歸',badge:'🌊',outfitColor:'#0288d1',accent:'#4fc3f7',desc:'夏日回歸造型'};
-  return null}
+  if(m===1&&d>=15||m===2&&d<=14)return{id:'valentine',name:'💝 情人節限定',badge:'💝',outfitColor:'#e91e63',accent:'#f8bbd0',desc:'甜蜜粉色造型'};
+  if(m===2&&d>=15||m===3)return{id:'spring',name:'🌸 春日限定',badge:'🌸',outfitColor:'#f48fb1',accent:'#81c784',desc:'櫻花浪漫造型'};
+  if(m===4)return{id:'debut',name:'💫 出道紀念',badge:'💫',outfitColor:'#7c4dff',accent:'#ffd700',desc:'閃耀出道造型'};
+  if(m===5)return{id:'spring',name:'🌸 春日限定',badge:'🌸',outfitColor:'#f48fb1',accent:'#81c784',desc:'櫻花浪漫造型'};
+  if(m===6||m===7&&d<=15)return{id:'summer',name:'🏖️ 夏日限定',badge:'🏖️',outfitColor:'#00bcd4',accent:'#ffeb3b',desc:'海灘清涼造型'};
+  if(m===7&&d>=16||m===8)return{id:'summer2',name:'🌊 盛夏回歸',badge:'🌊',outfitColor:'#0288d1',accent:'#4fc3f7',desc:'夏日回歸造型'};
+  if(m===9)return{id:'debut',name:'💫 出道紀念',badge:'💫',outfitColor:'#7c4dff',accent:'#ffd700',desc:'閃耀出道造型'};
+  if(m===10)return{id:'halloween',name:'🎃 萬聖限定',badge:'🎃',outfitColor:'#ff6f00',accent:'#7c4dff',desc:'萬聖派對造型'};
+  if(m===11)return{id:'debut',name:'💫 出道紀念',badge:'💫',outfitColor:'#7c4dff',accent:'#ffd700',desc:'閃耀出道造型'};
+  if(m===12)return{id:'xmas',name:'🎄 聖誕限定',badge:'🎄',outfitColor:'#c62828',accent:'#2e7d32',desc:'聖誕精靈造型'};
+  return{id:'debut',name:'💫 出道紀念',badge:'💫',outfitColor:'#7c4dff',accent:'#ffd700',desc:'閃耀出道造型'}}
 function isLimitedActive(){return !!getLimitedEvent()}
 function getLimitedKey(baseKey){const ev=getLimitedEvent();return ev?'ltd_'+ev.id+'_'+baseKey:null}
 function getLimitedCardData(member,ev){
@@ -1413,25 +2077,28 @@ function showGacha(){
     <div style="text-align:center;margin-bottom:.8rem">
       <div style="font-size:1.5rem;margin-bottom:.2rem">🎰</div>
       <div style="font-size:.85rem;font-weight:700">用 ⭐ 星星抽取偶像小卡</div>
-      <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem">答題獲得星星，星星越多抽越多！</div></div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem">答題獲得星星，星星越多抽越多！</div>
+      ${(()=>{const ev=getLimitedEvent();return ev?'<div style="margin-top:.4rem;background:linear-gradient(135deg,'+getSeasonalBg(ev.id)+');padding:.4rem .6rem;border-radius:.6rem;border:1px solid #ffd70044"><div style="font-size:.7rem;font-weight:700;color:#ffd700">'+ev.badge+' '+ev.name+'</div><div style="font-size:.55rem;color:rgba(255,255,255,.8);margin-top:.1rem">'+ev.desc+' · 抽卡有 15% 機率獲得限定版！</div></div>':'<div style="font-size:.55rem;color:var(--text-muted);margin-top:.2rem">目前無限定活動</div>'})()}</div>
     <div style="display:flex;flex-direction:column;gap:.5rem">
       <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid #e879f933">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
           <div><span style="font-size:.9rem;font-weight:700;color:#e879f9">🎤 K-pop 卡池</span>
             <div style="font-size:.55rem;color:var(--text-dim)">BT7·4PINK·THRICE 等 10 組偶像</div></div>
           <div style="font-size:.65rem;color:var(--accent)">10⭐/次</div></div>
-        <div style="display:flex;gap:.3rem">
-          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff" onclick="doPull('kpop',1)">抽 1 次</button>
-          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff" onclick="doPull('kpop',5)">抽 5 次 <span style="font-size:.55rem">(45⭐)</span></button></div></div>
+        <div style="display:flex;gap:.3rem;flex-wrap:wrap">
+          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff;min-width:60px" onclick="doPull('kpop',1)">抽1次</button>
+          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff;min-width:60px" onclick="doPull('kpop',5)">抽5次 <span style="font-size:.5rem">(45⭐)</span></button>
+          <button class="btn btn-sm" style="flex:1;background:#c77dff;color:#fff;min-width:60px" onclick="doPull('kpop',10)">抽10次 <span style="font-size:.5rem">(85⭐)</span></button></div></div>
 
       <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid #ff572233">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
           <div><span style="font-size:.9rem;font-weight:700;color:#ff5722">🔥 動漫卡池</span>
-            <div style="font-size:.55rem;color:var(--text-dim)">鬼滅·咒術·間諜·英雄學院</div></div>
+            <div style="font-size:.55rem;color:var(--text-dim)">鬼滅·咒術·間諜·灌籃·獵人</div></div>
           <div style="font-size:.65rem;color:var(--accent)">10⭐/次</div></div>
-        <div style="display:flex;gap:.3rem">
-          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff" onclick="doPull('anime',1)">抽 1 次</button>
-          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff" onclick="doPull('anime',5)">抽 5 次 <span style="font-size:.55rem">(45⭐)</span></button></div></div>
+        <div style="display:flex;gap:.3rem;flex-wrap:wrap">
+          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff;min-width:60px" onclick="doPull('anime',1)">抽1次</button>
+          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff;min-width:60px" onclick="doPull('anime',5)">抽5次 <span style="font-size:.5rem">(45⭐)</span></button>
+          <button class="btn btn-sm" style="flex:1;background:#e64a19;color:#fff;min-width:60px" onclick="doPull('anime',10)">抽10次 <span style="font-size:.5rem">(85⭐)</span></button></div></div>
 
       <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid var(--secondary)33">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
@@ -1457,7 +2124,7 @@ function showGacha(){
 
 function doPull(pool,count,groupId){
   const costs={standard:10,kpop:10,anime:10,group:15,premium:25};
-  const cost=costs[pool]*count*(count===5?.9:1);
+  const cost=costs[pool]*count*(count>=10?.85:count===5?.9:1);
   if(S.stars<cost){floatTxt('星星不夠！去答題賺⭐','var(--danger)');return}
   S.stars-=Math.floor(cost);S.totalPulls+=count;saveState();
 
@@ -1507,63 +2174,146 @@ function showPullResult(results){
   const ov=document.getElementById('pull-overlay');
   ov.style.display='flex';
   const container=document.getElementById('pull-result');
+  const rarityColors={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
+  const rarityGlow={SSR:'0 0 20px #ffd70066',SR:'0 0 15px #e879f944',R:'0 0 10px #60a5fa33',N:'none'};
 
-  const cards=results.map(r=>{
+  // Process and store pull data
+  window._pullCards=results.map(r=>{
     const m=r.member,g=m.group;
     const key=m.groupId+'_'+m.memberIdx;
-    const isDupe=!!S.cards[key];
-
-    // Check for limited edition
     const ltdEv=getLimitedEvent();
     const ltdKey=ltdEv?getLimitedKey(key):null;
     const isLtd=ltdEv&&Math.random()<0.15;
     const isShiny=Math.random()<0.03;
+    const isFlash=Math.random()<0.05;
     const actualKey=isLtd?ltdKey:key;
     const isDupeActual=!!S.cards[actualKey];
+    const isSpecial=isShiny||isFlash||r.rarity==='SSR'||r.rarity==='SR'||isLtd;
 
     if(!isDupeActual){
-      S.cards[actualKey]={stars:r.member.rarity==='SSR'?3:r.member.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:isLtd?ltdEv.id:null,rarity:r.member.rarity,shiny:isShiny};saveState();
+      S.cards[actualKey]={stars:r.member.rarity==='SSR'?3:r.member.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:isLtd?ltdEv.id:null,rarity:r.member.rarity,shiny:isShiny,flash:isFlash,isNew:true,newShiny:isShiny,newFlash:isFlash};saveState();
     }else{
       S.cards[actualKey].dupes++;
-      if(isShiny&&!S.cards[actualKey].shiny)S.cards[actualKey].shiny=true;
+      if(isShiny&&!S.cards[actualKey].shiny){S.cards[actualKey].shiny=true;S.cards[actualKey].newShiny=true}
+      if(isFlash&&!S.cards[actualKey].flash){S.cards[actualKey].flash=true;S.cards[actualKey].newFlash=true}
       const fragReward=r.member.rarity==='SSR'?5:r.member.rarity==='SR'?3:r.member.rarity==='R'?2:1;
-      S.cards[actualKey].fragments+=fragReward;
-      saveState();
+      S.cards[actualKey].fragments+=fragReward;saveState();
     }
+    return{m,g,rarity:r.rarity,isShiny,isFlash,isLtd,ltdEv,isDupeActual,actualKey,isSpecial};
+  });
 
-    const rarityColors={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
-    const rarityGlow={SSR:'0 0 20px #ffd70066',SR:'0 0 15px #e879f944',R:'0 0 10px #60a5fa33',N:'none'};
+  // Check if any special cards for fullscreen reveal
+  const specials=window._pullCards.filter(c=>c.isSpecial);
+  if(specials.length>0){
+    showSpecialReveal(specials,()=>showPullGrid());
+  }else{showPullGrid()}
+}
 
-    const cw=results.length>1?60:100,ch=results.length>1?80:130;
-    const shinyClass=isShiny?' shiny-card':'';
-    const shinyGlow=isShiny?'0 0 15px #ffd70088,0 0 30px #ff6ec744':'';
-    const cardBg=isLtd&&ltdEv?getSeasonalBg(ltdEv.id):g.bg;
-    const decoSvg=isLtd&&ltdEv?getSeasonalDecoSVG(ltdEv.id,cw,ch):'';
-    return `<div style="width:${cw}px;text-align:center;animation:fadeInUp .5s ease-out both;animation-delay:${Math.random()*.3}s">
-      <div class="${shinyClass}" style="width:${cw}px;height:${ch}px;border-radius:8px;background:${cardBg};
+function showSpecialReveal(specials,onDone){
+  const container=document.getElementById('pull-result');
+  let idx=0;
+  function showNext(){
+    if(idx>=specials.length){onDone();return}
+    const c=specials[idx];idx++;
+    const cls=c.isShiny?'shiny-card':c.isFlash?'flash-card':c.isLtd?'ltd-card ltd-'+c.ltdEv.id:'';
+    const bg=c.isLtd&&c.ltdEv?getSeasonalBg(c.ltdEv.id):c.g.bg;
+    const deco=c.isLtd&&c.ltdEv?getSeasonalDecoSVG(c.ltdEv.id,160,220):'';
+    const floaters=c.isLtd&&c.ltdEv?getSeasonalFloaters(c.ltdEv.id):'';
+    const chibiClass=c.isFlash?'flash-chibi-anim':c.isLtd&&c.ltdEv?getLtdChibiClass(c.ltdEv.id):'';
+    const chibi=chibiSVG(c.m,90,c.g);
+    const typeLabel=c.isShiny?'<span class="shiny-badge" style="font-size:1rem">✦ SHINY</span>':
+      c.isFlash?'<span style="font-size:1rem;background:linear-gradient(90deg,#7c4dff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡ FLASH</span>':
+      c.rarity==='SSR'?'<span style="font-size:1rem;color:#ffd700;font-weight:900">★ SSR ★</span>':
+      c.rarity==='SR'?'<span style="font-size:1rem;color:#e879f9;font-weight:900">★ SR ★</span>':
+      c.isLtd?'<span style="font-size:1rem;color:#ffd700;font-weight:900">'+c.ltdEv.badge+' 限定版</span>':'';
+    const borderColor=c.isShiny?'#ffd700':c.isFlash?'#7c4dff':c.rarity==='SSR'?'#ffd700':c.rarity==='SR'?'#e879f9':'#ffd700';
+    container.innerHTML=`<div id="special-reveal" style="text-align:center;animation:specialRevealIn .6s ease-out both;cursor:pointer">
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem;animation:fadeInUp .4s .2s both">${c.g.name}</div>
+      <div class="${cls}" style="width:160px;height:220px;border-radius:14px;background:${bg};
+        margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
+        position:relative;overflow:hidden;border:3px solid ${borderColor};
+        box-shadow:0 0 30px ${borderColor}66,0 0 60px ${borderColor}33">
+        <div class="ci-shine"></div>${c.isShiny||c.rarity==='SSR'||c.rarity==='SR'?'<div class="holo"></div>':''}${deco}${floaters}
+        <div style="position:relative;z-index:8" class="${chibiClass}">${chibi}</div>
+        <div style="position:relative;z-index:3;font-size:.8rem;font-weight:700">${c.m.name}</div></div>
+      <div style="margin-top:.6rem;animation:fadeInUp .4s .4s both">${typeLabel}</div>
+      <div style="font-size:1.1rem;font-weight:900;margin-top:.3rem;animation:fadeInUp .4s .5s both">${c.m.name}</div>
+      ${c.isLtd?'<div style="font-size:.65rem;color:#ffd700;margin-top:.2rem;animation:fadeInUp .4s .6s both">'+c.ltdEv.badge+' '+c.ltdEv.name+'</div>':''}
+      ${c.isDupeActual?'<div style="font-size:.55rem;color:var(--accent);margin-top:.2rem;animation:fadeInUp .4s .7s both">重複 → 🔮碎片</div>':'<div style="font-size:.55rem;color:var(--mint);margin-top:.2rem;animation:fadeInUp .4s .7s both">✦ NEW!</div>'}
+      <div style="font-size:.5rem;color:var(--text-dim);margin-top:.8rem;animation:fadeInUp .4s .8s both">點擊任意處繼續</div></div>`;
+    burst();burst();
+    document.getElementById('pull-result').onclick=()=>{document.getElementById('pull-result').onclick=null;showNext()}}
+  showNext()}
+
+function showPullGrid(){
+  const container=document.getElementById('pull-result');
+  const rarityColors={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
+  const pc=window._pullCards;
+  const isSingle=pc.length===1;
+  const cw=isSingle?120:pc.length<=5?75:60,ch=isSingle?160:pc.length<=5?100:80;
+
+  const cards=pc.map((c,ci)=>{
+    const cls=c.isShiny?'shiny-card':c.isFlash?'flash-card':c.isLtd?'ltd-card ltd-'+c.ltdEv.id:'';
+    const glow=c.isShiny?'0 0 15px #ffd70088':c.isFlash?'0 0 12px #7c4dff88':c.isLtd?'none':c.rarity==='SSR'?'0 0 15px #ffd70044':c.rarity==='SR'?'0 0 10px #e879f944':'none';
+    const bg=c.isLtd&&c.ltdEv?getSeasonalBg(c.ltdEv.id):c.g.bg;
+    const deco=c.isLtd&&c.ltdEv?getSeasonalDecoSVG(c.ltdEv.id,cw,ch):'';
+    const miniFloaters=c.isLtd&&c.ltdEv?getSeasonalFloatersMini(c.ltdEv.id):'';
+    const borderClr=c.isShiny?'#ffd700':c.isFlash?'#7c4dff':c.isLtd?'transparent':rarityColors[c.rarity]+'66';
+    return `<div style="width:${cw}px;text-align:center;animation:fadeInUp .4s ease-out both;animation-delay:${ci*0.08}s;cursor:pointer" onclick="showPullCardZoom(${ci})">
+      <div class="${cls}" style="width:${cw}px;height:${ch}px;border-radius:${isSingle?10:8}px;background:${bg};
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;
-        box-shadow:${shinyGlow||rarityGlow[r.rarity]};border:2px solid ${isShiny?'#ffd700':rarityColors[r.rarity]+'44'}">
-        <div class="ci-shine"></div>${r.rarity==='SSR'||r.rarity==='SR'||isShiny?'<div class="holo"></div>':''}${decoSvg}
-        <div style="position:relative;z-index:2">${chibiSVG(m,results.length>1?30:55,g)}</div>
-        <div style="position:relative;z-index:3;font-size:${results.length>1?'.35rem':'.5rem'};font-weight:700">${m.name}</div></div>
-      <div style="font-size:.5rem;font-weight:700;margin-top:.2rem">${isShiny?'<span class="shiny-badge">✦ SHINY</span>':'<span style="color:'+rarityColors[r.rarity]+'">'+r.rarity+'</span>'}</div>
-      <div style="font-size:.4rem;color:var(--text-dim)">${g.name}</div>
-      ${isLtd?'<div style="font-size:.35rem;color:#ffd700;font-weight:700">'+ltdEv.badge+' 限定版！</div>':''}
-      ${isDupeActual?'<div style="font-size:.35rem;color:var(--accent)">重複 → 💫碎片</div>':
-        '<div style="font-size:.35rem;color:var(--mint)">✦ NEW!</div>'}</div>`;
+        box-shadow:${glow};border:2px solid ${borderClr}">
+        <div class="ci-shine"></div>${c.rarity==='SSR'||c.rarity==='SR'||c.isShiny?'<div class="holo"></div>':''}${deco}${miniFloaters}
+        <div style="position:relative;z-index:2">${chibiSVG(c.m,isSingle?55:35,c.g)}</div>
+        <div style="position:relative;z-index:3;font-size:${isSingle?'.55rem':'.38rem'};font-weight:700">${c.m.name}</div></div>
+      <div style="font-size:.45rem;font-weight:700;margin-top:.15rem">${c.isShiny?'<span class="shiny-badge">✦ SHINY</span>':c.isFlash?'<span style="background:linear-gradient(90deg,#7c4dff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡ FLASH</span>':'<span style="color:'+rarityColors[c.rarity]+'">'+c.rarity+'</span>'}</div>
+      <div style="font-size:.35rem;color:var(--text-dim)">${c.g.name}</div>
+      ${c.isLtd?'<div style="font-size:.3rem;color:#ffd700">'+c.ltdEv.badge+' 限定</div>':''}
+      ${c.isDupeActual?'<div style="font-size:.3rem;color:var(--accent)">重複→🔮</div>':'<div style="font-size:.3rem;color:var(--mint)">✦ NEW!</div>'}</div>`;
   }).join('');
 
   container.innerHTML=`
-    <div style="text-align:center;margin-bottom:.8rem">
+    <div style="text-align:center;margin-bottom:.6rem">
       <div style="font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,#ff6ec7,#c77dff,#ffe66d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
-        ✦ 抽卡結果 ✦</div></div>
-    <div style="display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">${cards}</div>
+        ✦ 抽卡結果 ✦</div>
+      <div style="font-size:.5rem;color:var(--text-dim);margin-top:.2rem">點擊卡片可放大欣賞</div></div>
+    <div style="display:flex;justify-content:center;gap:${isSingle?'0':'.4rem'};flex-wrap:wrap;margin-bottom:.8rem">${cards}</div>
     <button class="btn btn-primary btn-sm" style="display:block;margin:0 auto" onclick="closePull()">確認 ✦</button>`;
-
   burst();
 }
 
+function showPullCardZoom(idx){
+  const c=window._pullCards[idx];if(!c)return;
+  const container=document.getElementById('pull-result');
+  const cls=c.isShiny?'shiny-card':c.isFlash?'flash-card':c.isLtd?'ltd-card ltd-'+c.ltdEv.id:'';
+  const bg=c.isLtd&&c.ltdEv?getSeasonalBg(c.ltdEv.id):c.g.bg;
+  const deco=c.isLtd&&c.ltdEv?getSeasonalDecoSVG(c.ltdEv.id,150,210):'';
+  const floaters=c.isLtd&&c.ltdEv?getSeasonalFloaters(c.ltdEv.id):'';
+  const chibiClass=c.isFlash?'flash-chibi-anim':c.isLtd&&c.ltdEv?getLtdChibiClass(c.ltdEv.id):'';
+  const chibi=chibiSVG(c.m,80,c.g);
+  const rarityColors={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
+  const borderClr=c.isShiny?'#ffd700':c.isFlash?'#7c4dff':c.isLtd?'transparent':rarityColors[c.rarity];
+  const typeLabel=c.isShiny?'<span class="shiny-badge" style="font-size:.85rem">✦ SHINY</span>':
+    c.isFlash?'<span style="font-size:.85rem;background:linear-gradient(90deg,#7c4dff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡ FLASH</span>':
+    c.isLtd?'<span style="font-size:.85rem;color:#ffd700;font-weight:900">'+c.ltdEv.badge+' 限定版</span>':
+    '<span style="color:'+rarityColors[c.rarity]+';font-size:.85rem;font-weight:700">'+c.rarity+'</span>';
+  container.innerHTML=`<div style="text-align:center;animation:specialRevealIn .4s ease-out both">
+    <div class="${cls}" style="width:150px;height:210px;border-radius:12px;background:${bg};
+      margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      position:relative;overflow:hidden;border:3px solid ${borderClr};
+      box-shadow:0 0 25px ${borderClr}55,0 0 50px ${borderClr}22">
+      <div class="ci-shine"></div>${c.isShiny||c.rarity==='SSR'||c.rarity==='SR'?'<div class="holo"></div>':''}${deco}${floaters}
+      <div style="position:relative;z-index:8" class="${chibiClass}">${chibi}</div>
+      <div style="position:relative;z-index:3;font-size:.7rem;font-weight:700">${c.m.name}</div></div>
+    <div style="margin-top:.5rem">${typeLabel}</div>
+    <div style="font-size:1rem;font-weight:900;margin-top:.2rem">${c.m.name}</div>
+    <div style="font-size:.6rem;color:var(--text-dim);margin-top:.1rem">${c.g.name} · ${c.g.concept}</div>
+    ${c.isLtd?'<div style="font-size:.55rem;color:#ffd700;margin-top:.2rem">'+c.ltdEv.badge+' '+c.ltdEv.name+'</div>':''}
+    <button class="btn btn-secondary btn-xs" style="margin-top:.6rem" onclick="showPullGrid()">← 返回</button></div>`;
+}
+
 function closePull(){
+  if(window._rvTimer)clearInterval(window._rvTimer);
   document.getElementById('pull-overlay').style.display='none';
   showGacha();
 }
@@ -1627,6 +2377,548 @@ function scheduleReminder(){
 function markPlayed(){localStorage.setItem('wordstar_lastplay',new Date().toDateString())}
 // Start reminder if previously enabled
 if(localStorage.getItem('wordstar_notif')==='on'&&'Notification' in window&&Notification.permission==='granted'){scheduleReminder()}
+
+// ===== PROFILE & TITLES SYSTEM =====
+function checkTitles(){return TITLES.filter(t=>t.check(S)).map(t=>t.id)}
+
+function showProfile(){
+  const titles=checkTitles();
+  const cards=Object.keys(S.cards||{}).length;
+  const groups=new Set();Object.values(S.cards||{}).forEach(c=>{
+    if(Object.values(S.cards||{}).filter(x=>x.gid===c.gid).length===GROUPS.find(g=>g.id===c.gid)?.members.length)groups.add(c.gid)});
+  const totalAns=Object.values(S.wordsAnswered||{}).reduce((a,b)=>a+(b.rv||0),0);
+  const acc=totalAns>0?Math.round(S.totalCorrect/totalAns*100):0;
+
+  document.getElementById('prof-level').textContent='等級 '+S.level;
+  document.getElementById('prof-cards').textContent=cards;
+  document.getElementById('prof-groups').textContent=groups.size;
+  document.getElementById('prof-pulls').textContent=S.totalPulls;
+  document.getElementById('prof-acc').textContent=acc+'%';
+  document.getElementById('prof-pkpts').textContent='🏆 '+(S.pkPoints||0);
+  document.getElementById('prof-duets').textContent=S.duetPlays||0;
+  document.getElementById('prof-pkstyle').textContent=Object.values(S.cards||{}).filter(c=>c.pkStyle).length;
+
+  const actT=S.activeTitle?TITLES.find(t=>t.id===S.activeTitle):null;
+  const atEl=document.getElementById('prof-active-title');
+  if(actT){atEl.textContent=actT.name;atEl.style.display='inline-block'}else{atEl.style.display='none'}
+
+  const tgrid=document.getElementById('prof-titles');
+  tgrid.innerHTML=TITLES.map(t=>{
+    const unlocked=titles.includes(t.id);
+    const tierColors={bronze:'title-bronze',silver:'title-silver',gold:'title-gold',diamond:'title-diamond'};
+    const cls=`title-badge ${tierColors[t.tier]} ${unlocked?'':'title-badge-locked'}`;
+    const icon=t.id.includes('duet')||t.id.includes('pkcard')?'🎶':t.id.includes('group')?'🎭':t.id.includes('shiny')?'✨':t.id.includes('lv')?'⭐':t.id.includes('pull')?'🎰':'📖';
+    return`<div class="${cls}" onclick="${unlocked?`equipTitle('${t.id}')`:''}" style="cursor:${unlocked?'pointer':'default'};opacity:${unlocked?'1':'0.4'}">
+      <div class="title-badge-icon">${icon}</div>
+      <div class="title-badge-name">${t.name}</div>
+      <div class="title-badge-tier">${t.desc}</div>
+    </div>`}).join('')
+}
+
+function equipTitle(id){
+  if(!checkTitles().includes(id))return;
+  S.activeTitle=S.activeTitle===id?null:id;
+  saveState();showProfile()
+}
+
+// ===== PK BGM ENGINE v2 (Randomized K-pop / Anime) =====
+const PKBgm=(function(){
+  const _pick=a=>a[Math.floor(Math.random()*a.length)];
+  const _shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
+
+  // --- Tone semitone transpose helper ---
+  const NOTES=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  function transpose(note,semi){
+    const m=note.match(/^([A-G]#?b?)(\d)$/);if(!m)return note;
+    let idx=NOTES.indexOf(m[1]),oct=+m[2];
+    idx+=semi;while(idx<0){idx+=12;oct--}while(idx>=12){idx-=12;oct++}
+    return NOTES[idx]+oct;
+  }
+
+  // --- Preset pools for randomization ---
+  const KEYS=[0,2,3,5,7]; // C, D, Eb, F, G (semitone offsets)
+
+  // 4 chord progression templates (scale degrees in semitones from root)
+  const PROG_TEMPLATES=[
+    [[0,3,7],[8,0,3],[5,8,0],[7,10,2]],      // i - VI - iv - v
+    [[0,3,7],[5,8,0],[7,10,2],[8,0,3]],       // i - iv - v - VI
+    [[0,3,7],[7,10,2],[8,0,3],[5,8,0]],       // i - v - VI - iv
+    [[0,3,7],[3,7,10],[5,8,0],[7,10,2]],      // i - III - iv - v
+    [[0,4,7],[5,9,0],[7,11,2],[0,4,7]],       // I - IV - V - I (major)
+    [[0,3,7],[10,2,5],[8,0,3],[7,10,2]],      // i - VII - VI - v
+  ];
+
+  // Melody rhythm patterns (beat positions in 16th notes over 4 bars = 64 steps)
+  const RHYTHM_PATTERNS=[
+    [0,2,4,8,10,12,16,18,20,24,28,32,34,36,40,42,44,48,50,52,56,60],
+    [0,3,4,8,12,14,16,20,22,24,28,30,32,36,38,40,44,48,50,52,56,58,62],
+    [0,2,6,8,10,14,16,18,22,24,28,32,34,38,40,44,48,50,54,56,60],
+    [0,4,6,8,12,16,18,20,24,26,30,32,36,40,44,48,50,52,56,58,62],
+  ];
+
+  // Melody scale patterns (intervals from root for building melodies)
+  const SCALES=[
+    [0,3,5,7,10,12,15,17],       // minor pentatonic + octave
+    [0,2,3,5,7,8,10,12],         // natural minor
+    [0,3,5,7,10,12,14,15,17],    // minor pentatonic extended
+    [0,2,4,5,7,9,11,12],         // major scale
+  ];
+
+  // Drum pattern variations
+  const KICK_PATTERNS=[
+    [0,4,8,12],                   // 4-on-the-floor
+    [0,4,8,10,12],                // with ghost
+    [0,3,4,8,12,14],              // syncopated
+    [0,4,6,8,12],                 // bounce
+  ];
+  const SNARE_PATTERNS=[
+    [4,12],                       // classic 2 & 4
+    [4,10,12],                    // with pickup
+    [4,12,14],                    // with ghost
+  ];
+  const HAT_PATTERNS=[
+    [0,2,4,6,8,10,12,14],        // straight 8ths
+    [0,2,3,4,6,8,10,11,12,14],   // with ghost 16ths
+    [0,1,2,3,4,6,8,10,11,12,14,15], // trap-ish rolls
+    [0,2,4,6,7,8,10,12,14,15],   // K-pop shuffle
+  ];
+
+  // Bass rhythm patterns
+  const BASS_PATTERNS=[
+    [0,0,4,4,8,8,12,12],         // pumping 8ths
+    [0,0,3,4,8,8,11,12],         // syncopated
+    [0,2,4,6,8,10,12,14],        // driving 8ths
+    [0,0,4,6,8,8,12,14],         // bouncy
+  ];
+
+  // BPM range
+  const BPM_RANGE=[128,132,136,140,144,148,152];
+
+  // Lead oscillator types (modern)
+  const LEAD_OSCS=['fatsawtooth','fatsquare','pwm','fmsquare'];
+  const BASS_OSCS=['fatsawtooth','sawtooth','fmsquare','square'];
+
+  let playing=false, muted=false, disposables=[];
+
+  function buildChords(progTemplate, keyOffset){
+    return progTemplate.map(intervals=>{
+      return intervals.map(semi=>transpose('C4',(semi+keyOffset)%12));
+    });
+  }
+
+  function generateMelody(scale, keyOffset, rhythmPattern){
+    const notes=scale.map(s=>transpose('C5',(s+keyOffset)%12 + (s+keyOffset>=12?12:0)));
+    const events=[];
+    const durs=['8n','8n','16n','8n','4n','8n','16n','8n'];
+    rhythmPattern.forEach((pos,i)=>{
+      const bar=Math.floor(pos/16);
+      const beat=Math.floor((pos%16)/4);
+      const sub=pos%4;
+      const time=`${bar}:${beat}:${sub}`;
+      // Melodic contour: mix of steps and skips
+      let noteIdx;
+      if(i===0) noteIdx=0;
+      else{
+        const prev=events[events.length-1]._ni;
+        const jump=_pick([-2,-1,-1,0,0,1,1,1,2,2,3]);
+        noteIdx=Math.max(0,Math.min(notes.length-1,prev+jump));
+      }
+      events.push({time,note:notes[noteIdx],dur:_pick(durs),_ni:noteIdx});
+    });
+    return events.map(e=>({time:e.time,note:e.note,dur:e.dur}));
+  }
+
+  function generateArpNotes(chords, keyOffset){
+    // Build arp from chord tones, one octave up
+    const arpNotes=[];
+    chords.forEach(ch=>{
+      const up=ch.map(n=>transpose(n,12));
+      const pattern=_shuf([...ch,...up]).slice(0,4);
+      arpNotes.push(...pattern);
+    });
+    return arpNotes;
+  }
+
+  function generateBassLine(chords, bassPattern){
+    // Bass plays root notes following rhythm pattern
+    const roots=chords.map(ch=>transpose(ch[0],-12));
+    const notes=[];
+    bassPattern.forEach((pos,i)=>{
+      notes.push(roots[Math.floor(i/2)%roots.length]);
+    });
+    return notes;
+  }
+
+  return{
+    get playing(){return playing},
+    get muted(){return muted},
+    async start(){
+      if(playing)return;
+      await Tone.start();
+
+      // === Randomize everything ===
+      const bpm=_pick(BPM_RANGE);
+      const keyOff=_pick(KEYS);
+      const progTpl=_pick(PROG_TEMPLATES);
+      const scale=_pick(SCALES);
+      const rhythmPat=_pick(RHYTHM_PATTERNS);
+      const kickPat=_pick(KICK_PATTERNS);
+      const snarePat=_pick(SNARE_PATTERNS);
+      const hatPat=_pick(HAT_PATTERNS);
+      const bassPat=_pick(BASS_PATTERNS);
+      const leadOsc=_pick(LEAD_OSCS);
+      const bassOsc=_pick(BASS_OSCS);
+
+      Tone.Transport.bpm.value=bpm;
+
+      const chords=buildChords(progTpl,keyOff);
+      const melody=generateMelody(scale,keyOff,rhythmPat);
+      const arpNotes=generateArpNotes(chords,keyOff);
+      const bassNotes=generateBassLine(chords,bassPat);
+
+      // --- Master bus ---
+      const comp=new Tone.Compressor(-20,4).toDestination();
+      const masterRev=new Tone.Reverb({decay:1.5,wet:.15}).connect(comp);
+      disposables.push(comp,masterRev);
+
+      // --- Kick (punchy modern) ---
+      const kick=new Tone.MembraneSynth({
+        pitchDecay:.04,octaves:8,
+        oscillator:{type:'sine'},
+        envelope:{attack:.002,decay:.25,sustain:0,release:.08}
+      }).connect(comp);
+      kick.volume.value=-2;
+      disposables.push(kick);
+
+      const kickSeq=new Tone.Sequence((t,v)=>{
+        if(v)kick.triggerAttackRelease('C1','16n',t);
+      },Array.from({length:16},(_,i)=>kickPat.includes(i)?1:null),'16n').start(0);
+      kickSeq.loop=true;
+      disposables.push(kickSeq);
+
+      // --- Snare (layered noise + body) ---
+      const snareNoise=new Tone.NoiseSynth({
+        noise:{type:'pink'},
+        envelope:{attack:.001,decay:.15,sustain:0,release:.06}
+      }).connect(comp);
+      snareNoise.volume.value=-6;
+      const snareBody=new Tone.MembraneSynth({
+        pitchDecay:.01,octaves:4,
+        oscillator:{type:'triangle'},
+        envelope:{attack:.001,decay:.1,sustain:0,release:.05}
+      }).connect(comp);
+      snareBody.volume.value=-10;
+      disposables.push(snareNoise,snareBody);
+
+      const snareSeq=new Tone.Sequence((t,v)=>{
+        if(v){snareNoise.triggerAttackRelease('16n',t);snareBody.triggerAttackRelease('E3','16n',t)}
+      },Array.from({length:16},(_,i)=>snarePat.includes(i)?1:null),'16n').start(0);
+      snareSeq.loop=true;
+      disposables.push(snareSeq);
+
+      // --- Hi-hats (crispy modern) ---
+      const hat=new Tone.MetalSynth({
+        frequency:300+Math.random()*200,
+        envelope:{attack:.001,decay:.04,release:.008},
+        harmonicity:5.1,modulationIndex:40,resonance:5000,octaves:1.5
+      }).connect(comp);
+      hat.volume.value=-16;
+      disposables.push(hat);
+
+      const openHat=new Tone.MetalSynth({
+        frequency:250+Math.random()*200,
+        envelope:{attack:.001,decay:.18,release:.05},
+        harmonicity:5.1,modulationIndex:32,resonance:6000,octaves:1.5
+      }).connect(comp);
+      openHat.volume.value=-20;
+      disposables.push(openHat);
+
+      const hatSeq=new Tone.Sequence((t,v)=>{
+        if(v===1)hat.triggerAttackRelease('32n',t,.012);
+        else if(v===2)openHat.triggerAttackRelease('16n',t,.018);
+      },Array.from({length:16},(_,i)=>{
+        if(i===14||i===6)return Math.random()>.5?2:1; // occasional open hat
+        return hatPat.includes(i)?1:null;
+      }),'16n').start(0);
+      hatSeq.loop=true;
+      disposables.push(hatSeq);
+
+      // --- Bass (modern thick) ---
+      const bassFilter=new Tone.Filter({frequency:400,type:'lowpass',rolloff:-24}).connect(comp);
+      const bass=new Tone.Synth({
+        oscillator:{type:bassOsc,count:bassOsc.startsWith('fat')?3:undefined,spread:bassOsc.startsWith('fat')?20:undefined},
+        envelope:{attack:.01,decay:.15,sustain:.5,release:.08}
+      }).connect(bassFilter);
+      bass.volume.value=-4;
+      disposables.push(bassFilter,bass);
+
+      const bassSeq=new Tone.Sequence((t,n)=>{
+        if(n)bass.triggerAttackRelease(n,'8n',t);
+      },bassNotes,'8n').start(0);
+      bassSeq.loop=true;
+      disposables.push(bassSeq);
+
+      // --- Lead (modern K-pop / anime bright) ---
+      const leadFilter=new Tone.Filter({frequency:3000,type:'lowpass',rolloff:-12}).connect(masterRev);
+      const leadChorus=new Tone.Chorus({frequency:3,delayTime:3.5,depth:.6,wet:.3}).connect(leadFilter);
+      leadChorus.start();
+      const lead=new Tone.PolySynth(Tone.Synth,{
+        oscillator:{type:leadOsc,count:leadOsc.startsWith('fat')?3:undefined,spread:leadOsc.startsWith('fat')?30:undefined},
+        envelope:{attack:.015,decay:.12,sustain:.25,release:.25}
+      }).connect(leadChorus);
+      lead.volume.value=-9;
+      disposables.push(leadFilter,leadChorus,lead);
+
+      const leadPart=new Tone.Part((t,v)=>{
+        lead.triggerAttackRelease(v.note,v.dur,t);
+      },melody).start(0);
+      leadPart.loop=true;leadPart.loopEnd='4:0:0';
+      disposables.push(leadPart);
+
+      // --- Pad (lush supersaw chord stabs) ---
+      const padRev=new Tone.Reverb({decay:2.5,wet:.4}).connect(comp);
+      const pad=new Tone.PolySynth(Tone.Synth,{
+        oscillator:{type:'fatsawtooth',count:5,spread:40},
+        envelope:{attack:.15,decay:.3,sustain:.4,release:.8}
+      }).connect(padRev);
+      pad.volume.value=-16;
+      disposables.push(padRev,pad);
+
+      const padEvents=chords.map((ch,i)=>({time:`${i}:0:0`,notes:ch}));
+      const padPart=new Tone.Part((t,v)=>{pad.triggerAttackRelease(v.notes,'2n',t)},padEvents).start(0);
+      padPart.loop=true;padPart.loopEnd='4:0:0';
+      disposables.push(padPart);
+
+      // --- Arp (sparkle / anime shine with delay) ---
+      const arpDelay=new Tone.PingPongDelay({delayTime:'8n.',feedback:.2,wet:.3}).connect(masterRev);
+      const arp=new Tone.Synth({
+        oscillator:{type:'sine'},
+        envelope:{attack:.003,decay:.08,sustain:.03,release:.15}
+      }).connect(arpDelay);
+      arp.volume.value=-15;
+      disposables.push(arpDelay,arp);
+
+      const arpSeq=new Tone.Sequence((t,n)=>{
+        if(n)arp.triggerAttackRelease(n,'32n',t);
+      },arpNotes,'16n').start('2:0:0');
+      arpSeq.loop=true;
+      disposables.push(arpSeq);
+
+      // --- FX: Occasional riser/impact ---
+      const riser=new Tone.NoiseSynth({
+        noise:{type:'white'},
+        envelope:{attack:3,decay:0,sustain:1,release:.1}
+      }).connect(new Tone.Filter({frequency:8000,type:'highpass'}).connect(comp));
+      riser.volume.value=-22;
+      disposables.push(riser);
+      const riserLoop=new Tone.Loop(t=>{
+        if(Math.random()>.5)riser.triggerAttackRelease(2,t);
+      },'8:0:0').start('4:0:0');
+      disposables.push(riserLoop);
+
+      Tone.Transport.start();
+      playing=true;
+      if(muted)Tone.Destination.mute=true;
+    },
+    stop(){
+      if(!playing)return;
+      Tone.Transport.stop();Tone.Transport.cancel();
+      disposables.forEach(d=>{try{d.dispose()}catch(e){}});
+      disposables=[];
+      playing=false;
+      Tone.Destination.mute=false;
+    },
+    toggleMute(){
+      muted=!muted;
+      Tone.Destination.mute=muted;
+      document.getElementById('pk-bgm-toggle').textContent=muted?'🔇':'🔊';
+    }
+  };
+})();
+function togglePKBgm(){PKBgm.toggleMute()}
+
+// ===== DUET MODE (一起演出) =====
+let PK={p1s:0,p2s:0,round:0,total:10,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,combo:0,timer:null,timerStart:0};
+
+function startPKSetup(){
+  PK={p1s:0,p2s:0,round:1,total:10,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,combo:0,timer:null,timerStart:0};
+  const pool=W.filter(x=>!S.wordsAnswered[x.w]||!S.wordsAnswered[x.w].m);
+  if(pool.length<10)PK.qs=shuf(W).slice(0,10);else PK.qs=shuf(pool).slice(0,10);
+  goTo('pk-screen');
+  document.getElementById('pk-p1-score').textContent='0';
+  document.getElementById('pk-p2-score').textContent='0';
+  showPKCountdown()
+}
+
+function showPKCountdown(){
+  PKBgm.start();
+  document.getElementById('pk-bgm-toggle').textContent=PKBgm.muted?'🔇':'🔊';
+  const w1=document.getElementById('pk-word-p1');
+  const w2=document.getElementById('pk-word-p2');
+  const combo=document.getElementById('pk-combo');
+  combo.classList.remove('active');combo.textContent='';
+  document.getElementById('pk-p1-answers').innerHTML='';
+  document.getElementById('pk-p2-answers').innerHTML='';
+  document.getElementById('pk-timer-fill').style.width='100%';
+  let cd=3;
+  w1.textContent='3';w2.textContent='3';
+  w1.style.fontSize='2rem';w2.style.fontSize='2rem';
+  w1.style.color='var(--secondary)';w2.style.color='var(--secondary)';
+  const timer=setInterval(()=>{cd--;
+    if(cd<=0){clearInterval(timer);
+      w1.style.fontSize='';w2.style.fontSize='';w1.style.color='';w2.style.color='';
+      startPKRound();return}
+    const txt=cd+'';w1.textContent=txt;w2.textContent=txt},1000)
+}
+
+function startPKRound(){
+  if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+  if(PK.round>PK.total){endPK();return}
+  PK.word=PK.qs[PK.cur];
+  // 4 options: 1 correct + 3 wrong
+  const wrongs=shuf(W.filter(x=>x.w!==PK.word.w)).map(x=>x.m).slice(0,3);
+  PK.options=shuf([PK.word.m,...wrongs]);
+  PK.p1picked=false;PK.p2picked=false;PK.p1ans=null;PK.p2ans=null;PK.done=false;
+
+  // Show word on BOTH sides
+  document.getElementById('pk-word-p1').textContent=PK.word.w;
+  document.getElementById('pk-word-p2').textContent=PK.word.w;
+  document.getElementById('pk-round-info').textContent='第 '+PK.round+' / '+PK.total+' 輪';
+
+  const p1el=document.getElementById('pk-p1-answers');
+  const p2el=document.getElementById('pk-p2-answers');
+  p1el.innerHTML=PK.options.map((opt,i)=>`<button class="pk-answer-btn" onclick="pkAns(${i},1)">${opt}</button>`).join('');
+  p2el.innerHTML=PK.options.map((opt,i)=>`<button class="pk-answer-btn" onclick="pkAns(${i},2)">${opt}</button>`).join('');
+
+  // Start 5-second timer
+  const fill=document.getElementById('pk-timer-fill');
+  fill.style.width='100%';
+  PK.timerStart=Date.now();
+  PK.timer=setInterval(()=>{
+    const elapsed=Date.now()-PK.timerStart;
+    const pct=Math.max(0,1-elapsed/5000)*100;
+    fill.style.width=pct+'%';
+    if(pct<=30)fill.style.background='linear-gradient(90deg,var(--danger),#ff9800)';
+    else fill.style.background='linear-gradient(90deg,var(--mint),var(--accent))';
+    if(elapsed>=5000){pkTimeUp()}
+  },50)
+}
+
+function pkTimeUp(){
+  if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+  if(PK.done)return;PK.done=true;
+  const cor=PK.word.m;
+  // Mark unanswered as timeout
+  if(!PK.p1picked){PK.p1picked=true;PK.p1ans=null;
+    document.querySelectorAll('#pk-p1-answers button').forEach(b=>{if(!b.classList.contains('pk-correct')&&!b.classList.contains('pk-wrong'))b.classList.add('pk-timeout')})}
+  if(!PK.p2picked){PK.p2picked=true;PK.p2ans=null;
+    document.querySelectorAll('#pk-p2-answers button').forEach(b=>{if(!b.classList.contains('pk-correct')&&!b.classList.contains('pk-wrong'))b.classList.add('pk-timeout')})}
+  // Tally
+  const p1ok=PK.p1ans===cor;const p2ok=PK.p2ans===cor;
+  if(p1ok)PK.p1s++;if(p2ok)PK.p2s++;
+  if(p1ok&&p2ok){PK.combo++;if(PK.combo>=2){const ce=document.getElementById('pk-combo');ce.textContent=PK.combo+' COMBO 🎵';ce.classList.add('active')}}
+  else{PK.combo=0;document.getElementById('pk-combo').classList.remove('active')}
+  document.getElementById('pk-p1-score').textContent=PK.p1s;
+  document.getElementById('pk-p2-score').textContent=PK.p2s;
+  // Show correct answer highlight
+  document.querySelectorAll('#pk-p1-answers button').forEach((b,i)=>{if(PK.options[i]===cor&&!b.classList.contains('pk-correct'))b.style.border='2px solid var(--mint)'});
+  document.querySelectorAll('#pk-p2-answers button').forEach((b,i)=>{if(PK.options[i]===cor&&!b.classList.contains('pk-correct'))b.style.border='2px solid var(--mint)'});
+  setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},1000)
+}
+
+function pkAns(idx,player){
+  if(PK.done)return;
+  const ans=PK.options[idx];
+  const cor=PK.word.m;
+  const isCorrect=ans===cor;
+  if(player===1){
+    if(PK.p1picked)return;PK.p1picked=true;PK.p1ans=ans;
+    const el=document.querySelectorAll('#pk-p1-answers button')[idx];
+    el.classList.add(isCorrect?'pk-correct':'pk-wrong');
+    // Immediate score update
+    if(isCorrect){PK.p1s++;document.getElementById('pk-p1-score').textContent=PK.p1s}
+  }else{
+    if(PK.p2picked)return;PK.p2picked=true;PK.p2ans=ans;
+    const el=document.querySelectorAll('#pk-p2-answers button')[idx];
+    el.classList.add(isCorrect?'pk-correct':'pk-wrong');
+    if(isCorrect){PK.p2s++;document.getElementById('pk-p2-score').textContent=PK.p2s}
+  }
+  // Both answered → advance immediately
+  if(PK.p1picked&&PK.p2picked){
+    if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+    PK.done=true;
+    const p1ok=PK.p1ans===cor;const p2ok=PK.p2ans===cor;
+    if(p1ok&&p2ok){PK.combo++;if(PK.combo>=2){const ce=document.getElementById('pk-combo');ce.textContent=PK.combo+' COMBO 🎵';ce.classList.add('active')}}
+    else{PK.combo=0;document.getElementById('pk-combo').classList.remove('active')}
+    setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},800)
+  }
+}
+
+function endPK(){
+  if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+  PKBgm.stop();
+  const totalCorrect=PK.p1s+PK.p2s;
+  const perfect=totalCorrect===PK.total*2;
+  const starReward=totalCorrect;
+  const pkPtsReward=Math.round(totalCorrect/2*5)+(perfect?20:0);
+
+  S.stars+=starReward;S.pkPoints=(S.pkPoints||0)+pkPtsReward;
+  S.duetPlays=(S.duetPlays||0)+1;
+  if(perfect)S.duetPerfect=true;
+  saveState();
+
+  const grade=totalCorrect>=18?'S':totalCorrect>=14?'A':totalCorrect>=10?'B':totalCorrect>=6?'C':'D';
+  const gradeClr={S:'#ffd700',A:'#00e676',B:'#42a5f5',C:'#ff9800',D:'#ef5350'}[grade];
+  document.getElementById('pull-overlay').style.display='flex';
+  document.getElementById('pull-result').innerHTML=`<div style="text-align:center;color:white">
+    <div style="font-size:1rem;color:var(--text-dim);margin-bottom:.3rem">🎶 演出結束！</div>
+    <div style="font-size:3.5rem;font-weight:900;color:${gradeClr};text-shadow:0 0 20px ${gradeClr}66;margin-bottom:.5rem">${grade}</div>
+    <div style="font-size:.8rem;margin-bottom:.3rem">演員 A：${PK.p1s}/${PK.total} 正確 ✓</div>
+    <div style="font-size:.8rem;margin-bottom:.6rem">演員 B：${PK.p2s}/${PK.total} 正確 ✓</div>
+    <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.3rem">合計答對 ${totalCorrect} / ${PK.total*2}</div>
+    ${perfect?'<div style="font-size:.85rem;color:#ffd700;font-weight:900;margin-bottom:.4rem;animation:pulse 1.5s infinite">🌟 完美演出！全部答對！</div>':''}
+    <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem">
+      <div style="text-align:center"><div style="font-size:1.3rem;font-weight:900;color:var(--accent)">${starReward}</div><div style="font-size:.55rem;color:var(--text-dim)">⭐ 星星</div></div>
+      <div style="text-align:center"><div style="font-size:1.3rem;font-weight:900;color:#00e5ff">${pkPtsReward}</div><div style="font-size:.55rem;color:var(--text-dim)">🏆 演出點數</div></div></div>
+    <button class="btn btn-primary" onclick="closeDuetResult()">返回首頁</button></div>`;
+}
+function closeDuetResult(){PKBgm.stop();document.getElementById('pull-overlay').style.display='none';goTo('home-screen');updateHome()}
+
+// ===== PK STYLE CARD SHOP =====
+function showPKStyleShop(){
+  const owned=Object.entries(S.cards).filter(([k,c])=>!c.pkStyle);
+  const alreadyPK=Object.entries(S.cards).filter(([k,c])=>c.pkStyle);
+  const cost=30;
+  const mc=document.getElementById('mod-content');
+  mc.innerHTML=`<div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:.6rem">
+      <div style="font-size:1rem;font-weight:900;background:linear-gradient(135deg,#00e5ff,#ff6ec7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">🎶 演出造型</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-top:.2rem">選擇一張已擁有的小卡，解鎖專屬演出造型</div>
+      <div style="font-size:.7rem;color:#00e5ff;font-weight:700;margin-top:.3rem">🏆 ${S.pkPoints||0} 演出點數</div>
+    </div>
+    ${alreadyPK.length?`<div style="font-size:.6rem;color:var(--mint);margin-bottom:.4rem">已解鎖 ${alreadyPK.length} 張演出造型</div>`:''}
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.3rem;max-height:50vh;overflow-y:auto">
+    ${owned.map(([key,card])=>{
+      const baseKey=key.startsWith('ltd_')?key.split('_').slice(2).join('_'):key;
+      const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return'';
+      const mem=g.members[parseInt(mi)];if(!mem)return'';
+      const canAfford=(S.pkPoints||0)>=cost;
+      return`<div style="text-align:center;cursor:${canAfford?'pointer':'default'};opacity:${canAfford?'1':'.5'}" onclick="${canAfford?`unlockPKStyle('${key}')`:''}" title="${canAfford?'點擊解鎖 ('+cost+' 🏆)':'點數不足'}">
+        <div class="card-item" style="width:100%;background:${g.bg};border:1px solid #00e5ff44">
+          <div class="ci-content">${chibiSVG(mem,22,g)}<div class="ci-word" style="font-size:.35rem">${mem.name}</div></div></div>
+        <div style="font-size:.35rem;color:var(--text-dim)">${cost}🏆</div></div>`}).join('')}</div>
+    <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:.5rem" onclick="closeMod()">關閉</button>`;
+  document.getElementById('det-modal').classList.add('active')
+}
+
+function unlockPKStyle(key){
+  const cost=30;
+  if((S.pkPoints||0)<cost){floatTxt('演出點數不足！','var(--danger)');return}
+  const card=S.cards[key];if(!card||card.pkStyle){floatTxt('已解鎖！','var(--text-dim)');return}
+  S.pkPoints-=cost;card.pkStyle=true;saveState();
+  floatTxt('🎶 演出造型已解鎖！','#00e5ff');
+  showPKStyleShop()
+}
 
 </script>
 </body>
