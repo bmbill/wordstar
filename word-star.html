@@ -570,11 +570,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       <div><div class="player-name">WordStar</div><div class="player-level">Lv.<span id="p-lv">1</span> <span id="p-rank">練習生</span></div></div></div>
     <div style="display:flex;gap:.4rem;align-items:center">
       <div class="coin-box" style="font-size:.7rem;color:#00e5ff;cursor:pointer" onclick="goTo('profile-screen');showProfile()">🏆 <span id="pk-pts-home">0</span></div>
-      <div class="coin-box" onclick="cheatTap()">⭐ <span id="coins">30</span></div></div></div>
+      <div class="coin-box">⭐ <span id="coins">30</span></div></div></div>
   <div class="exp-wrap"><div class="exp-bar"><div class="exp-fill" id="exp-bar"></div></div>
     <div class="exp-label"><span id="exp-text">0/30</span><span>Next Level</span></div></div>
   <div class="stats-row">
-    <div class="stat-card" onclick="cheatCardTap()"><div class="stat-num" style="color:var(--secondary)" id="s-cards">0</div><div class="stat-lbl">小卡</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--secondary)" id="s-cards">0</div><div class="stat-lbl">小卡</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--primary)" id="s-groups">0</div><div class="stat-lbl">集滿組</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--accent)" id="s-pulls">0</div><div class="stat-lbl">總抽數</div></div>
     <div class="stat-card"><div id="s-special" style="display:flex;align-items:center;justify-content:center;gap:.2rem;font-size:1.1rem;font-weight:900"><span style="color:#ffd700">0</span><span style="font-size:.5rem;color:#ffd700;font-weight:400">✦</span><span style="color:#b388ff">0</span><span style="font-size:.5rem;color:#b388ff;font-weight:400">⚡</span></div><div class="stat-lbl">閃卡/動態</div></div>
@@ -689,6 +689,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="title-wall">
       <div class="title-wall-title">🏆 稱號牆</div>
       <div class="title-grid" id="prof-titles"></div>
+    </div>
+    <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.06)">
+      <button class="btn" style="width:100%;background:rgba(255,60,60,.15);color:#ff6b6b;border:1px solid rgba(255,60,60,.25);font-size:.7rem;padding:.5rem;border-radius:.5rem" onclick="confirmResetAll()">🗑️ 重置所有資料</button>
+      <div style="text-align:center;font-size:.5rem;color:var(--text-muted);margin-top:.3rem">此操作將清除所有學習紀錄、星星、小卡等資料，無法復原</div>
     </div>
   </div>
 </div>
@@ -1346,11 +1350,6 @@ function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   const m={'home-screen':0,'gacha-screen':1,'collection-screen':2,'profile-screen':3};
   if(m[id]!=null)document.querySelectorAll('.nav-item')[m[id]]?.classList.add('active')}
-let _cheatN=0,_cheatT=0,_cheatC=0,_cheatCT=0;
-function cheatTap(){const now=Date.now();if(now-_cheatT>2000){_cheatN=0}_cheatT=now;_cheatN++;
-  if(_cheatN>=5){_cheatN=0;S.stars+=9999;saveState();updateHome();floatTxt('🌟 +9999 測試星星！','#ffd700')}}
-function cheatCardTap(){const now=Date.now();if(now-_cheatCT>2000){_cheatC=0}_cheatCT=now;_cheatC++;
-  if(_cheatC>=5){_cheatC=0;S.cards={};S.totalPulls=0;saveState();updateHome();floatTxt('🗑️ 已清除全部小卡！','var(--danger)')}}
 function startGame(){loadState();goTo('home-screen');updateHome()}
 
 // ===== DAILY MISSIONS =====
@@ -2664,6 +2663,25 @@ if(localStorage.getItem('wordstar_notif')==='on'&&'Notification' in window&&Noti
 
 // ===== PROFILE & TITLES SYSTEM =====
 function checkTitles(){return TITLES.filter(t=>t.check(S)).map(t=>t.id)}
+
+function confirmResetAll(){
+  const m=document.getElementById('mod-content');
+  m.innerHTML=`<div style="text-align:center;padding:.5rem">
+    <div style="font-size:1.8rem;margin-bottom:.5rem">⚠️</div>
+    <div style="font-weight:700;font-size:.9rem;margin-bottom:.4rem">確定要重置所有資料嗎？</div>
+    <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.8rem;line-height:1.4">
+      這將會清除所有學習紀錄、星星、小卡、<br>稱號、等級等所有資料，無法復原！</div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-secondary" style="flex:1;font-size:.75rem" onclick="closeMod()">取消</button>
+      <button class="btn" style="flex:1;font-size:.75rem;background:#ff4444;color:#fff" onclick="executeResetAll()">確定重置</button>
+    </div></div>`;
+  document.getElementById('det-modal').style.display='flex';
+}
+function executeResetAll(){
+  localStorage.removeItem('wordstar_state');
+  closeMod();
+  location.reload();
+}
 
 function showProfile(){
   const titles=checkTitles();
