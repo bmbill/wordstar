@@ -1541,7 +1541,15 @@ function startQuiz(mode){
     // Fallback: if less than 10, use more wrong words
     if(pool.length<10)pool=shuf(wrong);
   }
-  else pool=W.filter(x=>!S.wordsAnswered[x.w]||!S.wordsAnswered[x.w].m);
+  else {
+    const critical=W.filter(x=>!S.wordsAnswered[x.w]||(S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===0));
+    const struggling=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===1);
+    const mastered=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv>=2);
+    const criticalCnt=Math.min(7,critical.length);
+    const struggleCnt=Math.min(2,struggling.length);
+    const masteredCnt=Math.min(1,mastered.length);
+    pool=[...shuf(critical).slice(0,criticalCnt),...shuf(struggling).slice(0,struggleCnt),...shuf(mastered).slice(0,masteredCnt)];
+  }
   if(pool.length<4)pool=W.slice();
   Q.qs=shuf(pool).slice(0,10);
   Q.qs.forEach((q,i)=>{
