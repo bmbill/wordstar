@@ -22,6 +22,64 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
 .particle{position:absolute;border-radius:50%;opacity:.1;animation:floatUp linear infinite}
 @keyframes floatUp{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.1}90%{opacity:.1}100%{transform:translateY(-10vh) scale(1);opacity:0}}
+@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%{transform:translateX(-4px)}20%,40%,60%,80%{transform:translateX(4px)}}
+@keyframes shakeHard{0%,100%{transform:translate(0,0)}10%{transform:translate(-6px,-3px)}20%{transform:translate(5px,2px)}30%{transform:translate(-7px,1px)}40%{transform:translate(4px,-2px)}50%{transform:translate(-3px,4px)}60%{transform:translate(6px,-1px)}70%{transform:translate(-2px,3px)}80%{transform:translate(5px,-3px)}90%{transform:translate(-4px,2px)}}
+@keyframes garbageFly{0%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:1;transform:translateY(var(--fly-dir,50px)) scale(1.3)}100%{opacity:0;transform:translateY(var(--fly-dir,100px)) scale(.5)}}
+@keyframes comboFlash{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}30%{transform:translate(-50%,-50%) scale(1.4);opacity:1}60%{transform:translate(-50%,-50%) scale(.95);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+/* ===== BATTLE MODE STYLES ===== */
+#battle-screen.active{padding:0;flex-direction:column}
+.bt-container{display:flex;flex-direction:column;width:100vw;height:100dvh;position:relative;overflow:hidden}
+/* === 頂部生命條 === */
+.bt-hpbar-row{display:flex;align-items:center;padding:6px 8px;gap:4px;background:linear-gradient(180deg,rgba(10,6,18,.95),rgba(10,6,18,.7));flex-shrink:0;z-index:20;border-bottom:1px solid rgba(199,125,255,.15)}
+.bt-hp-wrap{display:flex;align-items:center;gap:4px;flex:1}
+.bt-hp-left{flex-direction:row}
+.bt-hp-right{flex-direction:row}
+.bt-hp-name{font-size:.65rem;font-weight:900;white-space:nowrap}
+.bt-hp-track{flex:1;height:14px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
+.bt-hp-fill{height:100%;border-radius:2px;transition:width .4s ease;background:linear-gradient(90deg,#ff4d6d,#ff6ec7,#ff9a9e);box-shadow:0 0 8px rgba(255,77,109,.4);position:relative}
+.bt-hp-fill::after{content:'';position:absolute;top:1px;left:2px;right:2px;height:4px;background:linear-gradient(180deg,rgba(255,255,255,.3),transparent);border-radius:2px}
+.bt-hp-cyan{background:linear-gradient(90deg,#7ff5dc,#00d4ff,#89f7fe);box-shadow:0 0 8px rgba(127,245,220,.4)}
+.bt-hp-val{font-size:.6rem;font-weight:900;color:var(--text-dim);white-space:nowrap;min-width:28px;text-align:center}
+.bt-hp-mid{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;padding:0 2px}
+.bt-hp-round{font-size:.5rem;color:var(--text-dim)}
+.bt-exit-btn{background:rgba(255,77,109,.15);border:1px solid #ff4d6d44;border-radius:50%;width:20px;height:20px;color:#ff4d6d;font-size:.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+/* === 中間：戰場區（飛行動畫區） === */
+.bt-arena{flex:1;display:flex;flex-direction:row;position:relative;border-bottom:1px solid rgba(199,125,255,.1);overflow:hidden}
+.bt-arena-left,.bt-arena-right{flex:1;position:relative;overflow:hidden}
+.bt-arena-left{background:linear-gradient(135deg,rgba(255,110,199,.04),transparent)}
+.bt-arena-right{background:linear-gradient(225deg,rgba(127,245,220,.04),transparent)}
+.bt-arena-mid{width:2px;flex-shrink:0;background:rgba(199,125,255,.15);z-index:5}
+.bt-garbage-zone{display:none}
+/* Center divider elements */
+.bt-vs-txt{font-size:1.2rem;margin:.3rem 0}
+.bt-round-lbl{font-size:.5rem;color:var(--text-dim);writing-mode:vertical-lr}
+.bt-combo-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.6rem;font-weight:900;pointer-events:none;opacity:0;z-index:30;text-shadow:0 0 25px rgba(255,230,109,.9);white-space:nowrap;width:max-content}
+.bt-combo-display.active{animation:comboFlash .8s ease forwards}
+/* === 下方：控制區 (佔40%) === */
+.bt-controls{flex-shrink:0;display:flex;flex-direction:row;position:relative}
+.bt-ctrl-side{flex:1;display:flex;flex-direction:column;padding:.3rem .5rem;gap:.3rem}
+.bt-ctrl-left{background:rgba(255,110,199,.04)}
+.bt-ctrl-right{background:rgba(127,245,220,.04)}
+.bt-ctrl-divider{width:2px;flex-shrink:0;background:rgba(199,125,255,.15)}
+/* Word display */
+.bt-word{font-size:1.3rem;font-weight:900;color:var(--accent);text-align:center;letter-spacing:1px;padding:.2rem 0}
+/* Answer buttons */
+.bt-ans{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.bt-answer-btn{padding:.4rem .2rem;border:1px solid rgba(255,255,255,.1);background:var(--card);color:var(--text);border-radius:.5rem;font-size:.75rem;cursor:pointer;font-weight:700;transition:all .15s;font-family:inherit;text-align:center;display:flex;align-items:center;justify-content:center}
+.bt-answer-btn:active{transform:scale(.93)}
+.bt-answer-btn.bt-correct{background:var(--mint);color:var(--bg);border-color:var(--mint)}
+.bt-answer-btn.bt-wrong{background:var(--danger);color:white;border-color:var(--danger)}
+/* Garbage interference overlay on control area */
+.bt-ctrl-side{position:relative}
+.bt-interference{position:absolute;inset:0;pointer-events:none;z-index:10;overflow:hidden}
+.bt-junk{position:absolute;font-size:1.8rem;opacity:.85;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));animation:junkDrop .4s ease forwards}
+@keyframes junkDrop{0%{transform:translateY(-40px) rotate(0deg) scale(0);opacity:0}50%{transform:translateY(0) rotate(180deg) scale(1.2);opacity:.9}100%{transform:translateY(0) rotate(220deg) scale(1);opacity:.8}}
+@keyframes junkFade{0%{opacity:.8}100%{opacity:0;transform:scale(.5)}}
+@keyframes hpFlash{0%,100%{opacity:1}50%{opacity:.4}}
+/* Flying garbage projectile */
+.bt-projectile{position:fixed;z-index:100;font-size:1.6rem;pointer-events:none;filter:drop-shadow(0 0 6px rgba(255,255,255,.5))}
+@keyframes flyLeft2Right{0%{left:15%;opacity:1;transform:scale(.6) rotate(0deg)}50%{opacity:1;transform:scale(1.4) rotate(180deg)}100%{left:80%;opacity:0;transform:scale(.4) rotate(360deg)}}
+@keyframes flyRight2Left{0%{left:80%;opacity:1;transform:scale(.6) rotate(0deg)}50%{opacity:1;transform:scale(1.4) rotate(-180deg)}100%{left:15%;opacity:0;transform:scale(.4) rotate(-360deg)}}
 .screen{display:none;flex-direction:column;min-height:100dvh;position:relative;z-index:1}.screen.active{display:flex}
 
 /* ===== CHIBI AVATAR SYSTEM ===== */
@@ -598,7 +656,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('spell')"><div class="action-icon">⭐</div><div class="action-title">星光大道</div><div class="action-desc">拼出單字</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('reverse')"><div class="action-icon">📺</div><div class="action-title">宣傳通告</div><div class="action-desc">中文選英文</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">複習錯題·高獎勵</div></div>
-    <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">同台表演</div><div class="action-desc">雙人合作答題</div></div></div>
+    <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">同台表演</div><div class="action-desc">雙人合作答題</div></div>
+    <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽(測試中)</div><div class="action-desc">雙人搶答丟拳頭</div></div></div>
   <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
   <div class="section-title">🔥 本週挑戰</div>
@@ -722,6 +781,52 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
         <div class="pk-player-score">✓ <span id="pk-p2-score">0</span></div>
       </div>
       <div class="pk-answers" id="pk-p2-answers"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BATTLE MODE (垃圾對戰) ===== -->
+<div class="screen" id="battle-screen">
+  <div class="bt-container" id="bt-container">
+    <!-- 最上方：生命條 -->
+    <div class="bt-hpbar-row">
+      <div class="bt-hp-wrap bt-hp-left">
+        <div class="bt-hp-name" style="color:#ff6ec7">♥ A</div>
+        <div class="bt-hp-track"><div class="bt-hp-fill" id="bt-p1-bar" style="width:100%"></div></div>
+        <div class="bt-hp-val" id="bt-p1-pct">100%</div>
+      </div>
+      <div class="bt-hp-mid">
+        <span class="bt-hp-round" id="bt-round-info">準備！</span>
+        <button class="bt-exit-btn" onclick="endBattleEarly()">✕</button>
+      </div>
+      <div class="bt-hp-wrap bt-hp-right">
+        <div class="bt-hp-val" id="bt-p2-pct">100%</div>
+        <div class="bt-hp-track"><div class="bt-hp-fill bt-hp-cyan" id="bt-p2-bar" style="width:100%"></div></div>
+        <div class="bt-hp-name" style="color:#7ff5dc">B ♥</div>
+      </div>
+    </div>
+    <!-- 中間：垃圾戰場 -->
+    <div class="bt-arena">
+      <div class="bt-arena-left">
+        <div class="bt-garbage-zone" id="bt-p1-garbage"></div>
+      </div>
+      <div class="bt-arena-mid"></div>
+      <div class="bt-combo-display" id="bt-combo"></div>
+      <div class="bt-arena-right">
+        <div class="bt-garbage-zone" id="bt-p2-garbage"></div>
+      </div>
+    </div>
+    <!-- 下方：左右各自的題目 + 選項 -->
+    <div class="bt-controls">
+      <div class="bt-ctrl-side bt-ctrl-left">
+        <div class="bt-word" id="bt-word-p1">READY</div>
+        <div class="bt-ans" id="bt-p1-answers"></div>
+      </div>
+      <div class="bt-ctrl-divider"></div>
+      <div class="bt-ctrl-side bt-ctrl-right">
+        <div class="bt-word" id="bt-word-p2">READY</div>
+        <div class="bt-ans" id="bt-p2-answers"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1364,7 +1469,7 @@ function resetGame(){
 
 function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.getElementById('bnav').style.display=(id==='title-screen'||id==='quiz-screen'||id==='pk-screen')?'none':'flex';
+  document.getElementById('bnav').style.display=(id==='title-screen'||id==='quiz-screen'||id==='pk-screen'||id==='battle-screen')?'none':'flex';
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   const m={'home-screen':0,'gacha-screen':1,'collection-screen':2,'profile-screen':3};
   if(m[id]!=null)document.querySelectorAll('.nav-item')[m[id]]?.classList.add('active')}
@@ -3226,22 +3331,18 @@ function pkTimeUp(){
   if(PK.timer){clearInterval(PK.timer);PK.timer=null}
   if(PK.done)return;PK.done=true;
   const cor=PK.word.m;
-  // Mark unanswered as timeout
   if(!PK.p1picked){PK.p1picked=true;PK.p1ans=null;PK.p1times.push(5000);
     document.querySelectorAll('#pk-p1-answers button').forEach(b=>{if(!b.classList.contains('pk-correct')&&!b.classList.contains('pk-wrong'))b.classList.add('pk-timeout')})}
   if(!PK.p2picked){PK.p2picked=true;PK.p2ans=null;PK.p2times.push(5000);
     document.querySelectorAll('#pk-p2-answers button').forEach(b=>{if(!b.classList.contains('pk-correct')&&!b.classList.contains('pk-wrong'))b.classList.add('pk-timeout')})}
-  // Tally
   const p1ok=PK.p1ans===cor;const p2ok=PK.p2ans===cor;
   if(p1ok)PK.p1s++;if(p2ok)PK.p2s++;
   if(p1ok&&p2ok){PK.combo++;if(PK.combo>PK.maxCombo)PK.maxCombo=PK.combo;if(PK.combo>=2){const ce=document.getElementById('pk-combo');ce.textContent=PK.combo+' COMBO 🎵';ce.classList.add('active')}}
   else{PK.combo=0;document.getElementById('pk-combo').classList.remove('active')}
   document.getElementById('pk-p1-score').textContent=PK.p1s;
   document.getElementById('pk-p2-score').textContent=PK.p2s;
-  // Show correct answer highlight
   document.querySelectorAll('#pk-p1-answers button').forEach((b,i)=>{if(PK.options[i]===cor&&!b.classList.contains('pk-correct'))b.style.border='2px solid var(--mint)'});
   document.querySelectorAll('#pk-p2-answers button').forEach((b,i)=>{if(PK.options[i]===cor&&!b.classList.contains('pk-correct'))b.style.border='2px solid var(--mint)'});
-  // Track round results (after tally, but scores already updated)
   const p1time=PK.p1times[PK.p1times.length-1]||0;
   const p2time=PK.p2times[PK.p2times.length-1]||0;
   PK.roundResults.push({word:PK.word.w,meaning:PK.word.m,p1ok,p2ok,p1time,p2time});
@@ -3257,31 +3358,294 @@ function pkAns(idx,player){
     if(PK.p1picked)return;PK.p1picked=true;PK.p1ans=ans;
     const el=document.querySelectorAll('#pk-p1-answers button')[idx];
     el.classList.add(isCorrect?'pk-correct':'pk-wrong');
-    // Track answer time
     PK.p1times.push(Date.now()-PK.timerStart);
-    // Immediate score update
     if(isCorrect){PK.p1s++;document.getElementById('pk-p1-score').textContent=PK.p1s}
   }else{
     if(PK.p2picked)return;PK.p2picked=true;PK.p2ans=ans;
     const el=document.querySelectorAll('#pk-p2-answers button')[idx];
     el.classList.add(isCorrect?'pk-correct':'pk-wrong');
-    // Track answer time
     PK.p2times.push(Date.now()-PK.timerStart);
     if(isCorrect){PK.p2s++;document.getElementById('pk-p2-score').textContent=PK.p2s}
   }
-  // Both answered → advance immediately
   if(PK.p1picked&&PK.p2picked){
     if(PK.timer){clearInterval(PK.timer);PK.timer=null}
     PK.done=true;
     const p1ok=PK.p1ans===cor;const p2ok=PK.p2ans===cor;
     if(p1ok&&p2ok){PK.combo++;if(PK.combo>PK.maxCombo)PK.maxCombo=PK.combo;if(PK.combo>=2){const ce=document.getElementById('pk-combo');ce.textContent=PK.combo+' COMBO 🎵';ce.classList.add('active')}}
     else{PK.combo=0;document.getElementById('pk-combo').classList.remove('active')}
-    // Track round results (after combo tracking, but scores already updated individually)
     const p1time=PK.p1times[PK.p1times.length-1]||0;
     const p2time=PK.p2times[PK.p2times.length-1]||0;
     PK.roundResults.push({word:PK.word.w,meaning:PK.word.m,p1ok,p2ok,p1time,p2time});
     setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},800)
   }
+}
+
+// ===== 垃圾尬舞 BATTLE MODE =====
+let BT={round:0,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[]};
+
+function startBattleSetup(){
+  BT={round:1,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[]};
+  // Build large pool (battle can go many rounds until someone's garbage fills up)
+  const pool=shuf(W).slice(0,80);
+  BT.qs=pool;
+  goTo('battle-screen');
+  updateBTDisplay();
+  showBattleCountdown();
+}
+function showBattleCountdown(){
+  PKBgm.start();
+  const w1=document.getElementById('bt-word-p1');
+  const w2=document.getElementById('bt-word-p2');
+  const combo=document.getElementById('bt-combo');
+  combo.classList.remove('active');combo.textContent='';
+  document.getElementById('bt-p1-answers').innerHTML='';
+  document.getElementById('bt-p2-answers').innerHTML='';
+  let cd=3;
+  w1.textContent='3';w2.textContent='3';
+  w1.style.fontSize='2rem';w2.style.fontSize='2rem';
+  w1.style.color='var(--secondary)';w2.style.color='var(--secondary)';
+  const timer=setInterval(()=>{cd--;
+    if(cd<=0){clearInterval(timer);
+      w1.style.fontSize='';w2.style.fontSize='';w1.style.color='';w2.style.color='';
+      startBattleRound();return}
+    w1.textContent=cd+'';w2.textContent=cd+''},1000);
+}
+function startBattleRound(){
+  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  if(BT.cur>=BT.qs.length){
+    // Need more questions
+    BT.qs=BT.qs.concat(shuf(W).slice(0,40));
+  }
+  BT.word=BT.qs[BT.cur];
+  const wrongs=shuf(W.filter(x=>x.w!==BT.word.w)).map(x=>x.m).slice(0,3);
+  BT.options=shuf([BT.word.m,...wrongs]);
+  BT.p1picked=false;BT.p2picked=false;BT.p1ans=null;BT.p2ans=null;BT.done=false;
+
+  document.getElementById('bt-word-p1').textContent=BT.word.w;
+  document.getElementById('bt-word-p2').textContent=BT.word.w;
+  document.getElementById('bt-round-info').textContent='第 '+BT.round+' 輪';
+
+  const p1el=document.getElementById('bt-p1-answers');
+  const p2el=document.getElementById('bt-p2-answers');
+  p1el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" onclick="btAns(${i},1)">${opt}</button>`).join('');
+  p2el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" onclick="btAns(${i},2)">${opt}</button>`).join('');
+
+  BT.timerStart=Date.now();
+  BT.timer=setInterval(()=>{
+    const elapsed=Date.now()-BT.timerStart;
+    if(elapsed>=6000){btTimeUp()}
+  },50);
+}
+function btAns(idx,player){
+  if(BT.done)return;
+  const ans=BT.options[idx];
+  const cor=BT.word.m;
+  const isCorrect=ans===cor;
+
+  // Highlight the button
+  if(player===1){
+    if(BT.p1picked)return;BT.p1picked=true;
+    document.querySelectorAll('#bt-p1-answers button')[idx].classList.add(isCorrect?'bt-correct':'bt-wrong');
+  }else{
+    if(BT.p2picked)return;BT.p2picked=true;
+    document.querySelectorAll('#bt-p2-answers button')[idx].classList.add(isCorrect?'bt-correct':'bt-wrong');
+  }
+
+  // === 立刻結算這一方的答題 ===
+  if(isCorrect){
+    // 答對 → 丟垃圾給對手
+    const target=player===1?2:1;
+    const combo=player===1?BT.p1combo:BT.p2combo;
+    const amount=btGarbageAmount(combo);
+    if(target===1)BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+amount);
+    else BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+amount);
+    if(player===1){BT.p1combo++;BT.p2combo=0}else{BT.p2combo++;BT.p1combo=0}
+    btThrowGarbage(target,amount);btPlaySound('correct');
+    const newCombo=player===1?BT.p1combo:BT.p2combo;
+    if(newCombo>=2)btShowCombo(newCombo,player===1?'A':'B');
+  }else{
+    // 答錯 → 自己吃垃圾
+    if(player===1){BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+3);BT.p1combo=0}
+    else{BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+3);BT.p2combo=0}
+    btShake('light');btPlaySound('wrong');
+  }
+
+  updateBTDisplay();
+
+  // === 立刻下一題（不等對方） ===
+  BT.done=true;
+  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+
+  if(BT.p1garbage>=BT.maxGarbage||BT.p2garbage>=BT.maxGarbage){
+    setTimeout(()=>{endBattle()},800);
+  }else{
+    setTimeout(()=>{BT.round++;BT.cur++;startBattleRound()},500);
+  }
+}
+function btTimeUp(){
+  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  if(BT.done)return;BT.done=true;
+  // 雙方都沒答 → 雙方各吃垃圾
+  BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+5);
+  BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+5);
+  BT.p1combo=0;BT.p2combo=0;
+  btPlaySound('wrong');
+  updateBTDisplay();
+  if(BT.p1garbage>=BT.maxGarbage||BT.p2garbage>=BT.maxGarbage){
+    setTimeout(()=>{endBattle()},800);
+  }else{
+    setTimeout(()=>{BT.round++;BT.cur++;startBattleRound()},500);
+  }
+}
+
+// Garbage amount based on combo
+function btGarbageAmount(combo){
+  if(combo<2)return 8;
+  if(combo<4)return 12;
+  if(combo<6)return 18;
+  return 25; // combo 6+ = devastating
+}
+// Get garbage emoji based on combo level
+function btGarbageIcon(combo){
+  if(combo<2)return['👊','✋','🦶'];
+  if(combo<4)return['🤜','🤛','⚡'];
+  if(combo<6)return['🥊','💥','🔥'];
+  return['🐉','⚡','💀','🌪️','💥'];
+}
+function btThrowGarbage(targetPlayer,amount){
+  const zone=document.getElementById(targetPlayer===1?'bt-p1-garbage':'bt-p2-garbage');
+  const attackerCombo=targetPlayer===1?BT.p2combo:BT.p1combo;
+  const icons=btGarbageIcon(attackerCombo);
+  const count=Math.min(Math.ceil(amount/4),6);
+  const animName=targetPlayer===1?'flyRight2Left':'flyLeft2Right';
+
+  // 1) Flying projectiles across the arena
+  for(let i=0;i<count;i++){
+    setTimeout(()=>{
+      const proj=document.createElement('div');
+      proj.className='bt-projectile';
+      proj.textContent=icons[Math.floor(Math.random()*icons.length)];
+      proj.style.top=(15+Math.random()*35)+'%';
+      proj.style.animation=`${animName} .5s ease-in forwards`;
+      document.getElementById('bt-container').appendChild(proj);
+      setTimeout(()=>{proj.remove()},600);
+      // Add to garbage zone
+      setTimeout(()=>{
+        const span=document.createElement('span');
+        span.className='bt-garbage-item';
+        span.textContent=icons[Math.floor(Math.random()*icons.length)];
+        zone.appendChild(span);
+        while(zone.children.length>30)zone.removeChild(zone.firstChild);
+      },350);
+    },i*120);
+  }
+
+  // 2) Interference: garbage drops onto opponent's answer area!
+  const ctrlSide=document.querySelector(targetPlayer===1?'.bt-ctrl-left':'.bt-ctrl-right');
+  if(ctrlSide){
+    let overlay=ctrlSide.querySelector('.bt-interference');
+    if(!overlay){overlay=document.createElement('div');overlay.className='bt-interference';ctrlSide.appendChild(overlay)}
+    const junkCount=Math.min(count+attackerCombo,8);
+    for(let i=0;i<junkCount;i++){
+      setTimeout(()=>{
+        const junk=document.createElement('div');
+        junk.className='bt-junk';
+        junk.textContent=icons[Math.floor(Math.random()*icons.length)];
+        junk.style.left=Math.random()*80+'%';
+        junk.style.top=Math.random()*70+'%';
+        overlay.appendChild(junk);
+        // Fade out after a delay (longer with higher combo)
+        const fadeDelay=800+attackerCombo*200;
+        setTimeout(()=>{junk.style.animation='junkFade .5s ease forwards';setTimeout(()=>{junk.remove()},500)},fadeDelay);
+      },i*100);
+    }
+  }
+
+  // 3) Shake
+  if(attackerCombo>=6)btShake('extreme');
+  else if(attackerCombo>=4)btShake('heavy');
+  else if(attackerCombo>=2)btShake('medium');
+  else btShake('light');
+}
+function btShake(intensity){
+  const el=document.getElementById('bt-container');if(!el)return;
+  const dur=intensity==='extreme'?500:intensity==='heavy'?350:intensity==='medium'?250:150;
+  const anim=intensity==='extreme'||intensity==='heavy'?'shakeHard':'shake';
+  el.style.animation='none';
+  setTimeout(()=>{el.style.animation=`${anim} ${dur}ms ease-in-out`},10);
+}
+function btShowCombo(num,playerLabel){
+  const ce=document.getElementById('bt-combo');
+  const colors=['','','#7ff5dc','#ffe66d','#ff6ec7','#ff4d6d','#ff0000'];
+  const color=colors[Math.min(num,6)]||'#ff0000';
+  ce.textContent=playerLabel+' '+num+'x COMBO🔥';
+  ce.style.color=color;
+  ce.classList.remove('active');
+  setTimeout(()=>{ce.classList.add('active')},10);
+}
+function btPlaySound(type){
+  try{
+    if(typeof Tone!=='undefined'&&Tone.context.state==='running'){
+      const synth=new Tone.Synth({oscillator:{type:'triangle'},envelope:{attack:0.01,decay:0.1,sustain:0,release:0.1}}).toDestination();
+      if(type==='correct')synth.triggerAttackRelease('C5','8n');
+      else synth.triggerAttackRelease('E3','8n');
+      setTimeout(()=>{try{synth.dispose()}catch(e){}},500);
+    }
+  }catch(e){}
+}
+function updateBTDisplay(){
+  // HP = 生命值 (100% → 0% 就輸)
+  const p1hp=Math.max(0,100-Math.round((BT.p1garbage/BT.maxGarbage)*100));
+  const p2hp=Math.max(0,100-Math.round((BT.p2garbage/BT.maxGarbage)*100));
+  const bar1=document.getElementById('bt-p1-bar');
+  const bar2=document.getElementById('bt-p2-bar');
+  bar1.style.width=p1hp+'%';
+  bar2.style.width=p2hp+'%';
+  document.getElementById('bt-p1-pct').textContent=p1hp+'%';
+  document.getElementById('bt-p2-pct').textContent=p2hp+'%';
+  // Color warning: low HP → bar turns red + flashing
+  if(p1hp<=20){bar1.style.background='linear-gradient(90deg,#ff0000,#ff4d6d)';bar1.style.animation='hpFlash .5s ease infinite'}
+  else if(p1hp<=40){bar1.style.background='linear-gradient(90deg,#ff6600,#ff9800)';bar1.style.animation='none'}
+  else{bar1.style.background='';bar1.style.animation='none'}
+  if(p2hp<=20){bar2.style.background='linear-gradient(90deg,#ff0000,#ff4d6d)';bar2.style.animation='hpFlash .5s ease infinite'}
+  else if(p2hp<=40){bar2.style.background='linear-gradient(90deg,#ff6600,#00d4ff)';bar2.style.animation='none'}
+  else{bar2.style.background='';bar2.style.animation='none'}
+}
+function endBattle(){
+  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  PKBgm.stop();
+  // Award 25 stars
+  S.stars=(S.stars||0)+25;saveState();
+  const loser=BT.p1garbage>=BT.maxGarbage?'A':'B';
+  const winner=loser==='A'?'B':'A';
+  const ov=document.getElementById('pull-overlay');
+  ov.style.display='flex';
+  document.getElementById('pull-result').innerHTML=`<div style="text-align:center;padding:2rem">
+    <div style="font-size:3.5rem;margin-bottom:.5rem">🏆</div>
+    <div style="font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#ffe66d,#ff6ec7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem">玩家 ${winner} 勝利！</div>
+    <div style="font-size:.85rem;color:var(--text-dim);margin-bottom:.3rem">玩家 ${loser} 被垃圾淹沒了...</div>
+    <div style="font-size:.8rem;color:var(--accent);margin:.5rem 0">⭐ +25 星星</div>
+    <div style="margin:1rem 0;padding:.8rem;background:var(--card);border-radius:.8rem">
+      <div style="font-size:.75rem;margin-bottom:.4rem;color:var(--text-dim)">對戰統計</div>
+      <div style="display:flex;justify-content:space-around;font-size:.8rem">
+        <div><div style="font-weight:900;color:#ff6ec7">玩家A</div><div>HP ${Math.max(0,100-BT.p1garbage)}%</div></div>
+        <div style="color:var(--text-muted)">VS</div>
+        <div><div style="font-weight:900;color:#7ff5dc">玩家B</div><div>HP ${Math.max(0,100-BT.p2garbage)}%</div></div>
+      </div>
+      <div style="font-size:.65rem;color:var(--accent);margin-top:.4rem">共 ${BT.round} 輪</div>
+    </div>
+    <button class="btn btn-primary" onclick="closeBattleResult()">返回首頁</button>
+  </div>`;
+}
+function endBattleEarly(){
+  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  PKBgm.stop();
+  goTo('home-screen');updateHome();
+}
+function closeBattleResult(){
+  PKBgm.stop();
+  document.getElementById('pull-overlay').style.display='none';
+  goTo('home-screen');updateHome();
 }
 
 function endPK(){
