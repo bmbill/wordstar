@@ -85,6 +85,19 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 #bt-fighter-1{left:22%;transform:translateX(-50%)}
 #bt-fighter-2{right:22%;transform:translateX(50%)}
 .bt-fighter svg{display:block}
+/* Landscape: scale fighters down so they don't overlap HP bar */
+@media (orientation:landscape) and (max-height:500px){
+  .bt-arena{max-height:30vh}
+  .bt-fighter svg{width:60px;height:auto}
+  .bt-fighter{bottom:20%}
+  .bt-stage-floor{height:18%}
+  .bt-word-center{font-size:1.1rem;padding:.2rem .5rem}
+  .bt-answer-btn{padding:.25rem .1rem;font-size:.65rem}
+  .bt-hpbar-row{padding:0}
+  .bt-hp-track{height:12px}
+  .bt-timer-num{font-size:1.1rem}
+  .bt-hp-name{font-size:.55rem}
+}
 /* Ground shadow */
 .bt-fighter-shadow{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:60px;height:10px;background:radial-gradient(ellipse,rgba(0,0,0,.5),transparent 70%);border-radius:50%;z-index:-1}
 /* Idle */
@@ -790,7 +803,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('reverse')"><div class="action-icon">📺</div><div class="action-title">宣傳通告</div><div class="action-desc">中文選英文</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">複習錯題·高獎勵</div></div>
     <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">同台表演</div><div class="action-desc">雙人合作答題</div></div>
-    <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽(測試中)</div><div class="action-desc">雙人搶答丟拳頭</div></div></div>
+    <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽</div><div class="action-desc">雙人搶答</div></div></div>
   <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
   <div class="section-title">🔥 本週挑戰</div>
@@ -1777,24 +1790,25 @@ function startQuiz(mode){
   Q.mode=mode;Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
   let pool;
   if(mode==='boss'){
-    // Year-end Grand Prize: 8 wrong words + 2 high-level words
-    const wrong=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].rv>0&&!S.wordsAnswered[x.w].m);
-    const hard=W.filter(x=>x.lv>=4);
-    // Allocate: 8 from previously wrong, 2 from high-level
-    pool=[...shuf(wrong).slice(0,8),...shuf(hard).slice(0,2)];
-    // Deduplicate
-    const seen=new Set();pool=pool.filter(x=>{if(seen.has(x.w))return false;seen.add(x.w);return true});
-    // Fallback: if less than 10, use more wrong words
-    if(pool.length<10)pool=shuf(wrong);
+    // Year-end Grand Prize: 8 wrong words + 2 high-level, always 10
+    const wrong=shuf(W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].rv>0&&!S.wordsAnswered[x.w].m));
+    const hard=shuf(W.filter(x=>x.lv>=4));
+    const seen=new Set();
+    pool=[];
+    for(const w of wrong){if(!seen.has(w.w)&&pool.length<8){seen.add(w.w);pool.push(w)}}
+    for(const w of hard){if(!seen.has(w.w)&&pool.length<10){seen.add(w.w);pool.push(w)}}
+    // Still not 10? Fill from all words
+    if(pool.length<10){for(const w of shuf(W)){if(!seen.has(w.w)){seen.add(w.w);pool.push(w);if(pool.length>=10)break}}}
   }
   else {
     const critical=W.filter(x=>!S.wordsAnswered[x.w]||(S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===0));
     const struggling=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===1);
     const mastered=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv>=2);
-    const criticalCnt=Math.min(7,critical.length);
-    const struggleCnt=Math.min(2,struggling.length);
-    const masteredCnt=Math.min(1,mastered.length);
-    pool=[...shuf(critical).slice(0,criticalCnt),...shuf(struggling).slice(0,struggleCnt),...shuf(mastered).slice(0,masteredCnt)];
+    const strugglePick=shuf(struggling).slice(0,2);
+    const masteredPick=shuf(mastered).slice(0,1);
+    const usedWords=new Set([...strugglePick,...masteredPick].map(x=>x.w));
+    const criticalPick=shuf(critical.filter(x=>!usedWords.has(x.w))).slice(0,10-strugglePick.length-masteredPick.length);
+    pool=[...criticalPick,...strugglePick,...masteredPick];
   }
   if(pool.length<4)pool=W.slice();
   Q.qs=shuf(pool).slice(0,10);
@@ -3401,6 +3415,103 @@ const PKBgm=(function(){
 })();
 function togglePKBgm(){PKBgm.toggleMute()}
 
+// ===== BATTLE BGM (格鬥風格) =====
+const BattleBgm=(function(){
+  const _pick=a=>a[Math.floor(Math.random()*a.length)];
+  let playing=false,disposables=[];
+  return{
+    get playing(){return playing},
+    async start(){
+      if(playing)return;
+      await Tone.start();
+      const bpm=_pick([155,160,165,170,175,180]);
+      Tone.Transport.bpm.value=bpm;
+      const key=_pick([0,2,5,7]); // C,D,F,G
+      const NOTES=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+      const t=(n,s)=>{const m=n.match(/^([A-G]#?b?)(\d)$/);if(!m)return n;let i=NOTES.indexOf(m[1]),o=+m[2];i+=s;while(i<0){i+=12;o--}while(i>=12){i-=12;o++}return NOTES[i]+o};
+      const root=n=>t(n,key);
+
+      const comp=new Tone.Compressor(-18,4).toDestination();
+      const rev=new Tone.Reverb({decay:1.2,wet:.1}).connect(comp);
+      disposables.push(comp,rev);
+
+      // Heavy kick
+      const kick=new Tone.MembraneSynth({pitchDecay:.03,octaves:9,oscillator:{type:'sine'},envelope:{attack:.001,decay:.2,sustain:0,release:.06}}).connect(comp);
+      kick.volume.value=0;disposables.push(kick);
+      const kickPat=_pick([[0,4,8,12],[0,4,6,8,12],[0,3,4,8,10,12],[0,4,8,10,12,14]]);
+      const kickSeq=new Tone.Sequence((ti,v)=>{if(v)kick.triggerAttackRelease('C1','16n',ti)},Array.from({length:16},(_,i)=>kickPat.includes(i)?1:null),'16n').start(0);
+      kickSeq.loop=true;disposables.push(kickSeq);
+
+      // Aggressive snare
+      const snr=new Tone.NoiseSynth({noise:{type:'white'},envelope:{attack:.001,decay:.12,sustain:0,release:.04}}).connect(comp);
+      snr.volume.value=-4;disposables.push(snr);
+      const snrBody=new Tone.MembraneSynth({pitchDecay:.008,octaves:5,oscillator:{type:'triangle'},envelope:{attack:.001,decay:.08,sustain:0,release:.04}}).connect(comp);
+      snrBody.volume.value=-8;disposables.push(snrBody);
+      const snrPat=_pick([[4,12],[4,10,12],[2,4,10,12,14]]);
+      const snrSeq=new Tone.Sequence((ti,v)=>{if(v){snr.triggerAttackRelease('16n',ti);snrBody.triggerAttackRelease('G3','16n',ti)}},Array.from({length:16},(_,i)=>snrPat.includes(i)?1:null),'16n').start(0);
+      snrSeq.loop=true;disposables.push(snrSeq);
+
+      // Tight hats
+      const hat=new Tone.MetalSynth({frequency:400,envelope:{attack:.001,decay:.03,release:.005},harmonicity:5,modulationIndex:50,resonance:6000,octaves:1}).connect(comp);
+      hat.volume.value=-16;disposables.push(hat);
+      const hatSeq=new Tone.Sequence((ti,v)=>{if(v)hat.triggerAttackRelease('32n',ti,.01)},Array.from({length:16},(_,i)=>[0,2,4,6,8,10,12,14].includes(i)?1:null),'16n').start(0);
+      hatSeq.loop=true;disposables.push(hatSeq);
+
+      // Aggressive distorted bass — power chords feel
+      const bassD=new Tone.Distortion({distortion:.3,wet:.4}).connect(comp);
+      const bass=new Tone.Synth({oscillator:{type:'fatsawtooth',count:3,spread:25},envelope:{attack:.005,decay:.1,sustain:.6,release:.05}}).connect(bassD);
+      bass.volume.value=-3;disposables.push(bassD,bass);
+      const bassNotes=_pick([
+        [root('C2'),root('C2'),null,root('Eb2'),root('Eb2'),null,root('F2'),root('F2'),null,root('Eb2'),null,root('C2'),root('C2'),null,root('Bb1'),null],
+        [root('C2'),null,root('C2'),root('C2'),null,root('Eb2'),null,root('F2'),root('F2'),null,root('G2'),null,root('F2'),null,root('Eb2'),null],
+        [root('C2'),root('C2'),null,root('C2'),root('Eb2'),null,root('F2'),null,root('Ab2'),null,root('G2'),root('G2'),null,root('F2'),null,null],
+      ]);
+      const bassSeq=new Tone.Sequence((ti,n)=>{if(n)bass.triggerAttackRelease(n,'16n',ti)},bassNotes,'16n').start(0);
+      bassSeq.loop=true;disposables.push(bassSeq);
+
+      // Power guitar-like lead — fighting game melody
+      const leadDist=new Tone.Distortion({distortion:.15,wet:.3}).connect(rev);
+      const lead=new Tone.Synth({oscillator:{type:'fatsquare',count:3,spread:20},envelope:{attack:.01,decay:.08,sustain:.3,release:.15}}).connect(leadDist);
+      lead.volume.value=-8;disposables.push(leadDist,lead);
+      const melodyPool=[
+        // Aggressive SF-style riffs
+        [{t:'0:0:0',n:root('C5'),d:'8n'},{t:'0:0:2',n:root('Eb5'),d:'8n'},{t:'0:1:0',n:root('F5'),d:'8n'},{t:'0:1:2',n:root('G5'),d:'4n'},{t:'0:2:2',n:root('F5'),d:'8n'},{t:'0:3:0',n:root('Eb5'),d:'8n'},{t:'0:3:2',n:root('C5'),d:'8n'},
+         {t:'1:0:0',n:root('G5'),d:'8n'},{t:'1:0:2',n:root('F5'),d:'16n'},{t:'1:1:0',n:root('Eb5'),d:'8n'},{t:'1:1:2',n:root('C5'),d:'4n'},{t:'1:2:2',n:root('Eb5'),d:'8n'},{t:'1:3:0',n:root('F5'),d:'4n'},
+         {t:'2:0:0',n:root('Ab5'),d:'8n'},{t:'2:0:2',n:root('G5'),d:'8n'},{t:'2:1:0',n:root('F5'),d:'8n'},{t:'2:1:2',n:root('Eb5'),d:'4n'},{t:'2:2:2',n:root('F5'),d:'8n'},{t:'2:3:0',n:root('G5'),d:'4n'},
+         {t:'3:0:0',n:root('C6'),d:'4n'},{t:'3:1:0',n:root('Bb5'),d:'8n'},{t:'3:1:2',n:root('Ab5'),d:'8n'},{t:'3:2:0',n:root('G5'),d:'4n'},{t:'3:3:0',n:root('F5'),d:'8n'},{t:'3:3:2',n:root('G5'),d:'8n'}],
+        // Intense ascending pattern
+        [{t:'0:0:0',n:root('C5'),d:'16n'},{t:'0:0:2',n:root('Eb5'),d:'16n'},{t:'0:1:0',n:root('G5'),d:'8n'},{t:'0:2:0',n:root('Ab5'),d:'8n'},{t:'0:2:2',n:root('G5'),d:'8n'},{t:'0:3:0',n:root('F5'),d:'8n'},{t:'0:3:2',n:root('Eb5'),d:'16n'},
+         {t:'1:0:0',n:root('F5'),d:'8n'},{t:'1:0:2',n:root('G5'),d:'8n'},{t:'1:1:0',n:root('Ab5'),d:'4n'},{t:'1:2:0',n:root('G5'),d:'8n'},{t:'1:2:2',n:root('F5'),d:'8n'},{t:'1:3:0',n:root('Eb5'),d:'4n'},
+         {t:'2:0:0',n:root('C5'),d:'8n'},{t:'2:0:2',n:root('F5'),d:'8n'},{t:'2:1:0',n:root('G5'),d:'8n'},{t:'2:1:2',n:root('Bb5'),d:'4n'},{t:'2:2:2',n:root('Ab5'),d:'8n'},{t:'2:3:0',n:root('G5'),d:'8n'},
+         {t:'3:0:0',n:root('C6'),d:'8n'},{t:'3:0:2',n:root('Bb5'),d:'16n'},{t:'3:1:0',n:root('Ab5'),d:'8n'},{t:'3:1:2',n:root('G5'),d:'4n'},{t:'3:2:2',n:root('Ab5'),d:'8n'},{t:'3:3:0',n:root('G5'),d:'4n'}],
+      ];
+      const mel=_pick(melodyPool);
+      const leadPart=new Tone.Part((ti,v)=>{lead.triggerAttackRelease(v.n,v.d,ti)},mel.map(m=>({time:m.t,n:m.n,d:m.d}))).start(0);
+      leadPart.loop=true;leadPart.loopEnd='4:0:0';
+      disposables.push(leadPart);
+
+      // Power chord stabs
+      const chordSyn=new Tone.PolySynth(Tone.Synth,{oscillator:{type:'fatsawtooth',count:4,spread:30},envelope:{attack:.02,decay:.2,sustain:.3,release:.4}}).connect(rev);
+      chordSyn.volume.value=-12;disposables.push(chordSyn);
+      const chords=_pick([
+        [{t:'0:0:0',n:[root('C4'),root('Eb4'),root('G4')]},{t:'1:0:0',n:[root('Ab3'),root('C4'),root('Eb4')]},{t:'2:0:0',n:[root('Bb3'),root('D4'),root('F4')]},{t:'3:0:0',n:[root('G3'),root('B3'),root('D4')]}],
+        [{t:'0:0:0',n:[root('C4'),root('Eb4'),root('G4')]},{t:'1:0:0',n:[root('F3'),root('Ab3'),root('C4')]},{t:'2:0:0',n:[root('G3'),root('Bb3'),root('D4')]},{t:'3:0:0',n:[root('Ab3'),root('C4'),root('Eb4')]}],
+      ]);
+      const chordPart=new Tone.Part((ti,v)=>{chordSyn.triggerAttackRelease(v.n,'2n',ti)},chords).start(0);
+      chordPart.loop=true;chordPart.loopEnd='4:0:0';
+      disposables.push(chordPart);
+
+      Tone.Transport.start();playing=true;
+    },
+    stop(){
+      if(!playing)return;
+      Tone.Transport.stop();Tone.Transport.cancel();
+      disposables.forEach(d=>{try{d.dispose()}catch(e){}});
+      disposables=[];playing=false;
+    }
+  };
+})();
+
 // ===== DUET MODE (同台表演) =====
 let PK={p1s:0,p2s:0,round:0,total:10,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,combo:0,maxCombo:0,encore:false,timer:null,timerStart:0,p1times:[],p2times:[],roundResults:[]};
 
@@ -3522,105 +3633,199 @@ function pkAns(idx,player){
 }
 
 // ===== 快打旋風 BATTLE MODE =====
-let BT={round:0,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],matchTimer:null,matchTime:99,prevP1hp:100,prevP2hp:100};
+let BT={round:0,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],questionTimer:null,questionTime:5,prevP1hp:100,prevP2hp:100};
 
 // === Fighter SVG Generator (larger for SF) ===
-function btFighterSVG(player){
-  const s=90,h=115;
+// pose: 'idle','hadouken','shoryuken','guard'
+function btFighterSVG(player,pose){
+  const s=100,h=125;
   const isP1=player===1;
-  const skin='#fce4ec';
-  const hair=isP1?'#ff6ec7':'#7ff5dc';
-  const hair2=isP1?'#c77dff':'#00d4ff';
-  const outfit=isP1?'#ff4d6d':'#00bcd4';
-  const outfit2=isP1?'#ff6ec7':'#7ff5dc';
-  const eye=isP1?'#4a2c8a':'#004d40';
-  const glow=isP1?'#ff6ec7':'#7ff5dc';
+  const skin=isP1?'#fde8d0':'#e8d5c4';
+  const skin2=isP1?'#f0c8a0':'#d4b8a0';
+  const hair=isP1?'#2c1810':'#e8e8e8';
+  const hair2=isP1?'#4a2820':'#cccccc';
+  const gi=isP1?'#e8e8e8':'#1a3a6a'; // P1=white gi (Ryu), P2=blue gi
+  const gi2=isP1?'#cccccc':'#0d2444';
+  const belt=isP1?'#1a1a1a':'#8b6914';
+  const hband=isP1?'#cc0000':'#cc6600';
+  const hband2=isP1?'#990000':'#995500';
+  const eye='#1a1a1a';
+  const glow=isP1?'#ff6644':'#44aaff';
   const uid='f'+player+Math.random().toString(36).substr(2,4);
   const facing=isP1?1:-1;
-  const cx=s/2;
+  const cx=s/2,cy=h/2;
+  const p=pose||'idle';
+
+  // Arm positions by pose
+  let frontArm='',backArm='',legMod='',bodyShift=0,headShift=0;
+  if(p==='hadouken'){
+    // Both arms thrust forward, palms open
+    frontArm=`<path d="M${cx+12},${h*.48} L${cx+32},${h*.50} L${cx+42},${h*.50}" stroke="${gi}" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M${cx+12},${h*.48} L${cx+32},${h*.52} L${cx+42},${h*.51}" stroke="${skin}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="${cx+44}" cy="${h*.505}" rx="5" ry="4" fill="${skin}"/>
+      <ellipse cx="${cx+44}" cy="${h*.505}" rx="4" ry="3" fill="${skin2}"/>`;
+    backArm=`<path d="M${cx-10},${h*.48} L${cx+20},${h*.50} L${cx+38},${h*.50}" stroke="${gi2}" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+    bodyShift=-2;
+  }else if(p==='shoryuken'){
+    // Lead arm up in uppercut, body leaning back
+    frontArm=`<path d="M${cx+10},${h*.46} Q${cx+18},${h*.30} ${cx+14},${h*.15}" stroke="${gi}" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M${cx+10},${h*.46} Q${cx+16},${h*.30} ${cx+13},${h*.16}" stroke="${skin}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="${cx+14}" cy="${h*.13}" r="5" fill="${skin}"/>`;
+    backArm=`<path d="M${cx-12},${h*.48} Q${cx-18},${h*.56} ${cx-14},${h*.60}" stroke="${gi2}" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <circle cx="${cx-14}" cy="${h*.61}" r="4" fill="${skin2}"/>`;
+    headShift=-8;bodyShift=-4;
+    legMod='crouch';
+  }else if(p==='guard'){
+    frontArm=`<path d="M${cx+12},${h*.48} Q${cx+16},${h*.38} ${cx+8},${h*.32}" stroke="${gi}" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <circle cx="${cx+7}" cy="${h*.31}" r="5" fill="${skin}"/>`;
+    backArm=`<path d="M${cx-12},${h*.48} Q${cx-16},${h*.38} ${cx-8},${h*.32}" stroke="${gi2}" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <circle cx="${cx-8}" cy="${h*.31}" r="4" fill="${skin2}"/>`;
+  }else{ // idle — fighting stance
+    frontArm=`<path d="M${cx+12},${h*.48} Q${cx+22},${h*.40} ${cx+20},${h*.34}" stroke="${gi}" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M${cx+12},${h*.48} Q${cx+20},${h*.40} ${cx+19},${h*.35}" stroke="${skin}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="${cx+20}" cy="${h*.33}" r="5" fill="${skin}"/>
+      <circle cx="${cx+20}" cy="${h*.33}" r="3.5" fill="${skin2}"/>`;
+    backArm=`<path d="M${cx-12},${h*.48} Q${cx-20},${h*.44} ${cx-16},${h*.38}" stroke="${gi2}" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <circle cx="${cx-16}" cy="${h*.37}" r="4" fill="${skin2}"/>`;
+  }
+
+  // Legs
+  const legY=h*.68;
+  let legs='';
+  if(legMod==='crouch'){
+    // Crouching legs for shoryuken
+    legs=`<path d="M${cx-6},${legY} Q${cx-16},${h*.80} ${cx-18},${h*.90}" stroke="${gi2}" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="${cx-19}" cy="${h*.93}" rx="8" ry="4" fill="#5a3020"/>
+      <path d="M${cx+6},${legY} Q${cx+10},${h*.78} ${cx+4},${h*.88}" stroke="${gi}" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="${cx+3}" cy="${h*.91}" rx="8" ry="4" fill="#5a3020"/>`;
+  }else{
+    legs=`<path d="M${cx-6},${legY} Q${cx-10},${h*.78} ${cx-12},${h*.90}" stroke="${gi2}" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="${cx-13}" cy="${h*.93}" rx="8" ry="4" fill="#5a3020"/>
+      <path d="M${cx+6},${legY} Q${cx+12},${h*.78} ${cx+14},${h*.90}" stroke="${gi}" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="${cx+15}" cy="${h*.93}" rx="8" ry="4" fill="#5a3020"/>`;
+  }
+
+  const headY=h*.28+headShift;
+  const bodyY=h*.52+bodyShift;
+
   return `<svg width="${s}" height="${h}" viewBox="0 0 ${s} ${h}" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(${facing})">
     <defs>
       <linearGradient id="hg${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${hair}"/><stop offset="100%" stop-color="${hair2}"/></linearGradient>
-      <linearGradient id="og${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${outfit}"/><stop offset="100%" stop-color="${outfit2}"/></linearGradient>
-      <radialGradient id="ag${uid}" cx=".5" cy=".5" r=".5"><stop offset="0%" stop-color="${glow}" stop-opacity=".3"/><stop offset="100%" stop-color="${glow}" stop-opacity="0"/></radialGradient>
-      <filter id="gl${uid}"><feGaussianBlur stdDeviation="2" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+      <linearGradient id="og${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${gi}"/><stop offset="100%" stop-color="${gi2}"/></linearGradient>
+      <linearGradient id="sk${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${skin}"/><stop offset="100%" stop-color="${skin2}"/></linearGradient>
+      <radialGradient id="ag${uid}" cx=".5" cy=".6" r=".5"><stop offset="0%" stop-color="${glow}" stop-opacity=".2"/><stop offset="100%" stop-color="${glow}" stop-opacity="0"/></radialGradient>
+      <linearGradient id="hb${uid}" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${hband}"/><stop offset="100%" stop-color="${hband2}"/></linearGradient>
     </defs>
-    <!-- Aura -->
-    <ellipse cx="${cx}" cy="${h*.55}" rx="${s*.6}" ry="${h*.45}" fill="url(#ag${uid})"/>
+    <!-- Aura glow -->
+    <ellipse cx="${cx}" cy="${h*.6}" rx="${s*.55}" ry="${h*.4}" fill="url(#ag${uid})"/>
     <!-- Legs -->
-    <rect x="${cx-12}" y="${h*.72}" width="8" height="18" rx="3" fill="url(#og${uid})"/>
-    <rect x="${cx+4}" y="${h*.72}" width="8" height="18" rx="3" fill="url(#og${uid})"/>
-    <!-- Shoes -->
-    <ellipse cx="${cx-8}" cy="${h*.94}" rx="6" ry="4" fill="#333"/>
-    <ellipse cx="${cx+8}" cy="${h*.94}" rx="6" ry="4" fill="#333"/>
-    <!-- Body -->
-    <ellipse cx="${cx}" cy="${h*.6}" rx="16" ry="14" fill="url(#og${uid})"/>
+    ${legs}
+    <!-- Body / Gi top -->
+    <ellipse cx="${cx}" cy="${bodyY}" rx="18" ry="16" fill="url(#og${uid})"/>
+    <!-- Gi collar V-neck -->
+    <path d="M${cx-10},${bodyY-12} L${cx},${bodyY-2} L${cx+10},${bodyY-12}" stroke="${skin}" stroke-width="2" fill="url(#sk${uid})" opacity=".7"/>
+    <!-- Gi texture lines -->
+    <path d="M${cx-8},${bodyY+2} L${cx-6},${bodyY+12}" stroke="${gi2}" stroke-width=".8" opacity=".4"/>
+    <path d="M${cx+8},${bodyY+2} L${cx+6},${bodyY+12}" stroke="${gi2}" stroke-width=".8" opacity=".4"/>
     <!-- Belt -->
-    <rect x="${cx-15}" y="${h*.66}" width="30" height="3" rx="1" fill="#333"/>
-    <rect x="${cx-3}" y="${h*.65}" width="6" height="5" rx="1" fill="#ffe66d"/>
+    <rect x="${cx-16}" y="${bodyY+10}" width="32" height="4" rx="1" fill="${belt}"/>
+    <rect x="${cx-3}" y="${bodyY+9}" width="6" height="6" rx="1" fill="#c9a84c"/>
+    <!-- Belt knot tails -->
+    <path d="M${cx+16},${bodyY+12} Q${cx+22},${bodyY+18} ${cx+18},${bodyY+24}" stroke="${belt}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M${cx+16},${bodyY+12} Q${cx+24},${bodyY+16} ${cx+22},${bodyY+22}" stroke="${belt}" stroke-width="2" fill="none" stroke-linecap="round"/>
     <!-- Neck -->
-    <rect x="${cx-4}" y="${h*.42}" width="8" height="8" rx="2" fill="${skin}"/>
+    <rect x="${cx-5}" y="${bodyY-18}" width="10" height="10" rx="3" fill="url(#sk${uid})"/>
+    <!-- Back arm (behind body) -->
+    ${backArm}
     <!-- Head -->
-    <circle cx="${cx}" cy="${h*.32}" r="14" fill="${skin}"/>
+    <ellipse cx="${cx}" cy="${headY}" rx="15" ry="16" fill="url(#sk${uid})"/>
+    <!-- Jaw/chin definition -->
+    <path d="M${cx-12},${headY+4} Q${cx},${headY+18} ${cx+12},${headY+4}" fill="url(#sk${uid})"/>
     <!-- Hair -->
-    <ellipse cx="${cx}" cy="${h*.24}" rx="16" ry="12" fill="url(#hg${uid})"/>
-    <path d="M${cx-14},${h*.3} Q${cx-8},${h*.15} ${cx},${h*.13} Q${cx+8},${h*.15} ${cx+14},${h*.3}" fill="url(#hg${uid})"/>
-    <!-- Spiky hair tips -->
-    <path d="M${cx-14},${h*.2} L${cx-18},${h*.08} L${cx-10},${h*.18}" fill="url(#hg${uid})"/>
-    <path d="M${cx+14},${h*.2} L${cx+18},${h*.08} L${cx+10},${h*.18}" fill="url(#hg${uid})"/>
-    <path d="M${cx},${h*.14} L${cx+2},${h*.02} L${cx+5},${h*.15}" fill="url(#hg${uid})"/>
+    <ellipse cx="${cx}" cy="${headY-6}" rx="16" ry="12" fill="url(#hg${uid})"/>
+    <path d="M${cx-15},${headY} Q${cx-8},${headY-16} ${cx},${headY-18} Q${cx+8},${headY-16} ${cx+15},${headY}" fill="url(#hg${uid})"/>
+    <!-- Spiky hair (more detailed) -->
+    <path d="M${cx-14},${headY-6} L${cx-20},${headY-18} L${cx-10},${headY-10}" fill="url(#hg${uid})"/>
+    <path d="M${cx-6},${headY-12} L${cx-4},${headY-26} L${cx+2},${headY-12}" fill="url(#hg${uid})"/>
+    <path d="M${cx+4},${headY-12} L${cx+8},${headY-24} L${cx+12},${headY-10}" fill="url(#hg${uid})"/>
+    <path d="M${cx+12},${headY-6} L${cx+20},${headY-16} L${cx+14},${headY-4}" fill="url(#hg${uid})"/>
+    <!-- Eyebrows (fierce) -->
+    <path d="M${cx-10},${headY-3} L${cx-4},${headY-1}" stroke="${hair}" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M${cx+4},${headY-1} L${cx+10},${headY-3}" stroke="${hair}" stroke-width="2.5" stroke-linecap="round"/>
     <!-- Eyes -->
-    <ellipse cx="${cx-5}" cy="${h*.32}" rx="3" ry="3.5" fill="white"/>
-    <ellipse cx="${cx+5}" cy="${h*.32}" rx="3" ry="3.5" fill="white"/>
-    <circle cx="${cx-4}" cy="${h*.32}" r="2" fill="${eye}"/>
-    <circle cx="${cx+6}" cy="${h*.32}" r="2" fill="${eye}"/>
-    <circle cx="${cx-3.5}" cy="${h*.31}" r=".8" fill="white"/>
-    <circle cx="${cx+6.5}" cy="${h*.31}" r=".8" fill="white"/>
+    <ellipse cx="${cx-6}" cy="${headY+2}" rx="4" ry="3.5" fill="white"/>
+    <ellipse cx="${cx+6}" cy="${headY+2}" rx="4" ry="3.5" fill="white"/>
+    <circle cx="${cx-5}" cy="${headY+2}" r="2.5" fill="${eye}"/>
+    <circle cx="${cx+7}" cy="${headY+2}" r="2.5" fill="${eye}"/>
+    <circle cx="${cx-4.5}" cy="${headY+1}" r="1" fill="white"/>
+    <circle cx="${cx+7.5}" cy="${headY+1}" r="1" fill="white"/>
+    <!-- Nose -->
+    <path d="M${cx},${headY+3} L${cx-1},${headY+7} L${cx+1},${headY+7}" stroke="${skin2}" stroke-width=".8" fill="none"/>
     <!-- Mouth -->
-    <path d="M${cx-3},${h*.38} Q${cx},${h*.42} ${cx+3},${h*.38}" stroke="#c77" fill="none" stroke-width="1" stroke-linecap="round"/>
-    <!-- Arms (fighting pose) -->
-    <g class="bt-arm-front" filter="url(#gl${uid})">
-      <path d="M${cx+14},${h*.52} Q${cx+26},${h*.42} ${cx+24},${h*.35}" stroke="url(#og${uid})" stroke-width="7" fill="none" stroke-linecap="round"/>
-      <!-- Fist -->
-      <circle cx="${cx+24}" cy="${h*.34}" r="5" fill="${skin}"/>
-    </g>
-    <g class="bt-arm-back">
-      <path d="M${cx-14},${h*.52} Q${cx-22},${h*.55} ${cx-20},${h*.48}" stroke="url(#og${uid})" stroke-width="6" fill="none" stroke-linecap="round"/>
-      <circle cx="${cx-20}" cy="${h*.47}" r="4" fill="${skin}"/>
-    </g>
+    ${p==='shoryuken'||p==='hadouken'?
+      `<ellipse cx="${cx}" cy="${headY+11}" rx="4" ry="3" fill="#8b2020"/><path d="M${cx-3},${headY+10} Q${cx},${headY+9} ${cx+3},${headY+10}" stroke="${skin2}" stroke-width=".8" fill="none"/>`
+      :`<path d="M${cx-4},${headY+10} Q${cx},${headY+13} ${cx+4},${headY+10}" stroke="#8b4040" stroke-width="1.5" fill="none" stroke-linecap="round"/>`
+    }
     <!-- Headband -->
-    <rect x="${cx-15}" y="${h*.25}" width="30" height="3" rx="1" fill="${glow}" opacity=".8"/>
-    <rect x="${cx+13}" y="${h*.22}" width="3" height="12" rx="1" fill="${glow}" opacity=".6" transform="rotate(15,${cx+14},${h*.25})"/>
+    <rect x="${cx-16}" y="${headY-5}" width="32" height="4" rx="1.5" fill="url(#hb${uid})"/>
+    <!-- Headband tails -->
+    <path d="M${cx+14},${headY-4} Q${cx+22},${headY-2} ${cx+26},${headY+4}" stroke="url(#hb${uid})" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M${cx+14},${headY-3} Q${cx+24},${headY} ${cx+28},${headY+8}" stroke="url(#hb${uid})" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>
+    <!-- Front arm (over body) -->
+    ${frontArm}
+    <!-- Muscle definition on visible arm -->
+    ${p==='idle'?`<path d="M${cx+14},${h*.46} Q${cx+18},${h*.43} ${cx+16},${h*.40}" stroke="rgba(0,0,0,.1)" stroke-width="1" fill="none"/>`:''}
   </svg>`;
 }
 function btInitFighters(){
   const f1=document.getElementById('bt-fighter-1');
   const f2=document.getElementById('bt-fighter-2');
-  if(f1){f1.innerHTML=btFighterSVG(1)+'<div class="bt-fighter-shadow"></div>'}
-  if(f2){f2.innerHTML=btFighterSVG(2)+'<div class="bt-fighter-shadow"></div>'}
+  if(f1){f1.innerHTML=btFighterSVG(1,'idle')+'<div class="bt-fighter-shadow"></div>'}
+  if(f2){f2.innerHTML=btFighterSVG(2,'idle')+'<div class="bt-fighter-shadow"></div>'}
   if(f1){f1.className='bt-fighter bt-fighter-idle'}
   if(f2){f2.className='bt-fighter bt-fighter-idle-r'}
+}
+function btSetPose(player,pose){
+  const el=document.getElementById(player===1?'bt-fighter-1':'bt-fighter-2');
+  if(!el)return;
+  const shadow=el.querySelector('.bt-fighter-shadow');
+  el.innerHTML=btFighterSVG(player,pose)+(shadow?'<div class="bt-fighter-shadow"></div>':'');
 }
 function btFighterAttack(attackerPlayer){
   const el=document.getElementById(attackerPlayer===1?'bt-fighter-1':'bt-fighter-2');
   if(!el)return;
+  const combo=attackerPlayer===1?BT.p1combo:BT.p2combo;
+  // Pick pose based on combo level
+  if(combo>=3)btSetPose(attackerPlayer,'shoryuken');
+  else btSetPose(attackerPlayer,'hadouken');
   const cls=attackerPlayer===1?'bt-fighter-attack-r':'bt-fighter-attack-l';
   el.className='bt-fighter '+cls;
-  setTimeout(()=>{el.className='bt-fighter '+(attackerPlayer===1?'bt-fighter-idle':'bt-fighter-idle-r')},400);
+  setTimeout(()=>{
+    btSetPose(attackerPlayer,'idle');
+    el.className='bt-fighter '+(attackerPlayer===1?'bt-fighter-idle':'bt-fighter-idle-r');
+  },450);
 }
 function btFighterHit(targetPlayer){
   const el=document.getElementById(targetPlayer===1?'bt-fighter-1':'bt-fighter-2');
   if(!el)return;
+  btSetPose(targetPlayer,'guard');
   const cls=targetPlayer===1?'bt-fighter-hit-l':'bt-fighter-hit-r';
   el.className='bt-fighter '+cls;
-  setTimeout(()=>{el.className='bt-fighter '+(targetPlayer===1?'bt-fighter-idle':'bt-fighter-idle-r')},500);
+  setTimeout(()=>{
+    btSetPose(targetPlayer,'idle');
+    el.className='bt-fighter '+(targetPlayer===1?'bt-fighter-idle':'bt-fighter-idle-r');
+  },500);
 }
 function btFighterUltAnim(attackerPlayer){
   const el=document.getElementById(attackerPlayer===1?'bt-fighter-1':'bt-fighter-2');
   if(!el)return;
+  btSetPose(attackerPlayer,'shoryuken');
   const cls=attackerPlayer===1?'bt-fighter-ult':'bt-fighter-ult-r';
   el.className='bt-fighter '+cls;
-  setTimeout(()=>{el.className='bt-fighter '+(attackerPlayer===1?'bt-fighter-idle':'bt-fighter-idle-r')},900);
+  setTimeout(()=>{
+    btSetPose(attackerPlayer,'idle');
+    el.className='bt-fighter '+(attackerPlayer===1?'bt-fighter-idle':'bt-fighter-idle-r');
+  },900);
 }
 // Energy ball projectile (replaces emoji)
 function btShootEnergy(attackerPlayer,combo){
@@ -3693,40 +3898,27 @@ function btHitFreeze(duration){
   ct.style.animationPlayState='paused';
   setTimeout(()=>{ct.style.animationPlayState=''},duration||50);
 }
-// === Match Timer ===
-function btStartMatchTimer(){
-  if(BT.matchTimer)clearInterval(BT.matchTimer);
-  BT.matchTime=99;
+// === Per-Question Timer (5s countdown) ===
+function btStartQuestionTimer(){
+  BT.questionTime=5;
   const el=document.getElementById('bt-timer');
-  if(el){el.textContent='99';el.classList.remove('bt-timer-danger')}
-  BT.matchTimer=setInterval(()=>{
-    BT.matchTime--;
+  if(el){el.textContent='5';el.classList.remove('bt-timer-danger')}
+  if(BT.questionTimer)clearInterval(BT.questionTimer);
+  BT.questionTimer=setInterval(()=>{
+    BT.questionTime--;
     const el=document.getElementById('bt-timer');
     if(el){
-      el.textContent=BT.matchTime;
-      if(BT.matchTime<=10)el.classList.add('bt-timer-danger');
+      el.textContent=BT.questionTime;
+      if(BT.questionTime<=2)el.classList.add('bt-timer-danger');
     }
-    if(BT.matchTime<=0){
-      clearInterval(BT.matchTimer);BT.matchTimer=null;
-      btMatchTimeOut();
+    if(BT.questionTime<=0){
+      clearInterval(BT.questionTimer);BT.questionTimer=null;
+      btTimeUp();
     }
   },1000);
 }
-function btStopMatchTimer(){
-  if(BT.matchTimer){clearInterval(BT.matchTimer);BT.matchTimer=null}
-}
-function btMatchTimeOut(){
-  // Time over — whoever has more HP wins
-  btStopMatchTimer();
-  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
-  BT.done=true;
-  // Force a KO on the lower HP player
-  const p1hp=BT.maxGarbage-BT.p1garbage;
-  const p2hp=BT.maxGarbage-BT.p2garbage;
-  if(p1hp<=p2hp)BT.p1garbage=BT.maxGarbage;
-  else BT.p2garbage=BT.maxGarbage;
-  updateBTDisplay();
-  btAnnounce('TIME',  'bt-announce-ko',800,()=>{endBattle()});
+function btStopQuestionTimer(){
+  if(BT.questionTimer){clearInterval(BT.questionTimer);BT.questionTimer=null}
 }
 // === Fighter Victory/KO Poses ===
 function btFighterVictory(player){
@@ -3741,7 +3933,7 @@ function btFighterKO(player){
 }
 
 function startBattleSetup(){
-  BT={round:1,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],matchTimer:null,matchTime:99,prevP1hp:100,prevP2hp:100};
+  BT={round:1,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],questionTimer:null,questionTime:5,prevP1hp:100,prevP2hp:100};
   const pool=shuf(W).slice(0,80);
   BT.qs=pool;
   goTo('battle-screen');
@@ -3753,8 +3945,7 @@ function startBattleSetup(){
   document.getElementById('bt-p2-answers').innerHTML='';
   btAnnounce('ROUND 1','bt-announce-round',1000,()=>{
     btAnnounce('FIGHT!','bt-announce-fight',600,()=>{
-      PKBgm.start();
-      btStartMatchTimer();
+      BattleBgm.start();
       startBattleRound();
     });
     btShake('light');
@@ -3777,10 +3968,7 @@ function startBattleRound(){
   p1el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" onclick="btAns(${i},1)">${opt}</button>`).join('');
   p2el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" onclick="btAns(${i},2)">${opt}</button>`).join('');
 
-  BT.timerStart=Date.now();
-  BT.timer=setInterval(()=>{
-    if(Date.now()-BT.timerStart>=6000)btTimeUp();
-  },50);
+  btStartQuestionTimer();
 }
 function btAns(idx,player){
   if(BT.done)return;
@@ -3807,33 +3995,34 @@ function btAns(idx,player){
     btVfxDmgNum(target,amount);
     const newCombo=player===1?BT.p1combo:BT.p2combo;
     if(newCombo>=2)btShowCombo(newCombo,player===1?'1P':'2P');
+    // 答對 → 立刻下一題
+    updateBTDisplay();
+    btFinishRound();
   }else{
     if(player===1){BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+3);BT.p1combo=0}
     else{BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+3);BT.p2combo=0}
     btFighterHit(player);btShake('light');btPlaySound('wrong');
     btVfxDmgNum(player,3);
-  }
-
-  updateBTDisplay();
-
-  if(BT.p1picked&&BT.p2picked){
-    btFinishRound();
+    updateBTDisplay();
+    // 答錯 → 等另一個人答（或超時）
+    if(BT.p1picked&&BT.p2picked){
+      btFinishRound();
+    }
   }
 }
 function btFinishRound(){
   if(BT.done)return;
   BT.done=true;
-  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  btStopQuestionTimer();
 
   if(BT.p1garbage>=BT.maxGarbage||BT.p2garbage>=BT.maxGarbage){
-    btStopMatchTimer();
     setTimeout(()=>{endBattle()},800);
   }else{
     setTimeout(()=>{BT.round++;BT.cur++;startBattleRound()},600);
   }
 }
 function btTimeUp(){
-  if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  btStopQuestionTimer();
   if(BT.done)return;
   if(!BT.p1picked){BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+5);BT.p1combo=0;btFighterHit(1);btVfxDmgNum(1,5)}
   if(!BT.p2picked){BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+5);BT.p2combo=0;btFighterHit(2);btVfxDmgNum(2,5)}
@@ -4126,8 +4315,8 @@ function updateBTDisplay(){
 }
 function endBattle(){
   if(BT.timer){clearInterval(BT.timer);BT.timer=null}
-  btStopMatchTimer();
-  PKBgm.stop();
+  btStopQuestionTimer();
+  BattleBgm.stop();
   S.stars=(S.stars||0)+25;saveState();
   const loserPlayer=BT.p1garbage>=BT.maxGarbage?1:2;
   const winnerPlayer=loserPlayer===1?2:1;
@@ -4176,12 +4365,12 @@ function btShowBattleResult(winnerLabel,p1hp,p2hp){
 }
 function endBattleEarly(){
   if(BT.timer){clearInterval(BT.timer);BT.timer=null}
-  btStopMatchTimer();
-  PKBgm.stop();
+  btStopQuestionTimer();
+  BattleBgm.stop();
   goTo('home-screen');updateHome();
 }
 function closeBattleResult(){
-  PKBgm.stop();
+  BattleBgm.stop();
   document.getElementById('pull-overlay').style.display='none';
   goTo('home-screen');updateHome();
 }
