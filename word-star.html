@@ -153,8 +153,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .bt-ctrl-divider{width:2px;flex-shrink:0;background:linear-gradient(180deg,#c9a84c44,transparent)}
 /* SF-style angular answer buttons */
 .bt-ans{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.bt-answer-btn{padding:.35rem .15rem;border:2px solid #c9a84c33;background:linear-gradient(180deg,#1c1c30,#12121e);color:var(--text);border-radius:3px;font-size:.72rem;cursor:pointer;font-weight:900;transition:all .1s;font-family:inherit;text-align:center;display:flex;align-items:center;justify-content:center;clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.bt-answer-btn{padding:.35rem .15rem;border:2px solid #c9a84c33;background:linear-gradient(180deg,#1c1c30,#12121e);color:var(--text);border-radius:3px;font-size:.72rem;cursor:pointer;font-weight:900;transition:all .1s;font-family:inherit;text-align:center;display:flex;align-items:center;justify-content:center;clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);text-shadow:0 1px 2px rgba(0,0,0,.5);touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .bt-answer-btn:active{transform:scale(.95);background:linear-gradient(180deg,#2a2a40,#1a1a2e);border-color:#c9a84c}
+.bt-answer-btn.bt-locked{animation:btLockPulse .35s ease;box-shadow:0 0 16px rgba(255,215,0,.85),inset 0 0 10px rgba(255,230,109,.4);border-color:#ffd700}
+@keyframes btLockPulse{0%{transform:scale(1)}35%{transform:scale(1.12);box-shadow:0 0 22px rgba(255,215,0,1),inset 0 0 14px rgba(255,230,109,.5)}100%{transform:scale(1)}}
 .bt-answer-btn.bt-correct{background:linear-gradient(180deg,#00c853,#00897b);color:white;border-color:#00e676;box-shadow:0 0 10px rgba(0,200,83,.4)}
 .bt-answer-btn.bt-wrong{background:linear-gradient(180deg,#d50000,#b71c1c);color:white;border-color:#ff1744;box-shadow:0 0 10px rgba(213,0,0,.4)}
 /* ====== ANNOUNCER OVERLAY ====== */
@@ -655,10 +657,25 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 
 /* ===== DUET MODE (同台表演) ===== */
 #pk-screen.active{padding:0;flex-direction:column;justify-content:space-between;padding-bottom:0}
-.pk-container{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);position:relative}
-.pk-p1-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 1rem;transform:rotate(180deg);background:linear-gradient(180deg,rgba(199,125,255,.08),transparent)}
-.pk-p2-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 1rem;background:linear-gradient(0deg,rgba(255,110,199,.08),transparent)}
-.pk-center-zone{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.3rem 1rem;background:linear-gradient(90deg,rgba(199,125,255,.1),rgba(255,110,199,.1));border-top:1px solid rgba(199,125,255,.15);border-bottom:1px solid rgba(255,110,199,.15)}
+.pk-container{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 50%,rgba(255,230,109,.06),transparent 60%),linear-gradient(180deg,#1a0b2e 0%,#0d0618 50%,#1a0b2e 100%)}
+/* Side curtains */
+.pk-container::before,.pk-container::after{content:'';position:absolute;top:0;bottom:0;width:14px;pointer-events:none;z-index:5}
+.pk-container::before{left:0;background:linear-gradient(90deg,#7a1329 0%,#4a0a1a 55%,transparent 100%);box-shadow:inset -2px 0 6px rgba(0,0,0,.5),2px 0 12px rgba(0,0,0,.6)}
+.pk-container::after{right:0;background:linear-gradient(270deg,#7a1329 0%,#4a0a1a 55%,transparent 100%);box-shadow:inset 2px 0 6px rgba(0,0,0,.5),-2px 0 12px rgba(0,0,0,.6)}
+.pk-p1-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 1.2rem;transform:rotate(180deg);background:radial-gradient(ellipse at 50% 100%,rgba(199,125,255,.22),transparent 70%),linear-gradient(180deg,rgba(199,125,255,.08),transparent);position:relative}
+.pk-p2-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 1.2rem;background:radial-gradient(ellipse at 50% 0%,rgba(255,110,199,.22),transparent 70%),linear-gradient(0deg,rgba(255,110,199,.08),transparent);position:relative}
+.pk-p1-area.pk-flash-ok,.pk-p2-area.pk-flash-ok{animation:pkFlashOk .65s ease}
+.pk-p1-area.pk-flash-bad,.pk-p2-area.pk-flash-bad{animation:pkFlashBad .65s ease}
+@keyframes pkFlashOk{0%{box-shadow:inset 0 0 0 rgba(127,245,220,0)}25%{box-shadow:inset 0 0 90px rgba(127,245,220,.8),inset 0 0 30px rgba(127,245,220,.5)}100%{box-shadow:inset 0 0 0 rgba(127,245,220,0)}}
+@keyframes pkFlashBad{0%{box-shadow:inset 0 0 0 rgba(255,77,109,0)}25%{box-shadow:inset 0 0 90px rgba(255,77,109,.85),inset 0 0 30px rgba(255,77,109,.55)}100%{box-shadow:inset 0 0 0 rgba(255,77,109,0)}}
+.pk-center-zone{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem 1rem;background:radial-gradient(ellipse at 50% 50%,rgba(255,230,109,.18),transparent 65%),linear-gradient(90deg,rgba(199,125,255,.18),rgba(255,230,109,.12),rgba(255,110,199,.18));border-top:2px solid #c9a84c;border-bottom:2px solid #c9a84c;box-shadow:0 0 24px rgba(255,215,0,.25),inset 0 0 30px rgba(255,215,0,.08)}
+/* Marquee light bulbs on stage border */
+.pk-center-zone::before,.pk-center-zone::after{content:'';position:absolute;left:0;right:0;height:6px;background-image:radial-gradient(circle,#ffd700 35%,transparent 38%);background-size:12px 6px;background-repeat:repeat-x;filter:drop-shadow(0 0 3px #ffd700);pointer-events:none}
+.pk-center-zone::before{top:-8px;animation:pkBulbs 1.1s steps(2) infinite}
+.pk-center-zone::after{bottom:-8px;animation:pkBulbs 1.1s steps(2) infinite .55s}
+@keyframes pkBulbs{0%{opacity:1}50%{opacity:.35}100%{opacity:1}}
+.pk-exit-btn{position:fixed;top:14px;left:14px;z-index:999;background:rgba(19,15,33,.7);border:1px solid #ff6b6b44;border-radius:50%;width:24px;height:24px;color:#ff6b6b;font-size:.7rem;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;transition:all .2s;font-weight:700;padding:0;line-height:1}
+.pk-exit-btn:active{transform:scale(.9);background:rgba(255,107,107,.2)}
 .pk-player-name{font-weight:700;font-size:.7rem;color:var(--text-dim)}
 .pk-player-score{display:flex;gap:.2rem;align-items:center;font-size:.8rem;font-weight:900;color:var(--accent)}
 .pk-word-local{font-size:1.15rem;font-weight:900;color:var(--accent);text-align:center;margin:.4rem 0;letter-spacing:1px}
@@ -669,8 +686,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .pk-combo-center.active{opacity:1;animation:comboPopIn .5s ease forwards}
 @keyframes comboPopIn{0%{transform:translate(-50%,-50%) scale(.5);opacity:0}60%{transform:translate(-50%,-50%) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
 .pk-answers{display:grid;grid-template-columns:repeat(2,1fr);gap:.3rem;width:100%}
-.pk-answer-btn{padding:.45rem .3rem;border:1px solid rgba(255,255,255,.1);background:var(--card);color:var(--text);border-radius:.6rem;font-size:.65rem;cursor:pointer;font-weight:700;transition:all .15s;font-family:inherit;min-height:36px}
+.pk-answer-btn{padding:.45rem .3rem;border:1px solid rgba(255,255,255,.1);background:var(--card);color:var(--text);border-radius:.6rem;font-size:.65rem;cursor:pointer;font-weight:700;transition:all .15s;font-family:inherit;min-height:36px;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .pk-answer-btn:active{transform:scale(.93)}
+.pk-answer-btn.pk-locked{animation:pkLockPulse .45s ease;box-shadow:0 0 18px rgba(255,215,0,.7),inset 0 0 12px rgba(255,230,109,.35);border-color:#ffd700}
+@keyframes pkLockPulse{0%{transform:scale(1)}35%{transform:scale(1.13);box-shadow:0 0 26px rgba(255,215,0,.95),inset 0 0 14px rgba(255,230,109,.5)}100%{transform:scale(1)}}
 .pk-answer-btn.pk-correct{background:var(--mint);color:var(--bg);border-color:var(--mint)}
 .pk-answer-btn.pk-wrong{background:var(--danger);color:white;border-color:var(--danger)}
 .pk-answer-btn.pk-timeout{background:var(--card2);color:var(--text-muted);border-color:var(--text-muted);opacity:.5}
@@ -792,7 +811,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div id="dm-body" style="margin-top:.5rem">
     <div id="dm-list" style="display:flex;flex-direction:column;gap:.3rem"></div>
     <div id="dm-bonus" style="margin-top:.4rem;text-align:center;display:none">
-      <button class="btn btn-sm" style="background:linear-gradient(135deg,var(--accent),var(--secondary));color:var(--bg);font-weight:700;font-size:.65rem" onclick="claimDailyBonus()">🎁 領取全完成獎勵 +50⭐</button>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,var(--accent),var(--secondary));color:var(--bg);font-weight:700;font-size:.65rem" onclick="claimDailyBonus()">🎁 領取全完成獎勵 +80⭐</button>
     </div>
     </div>
   </div>
@@ -801,7 +820,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('choice')"><div class="action-icon">🎤</div><div class="action-title">打歌舞台</div><div class="action-desc">英文選中文</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('spell')"><div class="action-icon">⭐</div><div class="action-title">星光大道</div><div class="action-desc">拼出單字</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('reverse')"><div class="action-icon">📺</div><div class="action-title">宣傳通告</div><div class="action-desc">中文選英文</div></div>
-    <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">複習錯題·高獎勵</div></div>
+    <div class="action-card" onclick="goTo('wrong-screen');showWrongReview()"><div class="action-icon">🎬</div><div class="action-title">NG 重拍</div><div class="action-desc">針對性複習</div></div>
+    <div class="action-card" style="grid-column:span 2" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">複習錯題·高獎勵</div></div></div>
+  <div class="section-title">🎤 雙人模式</div>
+  <div class="action-grid">
     <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">同台表演</div><div class="action-desc">雙人合作答題</div></div>
     <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽</div><div class="action-desc">雙人搶答</div></div></div>
   <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
@@ -840,6 +862,22 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   <div class="screen-header"><button class="back-btn" onclick="goTo('home-screen');updateHome()">←</button>
     <div style="font-weight:700;font-size:.95rem">練習室</div></div>
   <div id="rlist"></div>
+</div>
+
+<div class="screen" id="wrong-screen">
+  <div class="screen-header"><button class="back-btn" onclick="goTo('home-screen');updateHome()">←</button>
+    <div style="font-weight:700;font-size:.95rem">🎬 NG 重拍</div>
+    <div style="width:40px"></div></div>
+  <div style="padding:.8rem">
+    <div id="wrong-summary" style="background:linear-gradient(135deg,rgba(255,77,109,.08),rgba(199,125,255,.05));border:1px solid rgba(255,77,109,.2);border-radius:.8rem;padding:.7rem;margin-bottom:.6rem;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+        <div style="font-size:.75rem;color:var(--text-dim)">錯題總覽</div>
+        <div style="font-size:.65rem;color:var(--text-muted)"><span id="wrong-count-words">0</span> 個單字 · 累計 <span id="wrong-count-total">0</span> 次</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;font-weight:700" onclick="startWrongQuiz()">🎯 開始針對性複習</button>
+    </div>
+    <div id="wrong-list"></div>
+  </div>
 </div>
 
 <!-- capture overlay removed - replaced by gacha system -->
@@ -903,6 +941,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <div class="screen" id="pk-screen">
+  <button class="pk-exit-btn" onclick="endPKEarly()">✕</button>
   <button id="pk-bgm-toggle" onclick="togglePKBgm()" style="position:fixed;top:12px;right:12px;z-index:999;background:rgba(19,15,33,.85);border:1px solid #c77dff44;border-radius:50%;width:36px;height:36px;color:#c77dff;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;transition:all .2s">🔊</button>
   <div class="pk-container">
     <div class="pk-p1-area">
@@ -1640,26 +1679,26 @@ function toggleDM(){
 function getDailyMissions(){
   const today=new Date().toDateString();
   if(!S._dmDate||S._dmDate!==today){
-    S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,boss_done:0,duet_done:0};S._dmClaimed=false;
+    S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0};S._dmClaimed=false;
     // Clear individual claim flags for new day
-    ['choice_done','reverse_done','combo8','spell_correct','boss_done','duet_done'].forEach(k=>delete S['_dmc_'+k]);
+    ['choice_done','reverse_done','combo8','spell_correct','wrong_done','duet_done'].forEach(k=>delete S['_dmc_'+k]);
     saveState();
   }
   return[
-    {id:'choice_done',label:'完成 5 次打歌舞台',icon:'🎤',goal:5,reward:30,progress:Math.min(S._dm.choice_done||0,5)},
-    {id:'reverse_done',label:'完成 5 次宣傳通告',icon:'📢',goal:5,reward:30,progress:Math.min(S._dm.reverse_done||0,5)},
-    {id:'combo8',label:'達成 3 次 8 Combo',icon:'💥',goal:3,reward:10,progress:Math.min(S._dm.combo8||0,3)},
-    {id:'spell_correct',label:'星光大道答對 5 題',icon:'⭐',goal:5,reward:75,progress:Math.min(S._dm.spell_correct||0,5)},
-    {id:'boss_done',label:'完成 10 次年末大賞',icon:'🏆',goal:10,reward:100,progress:Math.min(S._dm.boss_done||0,10)},
-    {id:'duet_done',label:'同台表演取得 S 級',icon:'🎶',goal:1,reward:100,progress:Math.min(S._dm.duet_done||0,1)}
+    {id:'choice_done',label:'完成 5 次打歌舞台',icon:'🎤',goal:5,reward:50,progress:Math.min(S._dm.choice_done||0,5)},
+    {id:'reverse_done',label:'完成 5 次宣傳通告',icon:'📢',goal:5,reward:50,progress:Math.min(S._dm.reverse_done||0,5)},
+    {id:'combo8',label:'達成 3 次 8 Combo',icon:'💥',goal:3,reward:20,progress:Math.min(S._dm.combo8||0,3)},
+    {id:'spell_correct',label:'星光大道答對 5 題',icon:'⭐',goal:5,reward:100,progress:Math.min(S._dm.spell_correct||0,5)},
+    {id:'wrong_done',label:'參與 10 次 NG 重拍',icon:'🎬',goal:10,reward:120,progress:Math.min(S._dm.wrong_done||0,10)},
+    {id:'duet_done',label:'同台表演取得 S 級',icon:'🎶',goal:1,reward:120,progress:Math.min(S._dm.duet_done||0,1)}
   ];
 }
 function _dmInit(){
   const today=new Date().toDateString();
-  if(!S._dmDate||S._dmDate!==today){S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,boss_done:0,duet_done:0};S._dmClaimed=false;
-    ['choice_done','reverse_done','combo8','spell_correct','boss_done','duet_done'].forEach(k=>delete S['_dmc_'+k]);
+  if(!S._dmDate||S._dmDate!==today){S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0};S._dmClaimed=false;
+    ['choice_done','reverse_done','combo8','spell_correct','wrong_done','duet_done'].forEach(k=>delete S['_dmc_'+k]);
   }
-  if(!S._dm)S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,boss_done:0,duet_done:0};
+  if(!S._dm)S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0};
 }
 function trackDailyMission(type,val){
   _dmInit();
@@ -1668,6 +1707,7 @@ function trackDailyMission(type,val){
   else if(type==='combo8'){if(val===8)S._dm.combo8=(S._dm.combo8||0)+1}
   else if(type==='spell_correct'){S._dm.spell_correct=(S._dm.spell_correct||0)+1}
   else if(type==='boss_done'){S._dm.boss_done=(S._dm.boss_done||0)+1}
+  else if(type==='wrong_done'){S._dm.wrong_done=(S._dm.wrong_done||0)+1}
   else if(type==='duet_done'){S._dm.duet_done=(S._dm.duet_done||0)+1}
   saveState();
 }
@@ -1697,8 +1737,8 @@ function updateDailyMissions(){
   if(body&&S._dmCollapsed){body.style.display='none';if(arrow)arrow.textContent='▶'}
 }
 function claimDailyBonus(){
-  if(S._dmClaimed)return;S._dmClaimed=true;S.stars+=50;saveState();
-  floatTxt('+50⭐ 全部完成獎勵！','#ffd700');
+  if(S._dmClaimed)return;S._dmClaimed=true;S.stars+=80;saveState();
+  floatTxt('+80⭐ 全部完成獎勵！','#ffd700');
   document.getElementById('dm-bonus').style.display='none';
   document.getElementById('coins').textContent=S.stars;
 }
@@ -1790,12 +1830,12 @@ function startQuiz(mode){
   Q.mode=mode;Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
   let pool;
   if(mode==='boss'){
-    // Year-end Grand Prize: 8 wrong words + 2 high-level, always 10
-    const wrong=shuf(W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].rv>0&&!S.wordsAnswered[x.w].m));
+    // Year-end Grand Prize: 3 真錯題 (wr>0) + 7 high-level, always 10
+    const wrong=shuf(W.filter(x=>S.wordsAnswered[x.w]&&(S.wordsAnswered[x.w].wr||0)>0));
     const hard=shuf(W.filter(x=>x.lv>=4));
     const seen=new Set();
     pool=[];
-    for(const w of wrong){if(!seen.has(w.w)&&pool.length<8){seen.add(w.w);pool.push(w)}}
+    for(const w of wrong){if(!seen.has(w.w)&&pool.length<3){seen.add(w.w);pool.push(w)}}
     for(const w of hard){if(!seen.has(w.w)&&pool.length<10){seen.add(w.w);pool.push(w)}}
     // Still not 10? Fill from all words
     if(pool.length<10){for(const w of shuf(W)){if(!seen.has(w.w)){seen.add(w.w);pool.push(w);if(pool.length>=10)break}}}
@@ -1826,6 +1866,7 @@ function endQuiz(){
   if(Q.mode==='choice')trackDailyMission('choice_done',1);
   else if(Q.mode==='reverse')trackDailyMission('reverse_done',1);
   else if(Q.mode==='boss')trackDailyMission('boss_done',1);
+  else if(Q.mode==='wrong')trackDailyMission('wrong_done',1);
   if(Q.mistakes&&Q.mistakes.length>0){showQuizReview()}
   else{
     // Perfect run — show stats overlay
@@ -2162,12 +2203,13 @@ function handleRes(ok){
   if(ltdEv){ltdBanner.style.display='block';document.getElementById('ltd-badge').textContent=ltdEv.badge;document.getElementById('ltd-name').textContent=ltdEv.name;document.getElementById('ltd-desc').textContent=ltdEv.desc+'（抽卡15%機率出現）'}else{ltdBanner.style.display='none'}
   updateWeeklyUI();
   const aura=calcCardAura();
-    const baseReward=1+cb+Math.floor(q.lv/2)+bossBonus;
+    const baseReward=Math.max(1,Math.ceil((cb+Math.floor(q.lv/2)+bossBonus)*0.6));
     const starReward=baseReward+Math.floor(baseReward*aura/100);
     const er=3+q.lv*2+(Q.mode==='boss'?10:0);
     S.stars+=starReward;S.exp+=er;Q.coins+=starReward;
-    if(!S.wordsAnswered[q.w])S.wordsAnswered[q.w]={rv:0,m:false,sp:0,ch:0,re:0,lv:0};
+    if(!S.wordsAnswered[q.w])S.wordsAnswered[q.w]={rv:0,m:false,sp:0,ch:0,re:0,lv:0,wr:0,lastWrong:0,cw:0};
     const wa=S.wordsAnswered[q.w];wa.rv++;
+    if((wa.wr||0)>0){wa.cw=(wa.cw||0)+1;if(wa.cw>=2){wa.wr=0;wa.cw=0;floatTxt('🎬 已畢業！','var(--mint)')}}
     if(q._t==='spell')wa.sp=(wa.sp||0)+1;
     else if(q._t==='reverse')wa.re=(wa.re||0)+1;
     else wa.ch=(wa.ch||0)+1;
@@ -2184,6 +2226,9 @@ function handleRes(ok){
     setTimeout(()=>{Q.cur++;showQ()},1200)}
   else{Q.combo=0;document.getElementById('combo').classList.remove('active');
     const q2=Q.qs[Q.cur];Q.mistakes.push({w:q2.w,m:q2.m,lv:q2.lv,type:q2._t});
+    if(!S.wordsAnswered[q2.w])S.wordsAnswered[q2.w]={rv:0,m:false,sp:0,ch:0,re:0,lv:0,wr:0,lastWrong:0,cw:0};
+    const wa2=S.wordsAnswered[q2.w];wa2.wr=(wa2.wr||0)+1;wa2.lastWrong=Date.now();wa2.cw=0;
+    saveState();
     if(Q.overtime){floatTxt('延長賽結束！','#ffd700');setTimeout(()=>{Q.cur=Q.qs.length;showQ()},1500)}
     else{floatTxt('再加油！','var(--danger)');setTimeout(()=>{Q.cur++;showQ()},1500)}}}
 
@@ -2527,6 +2572,61 @@ function calcCardAura(){
 function closeMod(e){if(!e||e.target===document.getElementById('det-modal')){document.getElementById('det-modal').classList.remove('active');
   if(document.getElementById('collection-screen').classList.contains('active'))showColl(_collFv,_collGid)}}
 
+function showWrongReview(){
+  const list=document.getElementById('wrong-list');
+  const summary=document.getElementById('wrong-summary');
+  const es=Object.entries(S.wordsAnswered||{}).filter(([_,d])=>(d.wr||0)>0);
+  if(!es.length){
+    summary.style.display='none';
+    list.innerHTML='<div class="empty-state">目前沒有錯題紀錄 🎉<br>在舞台模式答錯的單字會收進這裡</div>';
+    return;
+  }
+  es.sort((a,b)=>{const dw=(b[1].wr||0)-(a[1].wr||0);if(dw)return dw;return (b[1].lastWrong||0)-(a[1].lastWrong||0)});
+  const totalWr=es.reduce((s,[_,d])=>s+(d.wr||0),0);
+  summary.style.display='block';
+  document.getElementById('wrong-count-words').textContent=es.length;
+  document.getElementById('wrong-count-total').textContent=totalWr;
+  const fmtDate=ts=>{if(!ts)return'—';const d=new Date(ts);const now=new Date();const diff=Math.floor((now-d)/86400000);if(diff===0)return'今天';if(diff===1)return'昨天';if(diff<7)return diff+'天前';return (d.getMonth()+1)+'/'+d.getDate()};
+  list.innerHTML=es.map(([word,d])=>{
+    const w=W.find(x=>x.w===word);if(!w)return'';
+    const wlv=d.lv||0;
+    let sc,st;if(wlv>=3){sc='mastered';st='大師🏆'}else if(wlv>=2){sc='mastered';st='精通✨'}else if(wlv>=1){sc='growing';st='熟悉📖'}else{sc='needs';st='初見👀'}
+    const rv=d.rv||0;const wr=d.wr||0;const cw=d.cw||0;
+    const acc=rv+wr>0?Math.round(rv/(rv+wr)*100):0;
+    const needed=Math.max(0,2-cw);
+    const gradHint=cw>0?`<span style="color:var(--mint);font-weight:700">再對 ${needed} 次畢業 ✨</span>`:'';
+    return`<div class="review-card fade-in" style="align-items:flex-start">
+      <div style="width:30px;font-size:1.2rem;padding-top:2px">🎬</div>
+      <div class="rv-info">
+        <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+          <div class="rv-word">${w.w}</div>
+          <div class="rv-status ${sc}" style="font-size:.5rem">${st}</div>
+        </div>
+        <div class="rv-meaning">${w.m}</div>
+        <div style="display:flex;gap:.6rem;font-size:.58rem;color:var(--text-muted);margin-top:.25rem;flex-wrap:wrap">
+          <span style="color:var(--danger);font-weight:700">✕ 錯 ${wr} 次</span>
+          <span>✓ 對 ${rv} 次</span>
+          <span>準度 ${acc}%</span>
+          <span>最後錯於 ${fmtDate(d.lastWrong)}</span>
+          ${gradHint}
+        </div>
+      </div>
+    </div>`}).join('');
+}
+function startWrongQuiz(){
+  const es=Object.entries(S.wordsAnswered||{}).filter(([_,d])=>(d.wr||0)>0);
+  if(!es.length){floatTxt('沒有錯題可複習','var(--text-dim)');return}
+  es.sort((a,b)=>{const dw=(b[1].wr||0)-(a[1].wr||0);if(dw)return dw;return (b[1].lastWrong||0)-(a[1].lastWrong||0)});
+  const words=es.slice(0,10).map(([word])=>W.find(x=>x.w===word)).filter(Boolean);
+  if(words.length<4){floatTxt('錯題不足 4 題','var(--text-dim)');return}
+  goTo('quiz-screen');
+  Q.mode='wrong';Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
+  Q.qs=shuf(words.slice());
+  Q.qs.forEach((q,i)=>{const ts=['choice','reverse','choice','spell','reverse'];q._t=ts[i%ts.length]});
+  Q.mistakes=[];
+  document.getElementById('dots').innerHTML=Q.qs.map((_,i)=>`<div class="pdot${i===0?' cur':''}" id="d${i}"></div>`).join('');
+  showQ();
+}
 function showReview(){const list=document.getElementById('rlist');const es=Object.entries(S.wordsAnswered);
   if(!es.length){list.innerHTML='<div class="empty-state">還沒有練習紀錄<br>快去打歌！</div>';return}
   list.innerHTML=es.slice(-30).reverse().map(([word,d])=>{const w=W.find(x=>x.w===word);if(!w)return'';
@@ -2966,7 +3066,8 @@ function confirmResetAll(){
   document.getElementById('det-modal').style.display='flex';
 }
 function executeResetAll(){
-  localStorage.removeItem('wordstar_state');
+  localStorage.removeItem('wordstar_save');
+  localStorage.removeItem('wordstar_lastplay');
   closeMod();
   location.reload();
 }
@@ -3090,9 +3191,13 @@ function showTitlePicker(){
   document.getElementById('det-modal').classList.add('active');
 }
 
-// ===== PK BGM ENGINE v2 (Randomized K-pop / Anime) =====
+// ===== PK BGM ENGINE v2 (Real audio file + randomized synth fallback) =====
+const PK_TRACKS=['audio/pk-01.mp3','audio/pk-03.mp3'];
 const PKBgm=(function(){
   const _pick=a=>a[Math.floor(Math.random()*a.length)];
+  let _audio=null,_fadeTimer=null;
+  const _stopFade=()=>{if(_fadeTimer){clearInterval(_fadeTimer);_fadeTimer=null}};
+  const _fadeIn=(el,target)=>{_stopFade();let v=0;el.volume=0;_fadeTimer=setInterval(()=>{v=Math.min(target,v+0.05);el.volume=v;if(v>=target)_stopFade()},60)};
   const _shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 
   // --- Tone semitone transpose helper ---
@@ -3167,8 +3272,8 @@ const PKBgm=(function(){
     [0,0,4,6,8,8,12,14],         // bouncy
   ];
 
-  // BPM range
-  const BPM_RANGE=[136,140,144,148,152,156,160,164];
+  // BPM range (K-pop stage / mid-tempo dance)
+  const BPM_RANGE=[112,116,120,124,128,132];
 
   // Lead oscillator types (modern)
   const LEAD_OSCS=['fatsawtooth','fatsquare','pwm','fmsquare','fatsawtooth','amsine'];
@@ -3232,6 +3337,22 @@ const PKBgm=(function(){
     get muted(){return muted},
     async start(){
       if(playing)return;
+
+      // === Try real audio file first ===
+      try{
+        const url=_pick(PK_TRACKS);
+        _audio=new Audio(url);
+        _audio.loop=true;_audio.preload='auto';
+        await _audio.play();
+        _fadeIn(_audio,0.55);
+        if(muted)_audio.muted=true;
+        playing=true;
+        return;
+      }catch(e){
+        _audio=null;
+        // fall through to Tone.js synth
+      }
+
       await Tone.start();
 
       // === Randomize everything ===
@@ -3256,20 +3377,30 @@ const PKBgm=(function(){
 
       // --- Master bus ---
       const comp=new Tone.Compressor(-20,4).toDestination();
-      const masterRev=new Tone.Reverb({decay:1.5,wet:.15}).connect(comp);
+      const masterRev=new Tone.Reverb({decay:2.4,wet:.22}).connect(comp);
       disposables.push(comp,masterRev);
 
-      // --- Kick (punchy modern) ---
+      // --- Sidechain duck bus (for pad/pluck to "pump" with kick) ---
+      const duckGain=new Tone.Gain(1).connect(comp);
+      disposables.push(duckGain);
+
+      // --- Kick (softer, more stage-like) ---
       const kick=new Tone.MembraneSynth({
-        pitchDecay:.04,octaves:8,
+        pitchDecay:.05,octaves:7,
         oscillator:{type:'sine'},
-        envelope:{attack:.002,decay:.25,sustain:0,release:.08}
+        envelope:{attack:.002,decay:.3,sustain:0,release:.1}
       }).connect(comp);
-      kick.volume.value=-2;
+      kick.volume.value=-3;
       disposables.push(kick);
 
       const kickSeq=new Tone.Sequence((t,v)=>{
-        if(v)kick.triggerAttackRelease('C1','16n',t);
+        if(v){
+          kick.triggerAttackRelease('C1','16n',t);
+          // Sidechain pump: duck pad/pluck down then ramp back up
+          duckGain.gain.cancelScheduledValues(t);
+          duckGain.gain.setValueAtTime(0.35,t);
+          duckGain.gain.linearRampToValueAtTime(1,t+0.22);
+        }
       },Array.from({length:16},(_,i)=>kickPat.includes(i)?1:null),'16n').start(0);
       kickSeq.loop=true;
       disposables.push(kickSeq);
@@ -3353,19 +3484,34 @@ const PKBgm=(function(){
       leadPart.loop=true;leadPart.loopEnd='4:0:0';
       disposables.push(leadPart);
 
-      // --- Pad (lush supersaw chord stabs) ---
-      const padRev=new Tone.Reverb({decay:2.5,wet:.4}).connect(comp);
+      // --- Pad (lush supersaw with sidechain pump) ---
+      const padRev=new Tone.Reverb({decay:3,wet:.5}).connect(duckGain);
       const pad=new Tone.PolySynth(Tone.Synth,{
-        oscillator:{type:'fatsawtooth',count:5,spread:40},
-        envelope:{attack:.15,decay:.3,sustain:.4,release:.8}
+        oscillator:{type:'fatsawtooth',count:6,spread:50},
+        envelope:{attack:.25,decay:.4,sustain:.6,release:1.2}
       }).connect(padRev);
-      pad.volume.value=-16;
+      pad.volume.value=-11;
       disposables.push(padRev,pad);
 
       const padEvents=chords.map((ch,i)=>({time:`${i}:0:0`,notes:ch}));
-      const padPart=new Tone.Part((t,v)=>{pad.triggerAttackRelease(v.notes,'2n',t)},padEvents).start(0);
+      const padPart=new Tone.Part((t,v)=>{pad.triggerAttackRelease(v.notes,'1n',t)},padEvents).start(0);
       padPart.loop=true;padPart.loopEnd='4:0:0';
       disposables.push(padPart);
+
+      // --- String pad layer (slow sustained warmth for stage feel) ---
+      const stringsRev=new Tone.Reverb({decay:4,wet:.6}).connect(duckGain);
+      const stringsFilter=new Tone.Filter({frequency:2200,type:'lowpass',rolloff:-12}).connect(stringsRev);
+      const strings=new Tone.PolySynth(Tone.Synth,{
+        oscillator:{type:'fatsawtooth',count:4,spread:25},
+        envelope:{attack:.6,decay:.5,sustain:.8,release:2.2}
+      }).connect(stringsFilter);
+      strings.volume.value=-20;
+      disposables.push(stringsRev,stringsFilter,strings);
+
+      const stringsEvents=chords.map((ch,i)=>({time:`${i}:0:0`,notes:ch.map(n=>transpose(n,12))}));
+      const stringsPart=new Tone.Part((t,v)=>{strings.triggerAttackRelease(v.notes,'1n',t)},stringsEvents).start(0);
+      stringsPart.loop=true;stringsPart.loopEnd='4:0:0';
+      disposables.push(stringsPart);
 
       // --- Arp (sparkle / anime shine with delay) ---
       const arpDelay=new Tone.PingPongDelay({delayTime:'8n.',feedback:.2,wet:.3}).connect(masterRev);
@@ -3400,29 +3546,52 @@ const PKBgm=(function(){
     },
     stop(){
       if(!playing)return;
-      Tone.Transport.stop();Tone.Transport.cancel();
-      disposables.forEach(d=>{try{d.dispose()}catch(e){}});
-      disposables=[];
+      _stopFade();
+      if(_audio){try{_audio.pause();_audio.src=''}catch(e){}_audio=null}
+      else{
+        Tone.Transport.stop();Tone.Transport.cancel();
+        disposables.forEach(d=>{try{d.dispose()}catch(e){}});
+        disposables=[];
+        Tone.Destination.mute=false;
+      }
       playing=false;
-      Tone.Destination.mute=false;
     },
     toggleMute(){
       muted=!muted;
-      Tone.Destination.mute=muted;
-      document.getElementById('pk-bgm-toggle').textContent=muted?'🔇':'🔊';
+      if(_audio)_audio.muted=muted;
+      else Tone.Destination.mute=muted;
+      const el=document.getElementById('pk-bgm-toggle');if(el)el.textContent=muted?'🔇':'🔊';
     }
   };
 })();
 function togglePKBgm(){PKBgm.toggleMute()}
 
 // ===== BATTLE BGM (格鬥風格) =====
+const BATTLE_TRACKS=['audio/pk-02.mp3','audio/pk-04.mp3'];
 const BattleBgm=(function(){
   const _pick=a=>a[Math.floor(Math.random()*a.length)];
-  let playing=false,disposables=[];
+  let playing=false,disposables=[],_audio=null,_fadeTimer=null;
+  const _stopFade=()=>{if(_fadeTimer){clearInterval(_fadeTimer);_fadeTimer=null}};
+  const _fadeIn=(el,target)=>{_stopFade();let v=0;el.volume=0;_fadeTimer=setInterval(()=>{v=Math.min(target,v+0.05);el.volume=v;if(v>=target)_stopFade()},60)};
   return{
     get playing(){return playing},
     async start(){
       if(playing)return;
+
+      // === Try real audio file first ===
+      try{
+        const url=_pick(BATTLE_TRACKS);
+        _audio=new Audio(url);
+        _audio.loop=true;_audio.preload='auto';
+        await _audio.play();
+        _fadeIn(_audio,0.6);
+        playing=true;
+        return;
+      }catch(e){
+        _audio=null;
+        // fall through to Tone.js synth
+      }
+
       await Tone.start();
       const bpm=_pick([155,160,165,170,175,180]);
       Tone.Transport.bpm.value=bpm;
@@ -3505,9 +3674,14 @@ const BattleBgm=(function(){
     },
     stop(){
       if(!playing)return;
-      Tone.Transport.stop();Tone.Transport.cancel();
-      disposables.forEach(d=>{try{d.dispose()}catch(e){}});
-      disposables=[];playing=false;
+      _stopFade();
+      if(_audio){try{_audio.pause();_audio.src=''}catch(e){}_audio=null}
+      else{
+        Tone.Transport.stop();Tone.Transport.cancel();
+        disposables.forEach(d=>{try{d.dispose()}catch(e){}});
+        disposables=[];
+      }
+      playing=false;
     }
   };
 })();
@@ -3562,8 +3736,8 @@ function startPKRound(){
 
   const p1el=document.getElementById('pk-p1-answers');
   const p2el=document.getElementById('pk-p2-answers');
-  p1el.innerHTML=PK.options.map((opt,i)=>`<button class="pk-answer-btn" onclick="pkAns(${i},1)">${opt}</button>`).join('');
-  p2el.innerHTML=PK.options.map((opt,i)=>`<button class="pk-answer-btn" onclick="pkAns(${i},2)">${opt}</button>`).join('');
+  p1el.innerHTML=PK.options.map((opt,i)=>`<button class="pk-answer-btn" ontouchstart="event.preventDefault();pkAns(${i},1)" onclick="pkAns(${i},1)">${opt}</button>`).join('');
+  p2el.innerHTML=PK.options.map((opt,i)=>`<button class="pk-answer-btn" ontouchstart="event.preventDefault();pkAns(${i},2)" onclick="pkAns(${i},2)">${opt}</button>`).join('');
 
   // Start 5-second timer
   const fill=document.getElementById('pk-timer-fill');
@@ -3601,23 +3775,77 @@ function pkTimeUp(){
   setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},1000)
 }
 
+function playLockSound(player){
+  try{
+    if(typeof Tone==='undefined')return;
+    if(Tone.context.state!=='running'){Tone.context.resume()}
+    const rev=new Tone.Reverb({decay:1.6,wet:.45}).toDestination();
+    if(player===1){
+      // P1: crystalline high chime — two sine tones an octave apart (glass-like)
+      const s=new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sine'},envelope:{attack:.001,decay:.45,sustain:0,release:.5}}).connect(rev);
+      s.volume.value=-1;
+      s.triggerAttackRelease(['E6','B6'],'8n');
+      setTimeout(()=>{try{s.dispose();rev.dispose()}catch(e){}},1800);
+    }else{
+      // P2: warm bell — FM synth with slight metallic shimmer
+      const s=new Tone.FMSynth({harmonicity:2.5,modulationIndex:4,oscillator:{type:'sine'},modulation:{type:'sine'},envelope:{attack:.002,decay:.55,sustain:0,release:.6},modulationEnvelope:{attack:.002,decay:.3,sustain:0,release:.2}}).connect(rev);
+      s.volume.value=-2;
+      s.triggerAttackRelease('A4','8n');
+      const s2=new Tone.Synth({oscillator:{type:'sine'},envelope:{attack:.001,decay:.35,sustain:0,release:.4}}).connect(rev);
+      s2.volume.value=-6;s2.triggerAttackRelease('E5','8n');
+      setTimeout(()=>{try{s.dispose();s2.dispose();rev.dispose()}catch(e){}},1800);
+    }
+  }catch(e){}
+}
+// Simple sfx audio cache — pre-warms HTMLAudio objects for instant replay
+const SFX_CACHE={};
+function playSfx(path,volume){
+  try{
+    let a=SFX_CACHE[path];
+    if(!a){a=new Audio(path);a.preload='auto';SFX_CACHE[path]=a}
+    // If the cached instance is still playing, clone for overlap
+    const el=a.paused?a:a.cloneNode(true);
+    el.currentTime=0;el.volume=volume==null?0.8:volume;
+    el.play().catch(()=>{});
+  }catch(e){}
+}
+// Battle attack sound — picks tier by combo level
+function btPlayAttack(combo){
+  let tier=1;
+  if(combo>=6)tier=6;
+  else if(combo>=4)tier=4;
+  else if(combo>=2)tier=2;
+  playSfx('audio/sfx/attack-'+tier+'.mp3',0.85);
+}
+// Battle damage taken
+function btPlayDamage(){
+  playSfx('audio/sfx/damage.mp3',0.7);
+}
 function pkAns(idx,player){
   if(PK.done)return;
   const ans=PK.options[idx];
   const cor=PK.word.m;
   const isCorrect=ans===cor;
+  const isFirstLock=!PK.p1picked&&!PK.p2picked;
+  const flashArea=(selector,ok)=>{const a=document.querySelector(selector);if(!a)return;const cls=ok?'pk-flash-ok':'pk-flash-bad';a.classList.remove('pk-flash-ok','pk-flash-bad');void a.offsetWidth;a.classList.add(cls);setTimeout(()=>a.classList.remove(cls),700)};
   if(player===1){
     if(PK.p1picked)return;PK.p1picked=true;PK.p1ans=ans;
     const el=document.querySelectorAll('#pk-p1-answers button')[idx];
+    if(isFirstLock)el.classList.add('pk-locked');
     el.classList.add(isCorrect?'pk-correct':'pk-wrong');
+    flashArea('.pk-p1-area',isCorrect);
     PK.p1times.push(Date.now()-PK.timerStart);
     if(isCorrect){PK.p1s++;document.getElementById('pk-p1-score').textContent=PK.p1s}
+    playLockSound(1);
   }else{
     if(PK.p2picked)return;PK.p2picked=true;PK.p2ans=ans;
     const el=document.querySelectorAll('#pk-p2-answers button')[idx];
+    if(isFirstLock)el.classList.add('pk-locked');
     el.classList.add(isCorrect?'pk-correct':'pk-wrong');
+    flashArea('.pk-p2-area',isCorrect);
     PK.p2times.push(Date.now()-PK.timerStart);
     if(isCorrect){PK.p2s++;document.getElementById('pk-p2-score').textContent=PK.p2s}
+    playLockSound(2);
   }
   if(PK.p1picked&&PK.p2picked){
     if(PK.timer){clearInterval(PK.timer);PK.timer=null}
@@ -3937,6 +4165,7 @@ function startBattleSetup(){
   const pool=shuf(W).slice(0,80);
   BT.qs=pool;
   goTo('battle-screen');
+  BattleBgm.start();
   btInitFighters();
   updateBTDisplay();
   // SF-style "ROUND 1 — FIGHT!" announcement
@@ -3945,7 +4174,6 @@ function startBattleSetup(){
   document.getElementById('bt-p2-answers').innerHTML='';
   btAnnounce('ROUND 1','bt-announce-round',1000,()=>{
     btAnnounce('FIGHT!','bt-announce-fight',600,()=>{
-      BattleBgm.start();
       startBattleRound();
     });
     btShake('light');
@@ -3965,8 +4193,8 @@ function startBattleRound(){
 
   const p1el=document.getElementById('bt-p1-answers');
   const p2el=document.getElementById('bt-p2-answers');
-  p1el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" onclick="btAns(${i},1)">${opt}</button>`).join('');
-  p2el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" onclick="btAns(${i},2)">${opt}</button>`).join('');
+  p1el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" ontouchstart="event.preventDefault();btAns(${i},1)" onclick="btAns(${i},1)">${opt}</button>`).join('');
+  p2el.innerHTML=BT.options.map((opt,i)=>`<button class="bt-answer-btn" ontouchstart="event.preventDefault();btAns(${i},2)" onclick="btAns(${i},2)">${opt}</button>`).join('');
 
   btStartQuestionTimer();
 }
@@ -3976,12 +4204,19 @@ function btAns(idx,player){
   const cor=BT.word.m;
   const isCorrect=ans===cor;
 
+  const isFirstLock=!BT.p1picked&&!BT.p2picked;
   if(player===1){
     if(BT.p1picked)return;BT.p1picked=true;BT.p1ans=ans;
-    document.querySelectorAll('#bt-p1-answers button')[idx].classList.add(isCorrect?'bt-correct':'bt-wrong');
+    const el=document.querySelectorAll('#bt-p1-answers button')[idx];
+    if(isFirstLock)el.classList.add('bt-locked');
+    el.classList.add(isCorrect?'bt-correct':'bt-wrong');
+    playLockSound(1);
   }else{
     if(BT.p2picked)return;BT.p2picked=true;BT.p2ans=ans;
-    document.querySelectorAll('#bt-p2-answers button')[idx].classList.add(isCorrect?'bt-correct':'bt-wrong');
+    const el=document.querySelectorAll('#bt-p2-answers button')[idx];
+    if(isFirstLock)el.classList.add('bt-locked');
+    el.classList.add(isCorrect?'bt-correct':'bt-wrong');
+    playLockSound(2);
   }
 
   if(isCorrect){
@@ -3991,9 +4226,11 @@ function btAns(idx,player){
     if(target===1)BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+amount);
     else BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+amount);
     if(player===1){BT.p1combo++;BT.p2combo=0}else{BT.p2combo++;BT.p1combo=0}
-    btThrowGarbage(target,amount);btPlaySound('correct');
-    btVfxDmgNum(target,amount);
+    btThrowGarbage(target,amount);
     const newCombo=player===1?BT.p1combo:BT.p2combo;
+    btPlayAttack(newCombo);
+    setTimeout(()=>btPlayDamage(),120);
+    btVfxDmgNum(target,amount);
     if(newCombo>=2)btShowCombo(newCombo,player===1?'1P':'2P');
     // 答對 → 立刻下一題
     updateBTDisplay();
@@ -4001,7 +4238,7 @@ function btAns(idx,player){
   }else{
     if(player===1){BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+3);BT.p1combo=0}
     else{BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+3);BT.p2combo=0}
-    btFighterHit(player);btShake('light');btPlaySound('wrong');
+    btFighterHit(player);btShake('light');btPlaySound('wrong');btPlayDamage();
     btVfxDmgNum(player,3);
     updateBTDisplay();
     // 答錯 → 等另一個人答（或超時）
@@ -4375,6 +4612,11 @@ function closeBattleResult(){
   goTo('home-screen');updateHome();
 }
 
+function endPKEarly(){
+  if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+  PKBgm.stop();
+  goTo('home-screen');updateHome();
+}
 function endPK(){
   if(PK.timer){clearInterval(PK.timer);PK.timer=null}
 
