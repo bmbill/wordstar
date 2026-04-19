@@ -592,7 +592,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .group-bonus{margin-top:.4rem;padding:.3rem .6rem;border-radius:2rem;font-size:.6rem;display:inline-block}
 
 /* Review */
-#review-screen{padding:.8rem;padding-bottom:5rem}
+#wrong-screen{padding:.8rem;padding-top:max(.8rem,env(safe-area-inset-top));padding-bottom:5rem}
+#gacha-screen{padding:.8rem;padding-top:max(.8rem,env(safe-area-inset-top));padding-bottom:5rem}
 .review-card{background:var(--card);border-radius:.7rem;padding:.6rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.6rem;cursor:pointer}
 .review-card:active{transform:scale(.98)}
 .rv-info{flex:1}.rv-word{font-weight:700;font-size:.85rem}.rv-meaning{font-size:.7rem;color:var(--text-dim)}
@@ -828,13 +829,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽</div><div class="action-desc">雙人搶答</div></div></div>
   <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
-  <div class="section-title">🔥 本週挑戰</div>
-  <div id="weekly-challenge" class="daily-quest" onclick="startWeekly()" style="border-left:3px solid var(--secondary)">
-    <div class="quest-header"><div class="quest-title" id="wk-title">📌 載入中...</div><div class="quest-reward" id="wk-reward">🎁 ???</div></div>
-    <div style="color:var(--text-dim);font-size:.7rem" id="wk-desc">...</div>
-    <div class="quest-bar-bg" style="margin-top:4px"><div class="quest-bar-fill" id="wk-bar" style="width:0%;background:var(--secondary)"></div></div>
-    <div style="color:var(--text-dim);font-size:.6rem;margin-top:2px" id="wk-progress">0/0</div></div>
-  <div class="section-title">🎭 偶像團體收集</div>
+<div class="section-title">🎭 偶像團體收集</div>
   <div class="group-scroll" id="group-scroll"></div>
   <div style="height:.6rem"></div>
   <div class="section-title">🃏 最新小卡</div>
@@ -856,12 +851,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div style="color:var(--text-dim);font-size:.7rem" id="cc">0/6574</div></div>
   <div class="filter-tabs" id="ftabs"></div>
   <div id="coll-body"></div>
-</div>
-
-<div class="screen" id="review-screen">
-  <div class="screen-header"><button class="back-btn" onclick="goTo('home-screen');updateHome()">←</button>
-    <div style="font-weight:700;font-size:.95rem">練習室</div></div>
-  <div id="rlist"></div>
 </div>
 
 <div class="screen" id="wrong-screen">
@@ -1774,8 +1763,7 @@ function updateHome(){
   // Limited event banner
   const ltdEv=getLimitedEvent();
   const ltdBanner=document.getElementById('ltd-banner');
-  if(ltdEv){ltdBanner.style.display='block';document.getElementById('ltd-badge').textContent=ltdEv.badge;document.getElementById('ltd-name').textContent=ltdEv.name;document.getElementById('ltd-desc').textContent=ltdEv.desc+'（抽卡15%機率出現）'}else{ltdBanner.style.display='none'}
-  updateWeeklyUI();
+  if(ltdEv){ltdBanner.style.display='block';document.getElementById('ltd-badge').textContent=ltdEv.badge;document.getElementById('ltd-name').textContent=ltdEv.name;document.getElementById('ltd-desc').textContent=ltdEv.desc+'（抽卡10%機率出現）'}else{ltdBanner.style.display='none'}
   const aura=calcCardAura();
   const ab=document.getElementById('aura-bar');
   if(aura>0){ab.style.display='block';document.getElementById('aura-pct').textContent=aura}else{ab.style.display='none'}
@@ -2200,8 +2188,7 @@ function handleRes(ok){
     // Limited event banner
   const ltdEv=getLimitedEvent();
   const ltdBanner=document.getElementById('ltd-banner');
-  if(ltdEv){ltdBanner.style.display='block';document.getElementById('ltd-badge').textContent=ltdEv.badge;document.getElementById('ltd-name').textContent=ltdEv.name;document.getElementById('ltd-desc').textContent=ltdEv.desc+'（抽卡15%機率出現）'}else{ltdBanner.style.display='none'}
-  updateWeeklyUI();
+  if(ltdEv){ltdBanner.style.display='block';document.getElementById('ltd-badge').textContent=ltdEv.badge;document.getElementById('ltd-name').textContent=ltdEv.name;document.getElementById('ltd-desc').textContent=ltdEv.desc+'（抽卡10%機率出現）'}else{ltdBanner.style.display='none'}
   const aura=calcCardAura();
     const baseReward=Math.max(1,Math.ceil((cb+Math.floor(q.lv/2)+bossBonus)*0.6));
     const starReward=baseReward+Math.floor(baseReward*aura/100);
@@ -2221,7 +2208,6 @@ function handleRes(ok){
     if(Q.mode==='spell')trackDailyMission('spell_correct',1);
     trackDailyMission('combo8',Q.combo);
     chkLv();saveState();
-    trackWeekly(Q.mode,Q.combo);
     floatTxt('+'+starReward+'⭐','var(--accent)');
     setTimeout(()=>{Q.cur++;showQ()},1200)}
   else{Q.combo=0;document.getElementById('combo').classList.remove('active');
@@ -2627,62 +2613,8 @@ function startWrongQuiz(){
   document.getElementById('dots').innerHTML=Q.qs.map((_,i)=>`<div class="pdot${i===0?' cur':''}" id="d${i}"></div>`).join('');
   showQ();
 }
-function showReview(){const list=document.getElementById('rlist');const es=Object.entries(S.wordsAnswered);
-  if(!es.length){list.innerHTML='<div class="empty-state">還沒有練習紀錄<br>快去打歌！</div>';return}
-  list.innerHTML=es.slice(-30).reverse().map(([word,d])=>{const w=W.find(x=>x.w===word);if(!w)return'';
-    const wlv=d.lv||0;
-    let sc,st;if(wlv>=3){sc='mastered';st='大師🏆'}else if(wlv>=2){sc='mastered';st='精通✨'}else if(wlv>=1){sc='growing';st='熟悉📖'}else if(d.rv>=1){sc='needs';st='初見👀'}else{sc='needs';st='需要練習'}
-    return`<div class="review-card fade-in">
-      <div style="width:30px;font-size:1.2rem">📝</div>
-      <div class="rv-info"><div class="rv-word">${w.w}</div><div class="rv-meaning">${w.m}</div></div>
-      <div class="rv-status ${sc}">${st}</div></div>`}).join('')}
 
 // ===== WEEKLY CHALLENGE SYSTEM =====
-function getWeekNum(){const d=new Date();const s=new Date(d.getFullYear(),0,1);return Math.floor((d-s)/604800000)}
-function getWeeklyChallenge(){
-  const wn=getWeekNum();
-  const challenges=[
-    {id:'spell20',title:'📝 拼字達人週',desc:'在拼字模式答對 20 題',mode:'spell',goal:20,reward:30,rewardTxt:'30⭐'},
-    {id:'boss15',title:'👑 大賞衝刺週',desc:'在年末大賞答對 15 題',mode:'boss',goal:15,reward:40,rewardTxt:'40⭐'},
-    {id:'reverse25',title:'🔄 宣傳通告週',desc:'在宣傳通告答對 25 題',mode:'reverse',goal:25,reward:30,rewardTxt:'30⭐'},
-    {id:'combo10',title:'🔥 連擊之王週',desc:'單場達成 10 連擊',mode:'choice',goal:10,reward:35,rewardTxt:'35⭐',type:'combo'},
-    {id:'master5',title:'📚 精通學者週',desc:'讓 5 個單字達到精通等級',mode:'any',goal:5,reward:40,rewardTxt:'40⭐',type:'mastery'},
-    {id:'lv4_20',title:'💎 高難度週',desc:'答對 20 題 Level 4+ 單字',mode:'boss',goal:20,reward:45,rewardTxt:'45⭐'},
-    {id:'choice30',title:'🎯 打歌舞台週',desc:'在打歌舞台答對 30 題',mode:'choice',goal:30,reward:35,rewardTxt:'35⭐'},
-    {id:'allmode',title:'🌈 全能偶像週',desc:'每種模式各答對 5 題',mode:'any',goal:4,reward:50,rewardTxt:'50⭐',type:'allmode'},
-  ];
-  return challenges[wn%challenges.length]}
-function getWeeklyState(){
-  if(!S.weekly)S.weekly={};
-  const c=getWeeklyChallenge();const wn=getWeekNum();
-  if(S.weekly.wn!==wn){S.weekly={wn:wn,prog:0,done:false,modes:{}}}
-  return S.weekly}
-function updateWeeklyUI(){
-  const c=getWeeklyChallenge();const ws=getWeeklyState();
-  document.getElementById('wk-title').textContent=c.title;
-  document.getElementById('wk-desc').textContent=ws.done?'✅ 已完成！獎勵已領取':c.desc;
-  document.getElementById('wk-reward').textContent=ws.done?'✅ 完成':'🎁 '+c.rewardTxt;
-  const prog=Math.min(ws.prog,c.goal);
-  document.getElementById('wk-bar').style.width=(prog/c.goal*100)+'%';
-  document.getElementById('wk-progress').textContent=ws.done?'已完成':prog+'/'+c.goal}
-function startWeekly(){
-  const c=getWeeklyChallenge();const ws=getWeeklyState();
-  if(ws.done){floatTxt('本週已完成！','var(--mint)');return}
-  if(c.mode!=='any'){goTo('quiz-screen');startQuiz(c.mode)}
-  else{goTo('quiz-screen');startQuiz('choice')}}
-function trackWeekly(mode,combo){
-  const c=getWeeklyChallenge();const ws=getWeeklyState();
-  if(ws.done)return;
-  if(c.type==='combo'){if(combo>=c.goal&&!ws.done){ws.prog=c.goal}}
-  else if(c.type==='mastery'){ws.prog=Object.values(S.wordsAnswered).filter(w=>(w.lv||0)>=2).length}
-  else if(c.type==='allmode'){
-    if(!ws.modes)ws.modes={};ws.modes[mode]=(ws.modes[mode]||0)+1;
-    ws.prog=Object.keys(ws.modes).filter(m=>ws.modes[m]>=5).length}
-  else if(c.mode===mode||c.mode==='any'){ws.prog++}
-  if(ws.prog>=c.goal&&!ws.done){ws.done=true;S.stars+=c.reward;
-    floatTxt('週挑戰完成！+'+c.reward+'⭐','var(--secondary)')}
-  saveState()}
-
 // ===== LIMITED EDITION CARDS =====
 function getLimitedEvent(){
   const now=new Date();const m=now.getMonth()+1;const d=now.getDate();
@@ -2735,71 +2667,70 @@ function getSeasonalDecoSVG(evId,w,h){
   return decos[evId]||''}
 
 // ===== GACHA SYSTEM =====
+// Seeded PRNG for daily combo (deterministic per date)
+function _gachaDailySeed(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function _seededRng(seed){let h=0;for(let i=0;i<seed.length;i++)h=(Math.imul(31,h)+seed.charCodeAt(i))|0;return()=>{h=(h+0x6D2B79F5)|0;let t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296}}
+function getDailyCombo(){
+  const rng=_seededRng(_gachaDailySeed());
+  const all=[...ALL_MEMBERS];
+  for(let i=all.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[all[i],all[j]]=[all[j],all[i]]}
+  return all.slice(0,5);
+}
 function showGacha(){
   document.getElementById('g-stars').textContent=S.stars;
   const pools=document.getElementById('gacha-pools');
+  const combo=getDailyCombo();
+  const comboPreview=combo.map(m=>{const owned=!!S.cards[m.groupId+'_'+m.memberIdx];const rarityColor={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'}[m.rarity];return`<div style="flex:1;min-width:54px;text-align:center;padding:.3rem;background:${owned?'rgba(127,245,220,.12)':'rgba(255,255,255,.03)'};border:1px solid ${owned?'var(--mint)':'rgba(255,255,255,.08)'};border-radius:.4rem;position:relative"><div style="font-size:.55rem;color:${rarityColor};font-weight:700">${m.rarity}</div><div style="font-size:.62rem;font-weight:700;margin-top:.1rem;line-height:1.1">${m.name}</div><div style="font-size:.5rem;color:var(--text-dim);margin-top:.1rem;line-height:1">${m.groupName}</div>${owned?'<div style="position:absolute;top:2px;right:3px;font-size:.5rem;color:var(--mint)">✓</div>':''}</div>`}).join('');
   pools.innerHTML=`
     <div style="text-align:center;margin-bottom:.8rem">
       <div style="font-size:1.5rem;margin-bottom:.2rem">🎰</div>
       <div style="font-size:.85rem;font-weight:700">用 ⭐ 星星抽取偶像小卡</div>
       <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem">答題獲得星星，星星越多抽越多！</div>
-      ${(()=>{const ev=getLimitedEvent();return ev?'<div style="margin-top:.4rem;background:linear-gradient(135deg,'+getSeasonalBg(ev.id)+');padding:.4rem .6rem;border-radius:.6rem;border:1px solid #ffd70044"><div style="font-size:.7rem;font-weight:700;color:#ffd700">'+ev.badge+' '+ev.name+'</div><div style="font-size:.55rem;color:rgba(255,255,255,.8);margin-top:.1rem">'+ev.desc+' · 抽卡有 15% 機率獲得限定版！</div></div>':'<div style="font-size:.55rem;color:var(--text-muted);margin-top:.2rem">目前無限定活動</div>'})()}</div>
+      ${(()=>{const ev=getLimitedEvent();return ev?'<div style="margin-top:.4rem;background:linear-gradient(135deg,'+getSeasonalBg(ev.id)+');padding:.4rem .6rem;border-radius:.6rem;border:1px solid #ffd70044"><div style="font-size:.7rem;font-weight:700;color:#ffd700">'+ev.badge+' '+ev.name+'</div><div style="font-size:.55rem;color:rgba(255,255,255,.8);margin-top:.1rem">'+ev.desc+' · 抽卡有 10% 機率獲得限定版！</div></div>':'<div style="font-size:.55rem;color:var(--text-muted);margin-top:.2rem">目前無限定活動</div>'})()}</div>
     <div style="display:flex;flex-direction:column;gap:.5rem">
+      <div style="background:linear-gradient(135deg,rgba(255,230,109,.1),rgba(199,125,255,.08));border-radius:.8rem;padding:.7rem;border:1px solid #ffd70044">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+          <div><span style="font-size:.9rem;font-weight:700;color:#ffd700">🌟 今日推薦組合</span>
+            <div style="font-size:.55rem;color:var(--text-dim)">限定 5 人，每日午夜刷新</div></div>
+          <div style="font-size:.65rem;color:var(--accent)">20⭐/次</div></div>
+        <div style="display:flex;gap:.25rem;margin-bottom:.4rem">${comboPreview}</div>
+        <button class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#ffd700,#c77dff);color:var(--bg);font-weight:700" onclick="doPull('daily-combo',1)">抽取組合 (20⭐)</button>
+      </div>
+
       <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid #e879f933">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
           <div><span style="font-size:.9rem;font-weight:700;color:#e879f9">🎤 K-pop 卡池</span>
             <div style="font-size:.55rem;color:var(--text-dim)">BT7·4PINK·THRICE 等 10 組偶像</div></div>
-          <div style="font-size:.65rem;color:var(--accent)">10⭐/次</div></div>
+          <div style="font-size:.65rem;color:var(--accent)">15⭐/次</div></div>
         <div style="display:flex;gap:.3rem;flex-wrap:wrap">
           <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff;min-width:60px" onclick="doPull('kpop',1)">抽1次</button>
-          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff;min-width:60px" onclick="doPull('kpop',5)">抽5次 <span style="font-size:.5rem">(45⭐)</span></button>
-          <button class="btn btn-sm" style="flex:1;background:#c77dff;color:#fff;min-width:60px" onclick="doPull('kpop',10)">抽10次 <span style="font-size:.5rem">(85⭐)</span></button></div></div>
+          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff;min-width:60px" onclick="doPull('kpop',5)">抽5次 <span style="font-size:.5rem">(68⭐)</span></button>
+          <button class="btn btn-sm" style="flex:1;background:#c77dff;color:#fff;min-width:60px" onclick="doPull('kpop',10)">抽10次 <span style="font-size:.5rem">(128⭐)</span></button></div></div>
 
       <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid #ff572233">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
           <div><span style="font-size:.9rem;font-weight:700;color:#ff5722">🔥 動漫卡池</span>
             <div style="font-size:.55rem;color:var(--text-dim)">鬼滅·咒術·間諜·灌籃·獵人</div></div>
-          <div style="font-size:.65rem;color:var(--accent)">10⭐/次</div></div>
+          <div style="font-size:.65rem;color:var(--accent)">15⭐/次</div></div>
         <div style="display:flex;gap:.3rem;flex-wrap:wrap">
           <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff;min-width:60px" onclick="doPull('anime',1)">抽1次</button>
-          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff;min-width:60px" onclick="doPull('anime',5)">抽5次 <span style="font-size:.5rem">(45⭐)</span></button>
-          <button class="btn btn-sm" style="flex:1;background:#e64a19;color:#fff;min-width:60px" onclick="doPull('anime',10)">抽10次 <span style="font-size:.5rem">(85⭐)</span></button></div></div>
-
-      <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid var(--secondary)33">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-          <div><span style="font-size:.9rem;font-weight:700;color:var(--secondary)">指定團體卡池</span>
-            <div style="font-size:.55rem;color:var(--text-dim)">選擇特定團體，提升目標成員機率</div></div>
-          <div style="font-size:.65rem;color:var(--accent)">15⭐/次</div></div>
-        <div style="font-size:.5rem;color:#e879f9;font-weight:700;margin-bottom:.2rem">🎤 K-pop</div>
-        <div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.4rem">
-          ${GROUPS.filter(g=>g.cat==='kpop').map(g=>`<button class="btn btn-secondary" style="font-size:.7rem;padding:.35rem .6rem;border-color:${g.theme}44;color:${g.theme}" onclick="doPull('group',1,'${g.id}')">${g.name}</button>`).join('')}</div>
-        <div style="font-size:.5rem;color:#ff5722;font-weight:700;margin-bottom:.2rem">🔥 動漫</div>
-        <div style="display:flex;flex-wrap:wrap;gap:.25rem">
-          ${GROUPS.filter(g=>g.cat==='anime').map(g=>`<button class="btn btn-secondary" style="font-size:.7rem;padding:.35rem .6rem;border-color:${g.theme}44;color:${g.theme}" onclick="doPull('group',1,'${g.id}')">${g.name}</button>`).join('')}</div></div>
-
-      <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid var(--accent)33">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-          <div><span style="font-size:.9rem;font-weight:700;color:var(--accent)">高級卡池</span>
-            <div style="font-size:.55rem;color:var(--text-dim)">SR/SSR 機率大幅提升！</div></div>
-          <div style="font-size:.65rem;color:var(--accent)">25⭐/次</div></div>
-        <button class="btn btn-sm" style="flex:1;width:100%;background:linear-gradient(135deg,var(--accent),var(--secondary));color:var(--bg);font-weight:700" onclick="doPull('premium',1)">豪華抽卡</button>
-        <div style="font-size:.45rem;color:var(--text-muted);margin-top:.3rem;text-align:center">高稀有度角色出現機率大幅提升！</div></div>
+          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff;min-width:60px" onclick="doPull('anime',5)">抽5次 <span style="font-size:.5rem">(68⭐)</span></button>
+          <button class="btn btn-sm" style="flex:1;background:#e64a19;color:#fff;min-width:60px" onclick="doPull('anime',10)">抽10次 <span style="font-size:.5rem">(128⭐)</span></button></div></div>
     </div>`;
 }
 
 function doPull(pool,count,groupId){
-  const costs={standard:10,kpop:10,anime:10,group:15,premium:25};
-  const cost=costs[pool]*count*(count>=10?.85:count===5?.9:1);
+  const costs={standard:15,kpop:15,anime:15,'daily-combo':20};
+  if(!costs[pool]){floatTxt('未知卡池','var(--danger)');return}
+  const cost=Math.ceil(costs[pool]*count*(count>=10?.85:count===5?.9:1));
   if(S.stars<cost){floatTxt('星星不夠！去答題賺⭐','var(--danger)');return}
-  S.stars-=Math.floor(cost);S.totalPulls+=count;saveState();
+  S.stars-=cost;S.totalPulls+=count;saveState();
 
-  // Rarity rates control which rarity tiers can appear
-  const rates=pool==='premium'
-    ?{SSR:.10,SR:.25,R:.35,N:.30}
-    :{SSR:.03,SR:.12,R:.25,N:.60};
+  // Rarity rates
+  const rates={SSR:.02,SR:.08,R:.30,N:.60};
 
   let candidates;
-  if(groupId){candidates=ALL_MEMBERS.filter(m=>m.groupId===groupId)}
+  if(pool==='daily-combo'){candidates=getDailyCombo()}
   else if(pool==='kpop'){candidates=ALL_MEMBERS.filter(m=>{const g=GROUPS.find(x=>x.id===m.groupId);return g&&g.cat==='kpop'})}
   else if(pool==='anime'){candidates=ALL_MEMBERS.filter(m=>{const g=GROUPS.find(x=>x.id===m.groupId);return g&&g.cat==='anime'})}
   else{candidates=[...ALL_MEMBERS]}
@@ -2848,7 +2779,7 @@ function showPullResult(results){
     const key=m.groupId+'_'+m.memberIdx;
     const ltdEv=getLimitedEvent();
     const ltdKey=ltdEv?getLimitedKey(key):null;
-    const isLtd=ltdEv&&Math.random()<0.15;
+    const isLtd=ltdEv&&Math.random()<0.10;
     const isShiny=Math.random()<0.03;
     const isFlash=Math.random()<0.05;
     const actualKey=isLtd?ltdKey:key;
