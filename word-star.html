@@ -308,6 +308,21 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .gp-member{width:22px;height:24px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2)}
 .gp-member.collected{border-color:var(--mint);box-shadow:0 0 6px rgba(127,245,220,.3)}
 
+/* ===== Idol Popup (主推登場) ===== */
+.idol-popup{position:fixed;top:calc(env(safe-area-inset-top) + 58px);right:8px;z-index:80;pointer-events:none;display:flex;align-items:flex-start;gap:6px;opacity:0}
+.idol-popup.show{animation:idolPopIn .35s ease-out forwards}
+.idol-popup.hide{animation:idolPopOut .3s ease-in forwards}
+@keyframes idolPopIn{0%{transform:translateX(60px) scale(.7);opacity:0}60%{transform:translateX(-4px) scale(1.06);opacity:1}100%{transform:translateX(0) scale(1);opacity:1}}
+@keyframes idolPopOut{0%{transform:translateX(0) scale(1);opacity:1}100%{transform:translateX(40px) scale(.85);opacity:0}}
+.idol-bubble{background:rgba(25,20,40,.94);border:1.5px solid var(--accent);border-radius:12px;padding:5px 9px;font-size:.68rem;max-width:140px;position:relative;color:#fff;backdrop-filter:blur(6px);font-weight:700;line-height:1.3;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.idol-bubble::after{content:'';position:absolute;right:-7px;top:12px;width:0;height:0;border:6px solid transparent;border-left-color:var(--accent)}
+.idol-bubble.correct{border-color:var(--mint)}
+.idol-bubble.correct::after{border-left-color:var(--mint)}
+.idol-bubble.wrong{border-color:var(--danger)}
+.idol-bubble.wrong::after{border-left-color:var(--danger)}
+.idol-bubble.combo{border-color:#ffd700;box-shadow:0 0 14px rgba(255,215,0,.5)}
+.idol-bubble.combo::after{border-left-color:#ffd700}
+.idol-chibi{width:60px;height:75px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 /* ===== Quiz ===== */
 #quiz-screen{padding:.8rem;padding-top:max(.8rem,env(safe-area-inset-top));min-height:100dvh}
 .quiz-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
@@ -1276,6 +1291,79 @@ ALL_MEMBERS.forEach((m,i)=>{
 });
 const RARITY_ORDER={SSR:4,SR:3,R:2,N:1};
 
+// ===== IDOL QUOTES (主推台詞) =====
+// Each group has a shared pool; leader (idx 0) has extra personal quotes.
+const GROUP_QUOTES={
+  kimetsu:{correct:['做得好！','全集中之呼吸！','斬鬼成功！','絕不放棄！','柱的風範！','守護重要之人！','這就是鬼殺隊！','禰豆子也會開心的','呼吸調整完畢','一起加油吧！','漂亮的斬擊','鬼殺隊集結！','繼續前進！','為了家人！'],wrong:['可惡…鬼真強','呼吸亂了','還不夠集中','再修練一次','柱還遠著…','差一點就斬了','鬼之詭計可怕','我的水之呼吸不夠','善逸式大哭'],combo:['壹ノ型・水面斬！','全集中・常中！','連環斬擊！','日之呼吸！','雷之呼吸！','火柱在此！','柱聯合攻擊！','鬼殺一擊必殺！'],lvup:['成為柱了嗎？','新型態領悟！','呼吸法更上一層','鬼殺隊的希望']},
+  jjk:{correct:['哇喔！','斬！','咒力來了','解術成功','七海前輩讚','釘崎超帥','這裡交給我','不是普通戰鬥','幹得好','五條老師笑了'],wrong:['咒靈太強','咒力不足…','壞透了～','七海會生氣','我 16 歲不該哭','領域還太弱'],combo:['領域展開！','無量空處！','逆轉術式','黑閃命中','縛！'],lvup:['升格一級術師','解放式神','天與咒縛擴大']},
+  spyfam:{correct:['任務完成','為了世界和平','安妮亞好開心','這就是家庭','父親帶得好','約兒揮拳命中','貝乞預知成功','waku waku'],wrong:['這可怎辦','任務失敗…','安妮亞腦袋爆炸','約兒手滑','父親在想什麼'],combo:['雙間諜合作！','超強連擊','安妮亞預知','刺客技能'],lvup:['升為二星間諜','家庭更堅強']},
+  haikyuu:{correct:['扣球成功','飛翔吧','永不落下','日向好快','影山托球精準','烏野衝啊','西谷守備','月島冷靜補位'],wrong:['可惡接球失誤','又被攔下','日向冷靜一點','影山有點偏','我們不能輸'],combo:['快攻速攻！','日向舉手','奇蹟托球','木兔直擊','隊長揮拍'],lvup:['晉級縣冠','強化特訓中']},
+  bnha:{correct:['Plus Ultra','成為英雄','爆破就對了','半冷半燃命中','麗日飄浮','飯田 Engine','蛙吹舌頭命中','老師 OK'],wrong:['我可以的','爆豪大罵','個性失誤','英雄不能放棄'],combo:['Detroit Smash','AP Shot','雷射大招','半冷半燃同時','全力出擊'],lvup:['個性升級','英雄名次提升','覺醒個性']},
+  slamdunk:{correct:['好球','2 分到手','天才球員','流川灌籃','三井三分','宮城切入','赤木扣籃','湘北加油'],wrong:['天才也會失手','可惡！','再加強練習','教練加油'],combo:['灌籃！','經典三分','快攻','赤木穿扣'],lvup:['進軍全國','天才覺醒']},
+  hxh:{correct:['石頭剪刀布','念能力開','變化系','具現化成功','強化系加成','酷拉皮卡鎖鏈','雷歐力醫術','西索撲克牌'],wrong:['念力不足','被西索發現','還不夠強'],combo:['石剪布剪！','念爆發','緋之眼覺醒','魔術大會'],lvup:['念系強化','獵人等級+1']},
+  bt7:{correct:['아미們看過來','練習時間到','今天 MV 上線','BT7 fighting','完美 dance break','新歌預告','第七章開啟','世界巡演繼續'],wrong:['哎～','再練一次','累累的','하루 종일 힘들어','絕不放棄'],combo:['World Tour','彈彈彈','Dynamite 炸裂','MV 破億','DNA 爆發'],lvup:['年末大賞候選','衝上 Billboard']},
+  '4pink':{correct:['粉墨登場','in your area','BLINK 看過來','4PINK 無敵','舞台女王','粉色風暴','Coachella 等等'],wrong:['嗯～再來','練習不夠','小失誤別在意','不能輸'],combo:['Kill This Love','炸場 combo','4 連擊','Shut Down'],lvup:['演唱會延長','世界女王']},
+  thrice:{correct:['ONCE 愛你們','元氣滿分','TT！','9 人齊心','Cheer Up baby','紅桃心形','Feel Special','可愛天花板'],wrong:['哎喲','TT…','再練再練','9 人要齊'],combo:['TT Pose','Dance Break','9 人同步','完美和音'],lvup:['新專大賣','日本公演擴大']},
+  lostkidz:{correct:['STAY 看看','Lost Kidz everywhere','God\'s Menu','我很棒','3RACHA 製作','狼群集合','8 狼派對'],wrong:['Lost 了','沒關係 we back','迷路中','再練再練'],combo:['MANIAC！','我的道路','3RACHA 大招','叛逆 combo'],lvup:['新高出道','世界巡演']},
+  nudenim:{correct:['Y2K vibes','Attention','Hype Boy','Ditto ditto','BUNNIES 你好','甜蜜少女味','復古回歸','牛仔褲穿好'],wrong:['咦～','甜度不夠','失誤了呢'],combo:['OMG combo','Super Shy','NuDenim 風暴'],lvup:['Melon 紅中','世界級新秀']},
+  aesthe:{correct:['MY WORLD 有我們','ae 連線成功','Next Level','虛擬空間 open','SYNK 100%','KWANGYA 進入'],wrong:['連線斷線','SYNK 下降','ae 信號弱'],combo:['Next Level～','Savage combo','ae 合體','MY WORLD 爆發'],lvup:['虛擬演唱會','AI 同步升級']},
+  eighteen:{correct:['CARAT 一起跳','13 人 go','完美和聲','Hip Hop 隊','Vocal 隊','Performance 隊','自作自演','又一神曲'],wrong:['13 人要合拍','失誤了','再練習'],combo:['Left & Right','13 同步','三團合體','Home Run'],lvup:['世界一等 K-pop','粉絲破億']},
+  we6:{correct:['DIVE 來了','I AM','6 人閃耀','王冠女孩','After LIKE','鑽石舞步'],wrong:['閃度下降','再練一次','沒事 DIVE 在'],combo:['I AM combo','大女王登場','6 連擊','鑽石魔法'],lvup:['Melon 橫掃','年度少女組']},
+  seraph1m:{correct:['無所畏懼','FEARNOT 你好','ANTIFRAGILE','天使降臨','5 人齊飛','UNFORGIVEN','翅膀展開'],wrong:['嗯～','再嘗試','畏懼一下下'],combo:['ANTIFRAGILE combo','Smart 音爆','UNFORGIVEN 連擊','翅膀震盪'],lvup:['全球爆紅','5 人完美一體']},
+  gidle:{correct:['NEVERLAND','女王駕到','5 人自主製作','TOMBOY','QUEENCARD','I Want That','自作自演女王'],wrong:['還差一個 Level','再練再寫','編曲再改'],combo:['LATATA 連擊','QUEEN CARD','女王大技','5 合 1'],lvup:['創作大獎','世界巡演']}
+};
+// Leader-specific quotes (member idx 0 of each group)
+const LEADER_QUOTES={
+  kimetsu:{correct:['為了禰豆子...','絕對斬鬼！','和煦之人會發光'],wrong:['對不起…禰豆子…','一定要再變強'],combo:['壹ノ型・水面斬！','生生流轉！','日之呼吸・第一型！']},
+  jjk:{correct:['讓一千人正常死去','哇喔抓到訣竅','哈？我贏了'],wrong:['再吃一個宿儺手指','我超強的…等等'],combo:['黑閃！','散華！']},
+  spyfam:{correct:['為了任務','偽裝成功','和平守護者'],wrong:['這不在預料中','重整計劃'],combo:['Twilight 行動','任務優先']},
+  haikyuu:{correct:['要飛得更高','還想打排球','小太陽在此'],wrong:['我還不夠強','但不會放棄'],combo:['速攻！','跳飛超高']},
+  bnha:{correct:['英雄的笑容','我可以成為英雄','Plus Ultra'],wrong:['還差一點','一到九代力量'],combo:['Detroit Smash','Shoot Style']},
+  slamdunk:{correct:['天才！','我是天才','赤木妹一定看到'],wrong:['就差一點','我的話才不會失誤'],combo:['灌籃天才','左手是輔助']},
+  hxh:{correct:['繼續旅行','我要找爸爸','和奇犽一起'],wrong:['嗯再試試','我要更強'],combo:['JAJAN KEN','石！']},
+  bt7:{correct:['ARMY 都是家人','音樂是我的語言','感謝粉絲'],wrong:['會更努力','這次沒做好'],combo:['七人一起','Leader 擔當']},
+  '4pink':{correct:['大姐登場','謝謝 BLINK','繼續前進'],wrong:['再練！','我能更好'],combo:['姐姐出手','最強門面']},
+  thrice:{correct:['謝謝 ONCE','TT 給你','一起加油'],wrong:['沒關係再來','還能更好'],combo:['我們是 THRICE！','九等於一']},
+  lostkidz:{correct:['STAY thank you','Bang Chan here','我們很棒'],wrong:['沒事','再嘗試'],combo:['3RACHA force','狼群出動']},
+  nudenim:{correct:['謝謝 BUNNIES','哈嘍哈嘍','今天也要可愛'],wrong:['哦吼','再加把勁'],combo:['Super Shy～','Attention please']},
+  aesthe:{correct:['Karina here','4 字母秘密','虛擬 leader'],wrong:['重新 SYNK','還能更好'],combo:['Black Mamba','Next Level Trip']},
+  eighteen:{correct:['CARAT 最棒','我是 S.Coups','13 人一體'],wrong:['隊長要堅強','我會帶他們'],combo:['17 同步','Check-in']},
+  we6:{correct:['Yujin is here','DIVE～','I AM 女王'],wrong:['還不夠','再加油'],combo:['Rebel Heart','女王出擊']},
+  seraph1m:{correct:['Sakura 來了','天使 leader','我來領隊'],wrong:['再重新一次','我會調整'],combo:['Sakura 上場','絕不後退']},
+  gidle:{correct:['Miyeon here','女王門面','5 個公主'],wrong:['再加油','重新來'],combo:['Queens 一起','Nxde！']}
+};
+const FALLBACK_QUOTES={correct:['做得好！','漂亮！','繼續加油'],wrong:['再試一次','沒關係','下次會更好'],combo:['精彩連擊！','太強了！','繼續！'],lvup:['恭喜升等！','更上一層樓']};
+
+// Show idol popup with chibi + speech bubble on quiz screen
+let _idolPopupTimer=null;
+function showIdolPopup(trigger){
+  if(!S.avatarKey)return;
+  const favKey=S.avatarKey;
+  // Parse limited-prefixed keys like "ltd_xxx_gid_idx" back to original
+  const baseKey=favKey.replace(/^ltd_[^_]+_/,'');
+  const [gid,miStr]=baseKey.split('_');
+  const mi=parseInt(miStr);
+  const g=GROUPS.find(x=>x.id===gid);if(!g)return;
+  const member=g.members[mi];if(!member)return;
+  // Pick quote: leader-specific if idx 0, else group pool, else fallback
+  const groupPool=GROUP_QUOTES[gid]||{};
+  const leaderPool=mi===0?(LEADER_QUOTES[gid]||{}):{};
+  const merged=[...(leaderPool[trigger]||[]),...(groupPool[trigger]||[]),...(FALLBACK_QUOTES[trigger]||[])];
+  if(!merged.length)return;
+  const quote=merged[Math.floor(Math.random()*merged.length)];
+  // Remove existing popup
+  const old=document.getElementById('idol-popup');if(old)old.remove();
+  if(_idolPopupTimer){clearTimeout(_idolPopupTimer);_idolPopupTimer=null}
+  // Build popup
+  const pop=document.createElement('div');pop.id='idol-popup';pop.className='idol-popup show';
+  const bubbleClass=trigger==='correct'?'correct':trigger==='wrong'?'wrong':trigger==='combo'?'combo':'';
+  pop.innerHTML=`<div class="idol-bubble ${bubbleClass}">${quote}</div><div class="idol-chibi">${chibiSVG(member,60,g)}</div>`;
+  document.body.appendChild(pop);
+  _idolPopupTimer=setTimeout(()=>{
+    pop.classList.remove('show');pop.classList.add('hide');
+    setTimeout(()=>{if(pop.parentNode)pop.remove()},320);
+  },2000);
+}
 
 // Enhanced Chibi SVG generator
 function chibiSVG(member,size=50,group=null){
@@ -1840,6 +1928,7 @@ function startQuiz(mode){
   }
   if(pool.length<4)pool=W.slice();
   Q.qs=shuf(pool).slice(0,10);
+  Q.origLen=Q.qs.length;
   Q.qs.forEach((q,i)=>{
     if(mode==='spell')q._t='spell';else if(mode==='reverse')q._t='reverse';
     else if(mode==='choice')q._t='choice';
@@ -1864,7 +1953,7 @@ function endQuiz(){
     ct.innerHTML=`<div style="text-align:center"><div style="font-size:3.54rem;font-weight:900;color:#ffd700;text-shadow:0 0 20px #ffd70044">S</div>
       <div style="font-size:.8rem;color:var(--mint);margin:.3rem 0">答對 ${total}/${total} 題（100%）</div>
       ${Q.maxCombo>=2?`<div style="font-size:.7rem;color:var(--accent);margin:.2rem 0">🔥 最大 Combo：${Q.maxCombo}</div>`:''}
-      ${Q.overtime?`<div style="font-size:.65rem;color:#ffd700;margin:.2rem 0">🔥 黃金延長賽 +${total-10} 題</div>`:''}
+      ${Q.overtime?`<div style="font-size:.65rem;color:#ffd700;margin:.2rem 0">🔥 黃金延長賽 +${total-(Q.origLen||10)} 題</div>`:''}
       <div style="font-size:1.18rem;font-weight:900;color:#ffd700;margin:.5rem 0;animation:pulse 1.5s infinite">✨ 全對！太厲害了！</div>
       <button class="btn btn-primary btn-sm" style="margin-top:.5rem" onclick="closePull();goTo('home-screen');updateHome()">回首頁 ✦</button></div>`;
   }}
@@ -1887,7 +1976,7 @@ function showQuizReview(){
     <div style="font-size:1.8rem;font-weight:900;color:${gradeColor};text-shadow:0 0 20px ${gradeColor}44">${grade}</div>
     <div style="font-size:.7rem;color:var(--text-dim);margin:.2rem 0">答對 ${right}/${total} 題（${pct}%）</div>
     ${Q.maxCombo>=2?`<div style="font-size:.6rem;color:var(--mint);margin:.2rem 0">🔥 最大 Combo：${Q.maxCombo}</div>`:''}
-    ${Q.overtime?`<div style="font-size:.6rem;color:#ffd700;margin:.2rem 0">🔥 黃金延長賽 +${total-10} 題</div>`:''}
+    ${Q.overtime?`<div style="font-size:.6rem;color:#ffd700;margin:.2rem 0">🔥 黃金延長賽 +${total-(Q.origLen||10)} 題</div>`:''}
     <div style="font-size:.85rem;font-weight:700;margin-top:.3rem">📝 錯題複習</div>
     <div style="font-size:.6rem;color:var(--text-dim)">點擊確認已複習，或等待 10 秒後可回首頁</div></div>
   <div style="display:flex;flex-direction:column;gap:6px;max-height:250px;overflow-y:auto;margin-bottom:.8rem;padding:0 2px">${mistakeCards}</div>
@@ -1941,7 +2030,12 @@ function showQ(){
         if(!pool.length)continue;
         const pick=pool[Math.floor(Math.random()*pool.length)];
         usedWords.add(pick.w);
-        const types=Q.mode==='spell'?['spell']:Q.mode==='reverse'?['reverse']:['choice','choice','spell','reverse','choice'];
+        let types;
+        if(Q.mode==='spell')types=['spell'];
+        else if(Q.mode==='reverse')types=['reverse'];
+        else if(Q.mode==='choice')types=['choice'];
+        else if(Q.mode==='boss')types=['choice','reverse'];
+        else types=['choice','reverse','spell'];
         extra.push({w:pick.w,m:pick.m,p:pick.p,lv:pick.lv,_t:types[i%types.length]});
       }
       Q.qs=Q.qs.concat(extra);
@@ -2209,13 +2303,17 @@ function handleRes(ok){
     trackDailyMission('combo8',Q.combo);
     chkLv();saveState();
     floatTxt('+'+starReward+'⭐','var(--accent)');
+    // Idol popup: combo 5+ always, otherwise 30% chance
+    if(Q.combo>=5)showIdolPopup('combo');
+    else if(Math.random()<0.3)showIdolPopup('correct');
     setTimeout(()=>{Q.cur++;showQ()},1200)}
   else{Q.combo=0;document.getElementById('combo').classList.remove('active');
     const q2=Q.qs[Q.cur];Q.mistakes.push({w:q2.w,m:q2.m,lv:q2.lv,type:q2._t});
     if(!S.wordsAnswered[q2.w])S.wordsAnswered[q2.w]={rv:0,m:false,sp:0,ch:0,re:0,lv:0,wr:0,lastWrong:0,cw:0};
     const wa2=S.wordsAnswered[q2.w];wa2.wr=(wa2.wr||0)+1;wa2.lastWrong=Date.now();wa2.cw=0;
     saveState();
-    if(Q.overtime){floatTxt('延長賽結束！','#ffd700');setTimeout(()=>{Q.cur=Q.qs.length;showQ()},1500)}
+    if(Math.random()<0.4)showIdolPopup('wrong');
+    if(Q.overtime){floatTxt('延長賽結束！','#ffd700');setTimeout(()=>{Q.cur++;Q.qs.length=Q.cur;showQ()},1500)}
     else{floatTxt('再加油！','var(--danger)');setTimeout(()=>{Q.cur++;showQ()},1500)}}}
 
 
@@ -2224,7 +2322,7 @@ function burst(){const cs=['#ffe66d','#ff6ec7','#c77dff','#7ff5dc','#fff'];
     d.style.background=cs[i%cs.length];d.style.left=(Math.random()*140-70)+'px';d.style.top=(Math.random()*140-70)+'px';
     d.style.animationDelay=(Math.random()*.3)+'s';const c=document.createElement('div');c.className='sparkle';
     c.style.left='50%';c.style.top='28%';c.appendChild(d);document.body.appendChild(c);setTimeout(()=>c.remove(),1000)}}
-function chkLv(){const nd=S.level*30;if(S.exp>=nd){S.exp-=nd;S.level++;floatTxt('LEVEL UP!✦','var(--secondary)')}}
+function chkLv(){const nd=S.level*30;if(S.exp>=nd){S.exp-=nd;S.level++;floatTxt('LEVEL UP!✦','var(--secondary)');showIdolPopup('lvup')}}
 function floatTxt(t,c){const e=document.createElement('div');e.className='float-text';e.style.color=c;
   e.textContent=t;e.style.left='50%';e.style.top='35%';e.style.transform='translateX(-50%)';
   document.body.appendChild(e);setTimeout(()=>e.remove(),1600)}
@@ -2608,6 +2706,7 @@ function startWrongQuiz(){
   goTo('quiz-screen');
   Q.mode='wrong';Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
   Q.qs=shuf(words.slice());
+  Q.origLen=Q.qs.length;
   Q.qs.forEach((q,i)=>{const ts=['choice','reverse','choice','spell','reverse'];q._t=ts[i%ts.length]});
   Q.mistakes=[];
   document.getElementById('dots').innerHTML=Q.qs.map((_,i)=>`<div class="pdot${i===0?' cur':''}" id="d${i}"></div>`).join('');
@@ -3065,40 +3164,64 @@ function editPlayerName(){
   const name=prompt('輸入你的名字（最多12字）：',cur);
   if(name!==null&&name.trim()){S.playerName=name.trim().slice(0,12);saveState();showProfile()}
 }
+let _avFilter={cat:'all',rarity:'all'};
+function setAvFilter(type,val){_avFilter[type]=val;showAvatarPicker()}
 function showAvatarPicker(){
   const owned=Object.entries(S.cards||{});
   if(!owned.length){floatTxt('先去抽卡吧！','var(--text-dim)');return}
-  // Build list of all selectable variants: normal, shiny, flash, limited
+  // Build list of all selectable variants
   const items=[];
   owned.forEach(([key,card])=>{
     const baseKey=key.startsWith('ltd_')?key.split('_').slice(2).join('_'):key;
     const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return;
     const mem=g.members[parseInt(mi)];if(!mem)return;
+    const rarity=card.rarity||mem.rarity||'N';
     const isLtd=key.startsWith('ltd_');
-    // Normal version
-    items.push({key,variant:'normal',g,mem,label:mem.name,border:'transparent',badge:'',bg:g.bg});
-    // Shiny version
-    if(card.shiny)items.push({key,variant:'shiny',g,mem,label:'✦',border:'#ffd700',badge:'✦ SHINY',badgeClr:'#ffd700',bg:'linear-gradient(135deg,'+g.bg.replace('linear-gradient(135deg,','').replace(')','')+')',glow:'0 0 6px #ffd70066'});
-    // Flash version
-    if(card.flash)items.push({key,variant:'flash',g,mem,label:'⚡',border:'#b388ff',badge:'⚡ FLASH',badgeClr:'#b388ff',bg:g.bg,glow:'0 0 6px #7c4dff66'});
-    // Limited version
-    if(isLtd){const ltdId=key.split('_')[1];items.push({key,variant:'ltd',g,mem,label:'限',border:'#ff6ec7',badge:'🎪 限定',badgeClr:'#ff6ec7',bg:g.bg,glow:'0 0 6px #ff6ec766'})}
+    items.push({key,variant:'normal',g,mem,rarity,border:'transparent',badge:'',bg:g.bg});
+    if(card.shiny)items.push({key,variant:'shiny',g,mem,rarity,border:'#ffd700',badge:'✦',badgeClr:'#ffd700',bg:g.bg,glow:'0 0 8px #ffd70066'});
+    if(card.flash)items.push({key,variant:'flash',g,mem,rarity,border:'#b388ff',badge:'⚡',badgeClr:'#b388ff',bg:g.bg,glow:'0 0 8px #7c4dff66'});
+    if(isLtd)items.push({key,variant:'ltd',g,mem,rarity,border:'#ff6ec7',badge:'🎪',badgeClr:'#ff6ec7',bg:g.bg,glow:'0 0 8px #ff6ec766'});
+  });
+  // Apply filters
+  let filtered=items;
+  if(_avFilter.cat!=='all')filtered=filtered.filter(it=>it.g.cat===_avFilter.cat);
+  if(_avFilter.rarity!=='all')filtered=filtered.filter(it=>it.rarity===_avFilter.rarity);
+  // Sort: rarity SSR>SR>R>N, then group, then member idx
+  filtered.sort((a,b)=>{
+    const rd=(RARITY_ORDER[b.rarity]||0)-(RARITY_ORDER[a.rarity]||0);
+    if(rd)return rd;
+    if(a.g.id!==b.g.id)return a.g.id.localeCompare(b.g.id);
+    return a.mem.name.localeCompare(b.mem.name);
   });
   const mc=document.getElementById('mod-content');
+  const rarityColor={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
+  const fBtn=(type,val,label,color)=>{const sel=_avFilter[type]===val;return`<button class="btn btn-sm" style="padding:.25rem .5rem;font-size:.6rem;background:${sel?(color||'var(--primary)'):'var(--card)'};color:${sel?'#fff':'var(--text-dim)'};border:1px solid ${sel?(color||'var(--primary)'):'rgba(255,255,255,.1)'};font-weight:${sel?900:600}" onclick="setAvFilter('${type}','${val}')">${label}</button>`};
   mc.innerHTML=`<div class="modal-handle"></div>
-    <div style="text-align:center;margin-bottom:.6rem">
+    <div style="text-align:center;margin-bottom:.5rem">
       <div style="font-size:.9rem;font-weight:900;color:var(--primary)">選擇頭像</div>
-      <div style="font-size:.55rem;color:var(--text-dim)">選擇一張小卡作為你的大頭照（含特殊版本）</div></div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.3rem;max-height:50vh;overflow-y:auto">
-    ${items.map(it=>{
+      <div style="font-size:.55rem;color:var(--text-dim)">選擇一張小卡作為你的大頭照</div></div>
+    <div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.3rem;justify-content:center">
+      ${fBtn('cat','all','全部')}${fBtn('cat','kpop','🎤 K-pop','#e879f9')}${fBtn('cat','anime','🔥 動漫','#ff5722')}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.5rem;justify-content:center">
+      ${fBtn('rarity','all','全稀有')}${fBtn('rarity','SSR','SSR','#ffd700')}${fBtn('rarity','SR','SR','#e879f9')}${fBtn('rarity','R','R','#60a5fa')}${fBtn('rarity','N','N','#9ca3af')}
+    </div>
+    <div style="text-align:center;font-size:.55rem;color:var(--text-muted);margin-bottom:.35rem">共 ${filtered.length} 張</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;max-height:48vh;overflow-y:auto;padding:2px">
+    ${filtered.length===0?'<div style="grid-column:span 3;text-align:center;color:var(--text-dim);font-size:.7rem;padding:1.5rem">沒有符合條件的卡</div>':filtered.map(it=>{
       const selKey=S.avatarKey===it.key&&(S.avatarVariant||'normal')===it.variant;
-      return`<div style="text-align:center;cursor:pointer;border:2px solid ${selKey?'var(--mint)':it.border};border-radius:.5rem;padding:2px;${it.glow?'box-shadow:'+it.glow:''}" onclick="setAvatar('${it.key}','${it.variant}')">
-        <div style="width:100%;background:${it.bg};border-radius:.4rem;padding:3px;display:flex;flex-direction:column;align-items:center;position:relative">
-          ${it.variant==='flash'?'<div style="position:absolute;inset:0;border-radius:.4rem;overflow:hidden"><div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,77,255,.15),transparent)"></div></div>':''}
-          ${it.variant==='shiny'?'<div style="position:absolute;inset:0;border-radius:.4rem;overflow:hidden"><div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,215,0,.15),transparent)"></div></div>':''}
-          ${chibiSVG(it.mem,22,it.g)}<div style="font-size:.3rem;font-weight:700">${it.mem.name}</div>
-          ${it.badge?'<div style="font-size:.25rem;font-weight:900;color:'+it.badgeClr+'">'+it.badge+'</div>':''}</div>
-        ${selKey?'<div style="font-size:.3rem;color:var(--mint)">✓使用中</div>':''}</div>`}).join('')}</div>
+      const rc=rarityColor[it.rarity]||'#9ca3af';
+      return`<div style="text-align:center;cursor:pointer;border:2px solid ${selKey?'var(--mint)':it.border};border-radius:.6rem;padding:3px;${it.glow?'box-shadow:'+it.glow:''};background:${it.bg};position:relative" onclick="setAvatar('${it.key}','${it.variant}')">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:4px 2px">
+          <div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-bottom:2px">
+            <div style="font-size:.5rem;font-weight:900;color:${rc};background:rgba(0,0,0,.35);padding:1px 4px;border-radius:3px">${it.rarity}</div>
+            ${it.badge?`<div style="font-size:.6rem;color:${it.badgeClr}">${it.badge}</div>`:'<div></div>'}
+          </div>
+          ${chibiSVG(it.mem,42,it.g)}
+          <div style="font-size:.65rem;font-weight:700;margin-top:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)">${it.mem.name}</div>
+          <div style="font-size:.5rem;color:rgba(255,255,255,.75);margin-top:1px">${it.g.name}</div>
+          ${selKey?'<div style="font-size:.55rem;color:var(--mint);font-weight:900;margin-top:2px">✓ 使用中</div>':''}
+        </div></div>`}).join('')}</div>
     <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:.5rem" onclick="closeMod()">關閉</button>`;
   document.getElementById('det-modal').classList.add('active');
 }
