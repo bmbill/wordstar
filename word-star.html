@@ -11,12 +11,17 @@
 <meta name="apple-mobile-web-app-title" content="WordStar">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Fredoka:wght@500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#0a0612;--surface:#130f21;--card:#1c1632;--card2:#241e3a;
   --primary:#c77dff;--secondary:#ff6ec7;--accent:#ffe66d;--mint:#7ff5dc;
   --danger:#ff4d6d;--text:#faf0ff;--text-dim:#a89cc8;--text-muted:#5c5278;
+  /* Aurora tokens — unified holographic language */
+  --rarity-ssr:#ffd700;--rarity-sr:#e879f9;--rarity-r:#60a5fa;--rarity-n:#9ca3af;
+  --aurora-c1:#ff6ec7;--aurora-c2:#c77dff;--aurora-c3:#7ff5dc;--aurora-c4:#ffe66d;--aurora-c5:#60a5fa;
+  --spring:cubic-bezier(0.16,1,0.3,1);--ease-out:cubic-bezier(0.22,1,0.36,1);
+  --font-display:'Fredoka','Noto Sans TC',sans-serif;
 }
 body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
 .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
@@ -380,8 +385,32 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .combo-count{font-size:1.4rem;font-weight:900;color:var(--accent);text-shadow:0 0 12px rgba(255,230,109,.5)}
 .combo-label{font-size:.55rem;color:var(--text-dim)}
 
+/* ===== AURORA UNIFIED LAYER (holographic language) ===== */
+@property --aurora-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+.aurora-text{background:linear-gradient(90deg,var(--aurora-c1),var(--aurora-c2),var(--aurora-c3),var(--aurora-c4),var(--aurora-c1));background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:auroraText 4s linear infinite;font-family:var(--font-display);letter-spacing:.02em}
+@keyframes auroraText{to{background-position:200% center}}
+.aurora-mesh{position:absolute;inset:-20%;pointer-events:none;z-index:0;background:
+  radial-gradient(ellipse 60% 50% at 20% 30%,rgba(255,110,199,.22),transparent 60%),
+  radial-gradient(ellipse 50% 60% at 80% 70%,rgba(199,125,255,.22),transparent 60%),
+  radial-gradient(ellipse 45% 55% at 60% 20%,rgba(127,245,220,.15),transparent 60%),
+  radial-gradient(ellipse 55% 45% at 30% 85%,rgba(255,230,109,.12),transparent 60%);
+  filter:blur(40px);animation:auroraDrift 18s ease-in-out infinite}
+@keyframes auroraDrift{0%,100%{transform:translate(0,0) rotate(0deg)}33%{transform:translate(-3%,2%) rotate(4deg)}66%{transform:translate(2%,-3%) rotate(-3deg)}}
+.aurora-ring{position:relative}
+.aurora-ring::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from var(--aurora-angle),var(--aurora-c1),var(--aurora-c2),var(--aurora-c3),var(--aurora-c4),var(--aurora-c1));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:auroraSpin 6s linear infinite;pointer-events:none}
+@keyframes auroraSpin{to{--aurora-angle:360deg}}
+.scale-press{transition:transform .18s var(--spring)}
+.scale-press:active{transform:scale(.96)}
+.skip-btn{position:absolute;top:max(1rem,env(safe-area-inset-top));right:1rem;z-index:210;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:var(--text);font-family:var(--font-display);font-weight:600;font-size:.7rem;padding:.4rem .8rem;border-radius:999px;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);letter-spacing:.06em;transition:all .18s var(--spring)}
+.skip-btn:active{transform:scale(.94);background:rgba(255,255,255,.14)}
+@media (prefers-reduced-motion: reduce){
+  .aurora-mesh,.aurora-ring::before,.aurora-text{animation:none !important}
+  .shiny-card::before,.shiny-card::after,.flash-card::before,.flash-card::after,.ltd-card::before,.ltd-card::after{animation:none !important}
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.15s !important}
+}
+
 /* Capture */
-#pull-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem}
+#pull-overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 30%,#1a0b2e 0%,#05020d 70%);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;overflow:hidden}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes specialRevealIn{0%{opacity:0;transform:scale(.3) rotateY(90deg)}40%{opacity:1;transform:scale(1.1) rotateY(-5deg)}70%{transform:scale(.95) rotateY(3deg)}100%{transform:scale(1) rotateY(0deg)}}
 .capture-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center;text-align:center}
@@ -1043,7 +1072,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <div class="capture-overlay" id="pull-overlay" style="display:none">
-  <div id="pull-result"></div>
+  <div class="aurora-mesh"></div>
+  <div id="pull-result" style="position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center"></div>
 </div>
 
 <div class="bottom-nav" id="bnav" style="display:none">
@@ -1068,6 +1098,19 @@ const W=RAW.map(r=>({w:r[0],p:r[1],m:r[2],lv:r[3]}));
 // K-POP VIRTUAL GROUP SYSTEM (CSS Chibi Characters)
 // ============================================================
 // K-pop inspired groups with real member looks (Q-version)
+// === Rarity / special card color tokens (single source of truth) ===
+const RARITY_HEX={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
+const SHINY_HEX='#ffd700';
+const FLASH_HEX='#7c4dff';
+// Haptic helper — respects reduced-motion
+function hapticReveal(kind){
+  try{
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(!navigator.vibrate)return;
+    const p={shiny:[60,30,120,30,80],flash:[80,40,120],ltd:[50,30,100],ssr:[40,20,100],sr:[30,20,60]};
+    navigator.vibrate(p[kind]||[40]);
+  }catch(e){}
+}
 function _l(hex,amt){let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);r=Math.min(255,r+Math.round(255*amt));g=Math.min(255,g+Math.round(255*amt));b=Math.min(255,b+Math.round(255*amt));return'#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')}
 function _d(hex,amt){return _l(hex,-amt)}
 
@@ -2779,42 +2822,61 @@ function showGacha(){
   document.getElementById('g-stars').textContent=S.stars;
   const pools=document.getElementById('gacha-pools');
   const combo=getDailyCombo();
-  const comboPreview=combo.map(m=>{const owned=!!S.cards[m.groupId+'_'+m.memberIdx];const rarityColor={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'}[m.rarity];return`<div style="flex:1;min-width:54px;text-align:center;padding:.3rem;background:${owned?'rgba(127,245,220,.12)':'rgba(255,255,255,.03)'};border:1px solid ${owned?'var(--mint)':'rgba(255,255,255,.08)'};border-radius:.4rem;position:relative"><div style="font-size:.55rem;color:${rarityColor};font-weight:700">${m.rarity}</div><div style="font-size:.62rem;font-weight:700;margin-top:.1rem;line-height:1.1">${m.name}</div><div style="font-size:.5rem;color:var(--text-dim);margin-top:.1rem;line-height:1">${m.groupName}</div>${owned?'<div style="position:absolute;top:2px;right:3px;font-size:.5rem;color:var(--mint)">✓</div>':''}</div>`}).join('');
+  const comboPreview=combo.map(m=>{
+    const owned=!!S.cards[m.groupId+'_'+m.memberIdx];
+    const rarityColor=RARITY_HEX[m.rarity];
+    const grp=GROUPS.find(g=>g.id===m.groupId);
+    const chibi=grp?chibiSVG(m,44,grp):'';
+    const tint=grp?grp.bg:'linear-gradient(135deg,#1c1632,#241e3a)';
+    return `<div style="flex:1;min-width:54px;text-align:center;padding:.25rem .2rem .3rem;background:${tint};border:1px solid ${owned?'var(--mint)':rarityColor+'44'};border-radius:.55rem;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+      <div class="ci-shine" style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent 50%);pointer-events:none"></div>
+      <div style="position:absolute;top:3px;left:3px;font-size:.42rem;color:${rarityColor};font-weight:900;font-family:var(--font-display);background:rgba(0,0,0,.55);padding:1px 4px;border-radius:6px;letter-spacing:.04em;z-index:2">${m.rarity}</div>
+      ${owned?'<div style="position:absolute;top:3px;right:3px;font-size:.55rem;color:var(--mint);z-index:2;text-shadow:0 0 4px rgba(127,245,220,.8)">✓</div>':''}
+      <div style="height:44px;display:flex;align-items:center;justify-content:center;margin:6px 0 2px;position:relative;z-index:1${owned?'':';filter:grayscale(.35) brightness(.85)'}">${chibi}</div>
+      <div style="font-size:.58rem;font-weight:700;line-height:1.1;position:relative;z-index:1">${m.name}</div>
+      <div style="font-size:.46rem;color:rgba(255,255,255,.7);margin-top:.1rem;line-height:1;position:relative;z-index:1">${m.groupName}</div>
+    </div>`;
+  }).join('');
+  const poolBtn=(pool,count,price,tone)=>`<button class="btn btn-sm scale-press" style="flex:1;background:${tone};color:#fff;min-width:60px;border:none;box-shadow:0 2px 10px rgba(0,0,0,.25)" onclick="doPull('${pool}',${count})">抽${count}次${count>1?` <span style="font-size:.5rem;opacity:.85">(${price}⭐)</span>`:''}</button>`;
   pools.innerHTML=`
-    <div style="text-align:center;margin-bottom:.8rem">
-      <div style="font-size:1.5rem;margin-bottom:.2rem">🎰</div>
-      <div style="font-size:.85rem;font-weight:700">用 ⭐ 星星抽取偶像小卡</div>
-      <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem">答題獲得星星，星星越多抽越多！</div>
-      ${(()=>{const ev=getLimitedEvent();return ev?'<div style="margin-top:.4rem;background:linear-gradient(135deg,'+getSeasonalBg(ev.id)+');padding:.4rem .6rem;border-radius:.6rem;border:1px solid #ffd70044"><div style="font-size:.7rem;font-weight:700;color:#ffd700">'+ev.badge+' '+ev.name+'</div><div style="font-size:.55rem;color:rgba(255,255,255,.8);margin-top:.1rem">'+ev.desc+' · 抽卡有 10% 機率獲得限定版！</div></div>':'<div style="font-size:.55rem;color:var(--text-muted);margin-top:.2rem">目前無限定活動</div>'})()}</div>
-    <div style="display:flex;flex-direction:column;gap:.5rem">
-      <div style="background:linear-gradient(135deg,rgba(255,230,109,.1),rgba(199,125,255,.08));border-radius:.8rem;padding:.7rem;border:1px solid #ffd70044">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-          <div><span style="font-size:.9rem;font-weight:700;color:#ffd700">🌟 今日推薦組合</span>
-            <div style="font-size:.55rem;color:var(--text-dim)">限定 5 人，每日午夜刷新</div></div>
-          <div style="font-size:.65rem;color:var(--accent)">20⭐/次</div></div>
-        <div style="display:flex;gap:.25rem;margin-bottom:.4rem">${comboPreview}</div>
-        <button class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#ffd700,#c77dff);color:var(--bg);font-weight:700" onclick="doPull('daily-combo',1)">抽取組合 (20⭐)</button>
+    <div style="text-align:center;margin-bottom:1rem;position:relative">
+      <div style="font-size:1.8rem;margin-bottom:.3rem;filter:drop-shadow(0 4px 12px rgba(199,125,255,.4))">🎰</div>
+      <div class="aurora-text" style="font-size:1.05rem;font-weight:700">用 ⭐ 抽取偶像小卡</div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-top:.25rem">答題獲得星星，星星越多抽越多</div>
+      ${(()=>{const ev=getLimitedEvent();return ev?`<div class="aurora-ring" style="margin-top:.6rem;background:linear-gradient(135deg,${getSeasonalBg(ev.id)});padding:.5rem .8rem;border-radius:.7rem;border:1px solid rgba(255,215,0,.28)"><div style="font-size:.72rem;font-weight:700;color:#ffd700;font-family:var(--font-display)">${ev.badge} ${ev.name}</div><div style="font-size:.55rem;color:rgba(255,255,255,.8);margin-top:.15rem">${ev.desc} · 抽卡有 10% 機率獲得限定版！</div></div>`:'<div style="font-size:.55rem;color:var(--text-muted);margin-top:.2rem">目前無限定活動</div>'})()}</div>
+    <div style="display:flex;flex-direction:column;gap:.6rem">
+      <div class="aurora-ring" style="background:linear-gradient(135deg,rgba(255,230,109,.12),rgba(199,125,255,.1) 60%,rgba(127,245,220,.08));border-radius:.9rem;padding:.8rem;border:1px solid rgba(255,215,0,.18);position:relative;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem;gap:.5rem">
+          <div style="min-width:0"><div class="aurora-text" style="font-size:.92rem;font-weight:700">🌟 今日推薦組合</div>
+            <div style="font-size:.55rem;color:var(--text-dim);margin-top:.1rem">限定 5 人，每日午夜刷新</div></div>
+          <div style="font-size:.65rem;color:var(--accent);font-family:var(--font-display);font-weight:600;white-space:nowrap">20⭐/次</div></div>
+        <div style="display:flex;gap:.25rem;margin-bottom:.5rem">${comboPreview}</div>
+        <button class="btn btn-sm scale-press" style="width:100%;background:linear-gradient(135deg,#ffd700,#ff6ec7 50%,#c77dff);color:#1a0b2e;font-weight:700;border:none;box-shadow:0 4px 16px rgba(255,215,0,.25),0 0 0 1px rgba(255,255,255,.15) inset;font-family:var(--font-display)" onclick="doPull('daily-combo',1)">抽取組合 · 20⭐</button>
       </div>
 
-      <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid #e879f933">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-          <div><span style="font-size:.9rem;font-weight:700;color:#e879f9">🎤 K-pop 卡池</span>
-            <div style="font-size:.55rem;color:var(--text-dim)">BT7·4PINK·THRICE 等 10 組偶像</div></div>
-          <div style="font-size:.65rem;color:var(--accent)">15⭐/次</div></div>
-        <div style="display:flex;gap:.3rem;flex-wrap:wrap">
-          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff;min-width:60px" onclick="doPull('kpop',1)">抽1次</button>
-          <button class="btn btn-sm" style="flex:1;background:#e879f9;color:#fff;min-width:60px" onclick="doPull('kpop',5)">抽5次 <span style="font-size:.5rem">(68⭐)</span></button>
-          <button class="btn btn-sm" style="flex:1;background:#c77dff;color:#fff;min-width:60px" onclick="doPull('kpop',10)">抽10次 <span style="font-size:.5rem">(128⭐)</span></button></div></div>
+      <div style="background:var(--card);border-radius:.9rem;padding:.8rem;border:1px solid rgba(232,121,249,.28);position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 100% 0%,rgba(232,121,249,.12),transparent 60%);pointer-events:none"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:.5rem;position:relative">
+          <div style="min-width:0"><span style="font-size:.92rem;font-weight:700;color:#e879f9">🎤 K-pop 卡池</span>
+            <div style="font-size:.55rem;color:var(--text-dim);margin-top:.1rem">BT7·4PINK·THRICE 等 10 組偶像</div></div>
+          <div style="font-size:.65rem;color:var(--accent);font-family:var(--font-display);font-weight:600;white-space:nowrap">15⭐/次</div></div>
+        <div style="display:flex;gap:.35rem;flex-wrap:wrap;position:relative">
+          ${poolBtn('kpop',1,15,'linear-gradient(135deg,#e879f9,#c77dff)')}
+          ${poolBtn('kpop',5,68,'linear-gradient(135deg,#e879f9,#c77dff)')}
+          ${poolBtn('kpop',10,128,'linear-gradient(135deg,#c77dff,#7c4dff)')}
+        </div></div>
 
-      <div style="background:var(--card);border-radius:.8rem;padding:.7rem;border:1px solid #ff572233">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-          <div><span style="font-size:.9rem;font-weight:700;color:#ff5722">🔥 動漫卡池</span>
-            <div style="font-size:.55rem;color:var(--text-dim)">鬼滅·咒術·間諜·灌籃·獵人</div></div>
-          <div style="font-size:.65rem;color:var(--accent)">15⭐/次</div></div>
-        <div style="display:flex;gap:.3rem;flex-wrap:wrap">
-          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff;min-width:60px" onclick="doPull('anime',1)">抽1次</button>
-          <button class="btn btn-sm" style="flex:1;background:#ff5722;color:#fff;min-width:60px" onclick="doPull('anime',5)">抽5次 <span style="font-size:.5rem">(68⭐)</span></button>
-          <button class="btn btn-sm" style="flex:1;background:#e64a19;color:#fff;min-width:60px" onclick="doPull('anime',10)">抽10次 <span style="font-size:.5rem">(128⭐)</span></button></div></div>
+      <div style="background:var(--card);border-radius:.9rem;padding:.8rem;border:1px solid rgba(255,87,34,.28);position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 100% 0%,rgba(255,87,34,.12),transparent 60%);pointer-events:none"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:.5rem;position:relative">
+          <div style="min-width:0"><span style="font-size:.92rem;font-weight:700;color:#ff7043">🔥 動漫卡池</span>
+            <div style="font-size:.55rem;color:var(--text-dim);margin-top:.1rem">鬼滅·咒術·間諜·灌籃·獵人</div></div>
+          <div style="font-size:.65rem;color:var(--accent);font-family:var(--font-display);font-weight:600;white-space:nowrap">15⭐/次</div></div>
+        <div style="display:flex;gap:.35rem;flex-wrap:wrap;position:relative">
+          ${poolBtn('anime',1,15,'linear-gradient(135deg,#ff7043,#ff5722)')}
+          ${poolBtn('anime',5,68,'linear-gradient(135deg,#ff7043,#ff5722)')}
+          ${poolBtn('anime',10,128,'linear-gradient(135deg,#ff5722,#bf360c)')}
+        </div></div>
     </div>`;
 }
 
@@ -2823,6 +2885,8 @@ function doPull(pool,count,groupId){
   if(!costs[pool]){floatTxt('未知卡池','var(--danger)');return}
   const cost=Math.ceil(costs[pool]*count*(count>=10?.85:count===5?.9:1));
   if(S.stars<cost){floatTxt('星星不夠！去答題賺⭐','var(--danger)');return}
+  // Baseline tap haptic — stronger for 10-pulls
+  try{if(navigator.vibrate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)navigator.vibrate(count>=10?[30,20,50]:count>=5?[25,15,35]:20)}catch(e){}
   S.stars-=cost;S.totalPulls+=count;saveState();
 
   // Rarity rates
@@ -2910,9 +2974,16 @@ function showPullResult(results){
 
 function showSpecialReveal(specials,onDone){
   const container=document.getElementById('pull-result');
-  let idx=0;
+  const overlay=document.getElementById('pull-overlay');
+  let idx=0,skipped=false;
+  // Skip button (one-time setup)
+  let skipBtn=overlay.querySelector('.skip-btn');
+  if(!skipBtn){skipBtn=document.createElement('button');skipBtn.className='skip-btn';skipBtn.textContent='跳過 ›';overlay.appendChild(skipBtn)}
+  skipBtn.style.display='block';
+  skipBtn.onclick=(e)=>{e.stopPropagation();skipped=true;skipBtn.style.display='none';onDone()};
   function showNext(){
-    if(idx>=specials.length){onDone();return}
+    if(skipped)return;
+    if(idx>=specials.length){skipBtn.style.display='none';onDone();return}
     const c=specials[idx];idx++;
     const cls=c.isShiny?'shiny-card':c.isFlash?'flash-card':c.isLtd?'ltd-card ltd-'+c.ltdEv.id:'';
     const bg=c.isLtd&&c.ltdEv?getSeasonalBg(c.ltdEv.id):c.g.bg;
@@ -2920,66 +2991,66 @@ function showSpecialReveal(specials,onDone){
     const floaters=c.isLtd&&c.ltdEv?getSeasonalFloaters(c.ltdEv.id):'';
     const chibiClass=c.isFlash?'flash-chibi-anim':c.isLtd&&c.ltdEv?getLtdChibiClass(c.ltdEv.id):'';
     const chibi=chibiSVG(c.m,90,c.g);
-    const typeLabel=c.isShiny?'<span class="shiny-badge" style="font-size:1.18rem">✦ SHINY</span>':
-      c.isFlash?'<span style="font-size:1.18rem;background:linear-gradient(90deg,#7c4dff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡ FLASH</span>':
-      c.rarity==='SSR'?'<span style="font-size:1.18rem;color:#ffd700;font-weight:900">★ SSR ★</span>':
-      c.rarity==='SR'?'<span style="font-size:1.18rem;color:#e879f9;font-weight:900">★ SR ★</span>':
-      c.isLtd?'<span style="font-size:1.18rem;color:#ffd700;font-weight:900">'+c.ltdEv.badge+' 限定版</span>':'';
-    const borderColor=c.isShiny?'#ffd700':c.isFlash?'#7c4dff':c.rarity==='SSR'?'#ffd700':c.rarity==='SR'?'#e879f9':'#ffd700';
-    container.innerHTML=`<div id="special-reveal" style="text-align:center;animation:specialRevealIn .6s ease-out both;cursor:pointer">
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem;animation:fadeInUp .4s .2s both">${c.g.name}</div>
+    const typeLabel=c.isShiny?'<span class="shiny-badge" style="font-size:1.18rem;font-family:var(--font-display)">✦ SHINY</span>':
+      c.isFlash?`<span style="font-size:1.18rem;background:linear-gradient(90deg,${FLASH_HEX},#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;font-family:var(--font-display)">⚡ FLASH</span>`:
+      c.rarity==='SSR'?'<span class="aurora-text" style="font-size:1.18rem;font-weight:900">★ SSR ★</span>':
+      c.rarity==='SR'?`<span style="font-size:1.18rem;color:${RARITY_HEX.SR};font-weight:900;font-family:var(--font-display)">★ SR ★</span>`:
+      c.isLtd?'<span class="aurora-text" style="font-size:1.18rem;font-weight:900">'+c.ltdEv.badge+' 限定版</span>':'';
+    const borderColor=c.isShiny?SHINY_HEX:c.isFlash?FLASH_HEX:RARITY_HEX[c.rarity]||SHINY_HEX;
+    // Haptic feedback on reveal
+    hapticReveal(c.isShiny?'shiny':c.isFlash?'flash':c.isLtd?'ltd':c.rarity==='SSR'?'ssr':'sr');
+    container.innerHTML=`<div id="special-reveal" style="text-align:center;animation:specialRevealIn .55s var(--spring) both;cursor:pointer">
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem;letter-spacing:.1em;animation:fadeInUp .4s .2s both;font-family:var(--font-display)">${c.g.name}</div>
       <div class="${cls}" style="width:160px;height:220px;border-radius:14px;background:${bg};
         margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
         position:relative;overflow:hidden;border:3px solid ${borderColor};
-        box-shadow:0 0 30px ${borderColor}66,0 0 60px ${borderColor}33">
+        box-shadow:0 0 30px ${borderColor}66,0 0 60px ${borderColor}33,0 20px 50px rgba(0,0,0,.5)">
         <div class="ci-shine"></div>${c.isShiny||c.rarity==='SSR'||c.rarity==='SR'?'<div class="holo"></div>':''}${deco}${floaters}
         <div style="position:relative;z-index:8" class="${chibiClass}">${chibi}</div>
         <div style="position:relative;z-index:3;font-size:.8rem;font-weight:700">${c.m.name}</div></div>
-      <div style="margin-top:.6rem;animation:fadeInUp .4s .4s both">${typeLabel}</div>
+      <div style="margin-top:.7rem;animation:fadeInUp .4s .4s both">${typeLabel}</div>
       <div style="font-size:1.1rem;font-weight:900;margin-top:.3rem;animation:fadeInUp .4s .5s both">${c.m.name}</div>
-      ${c.isLtd?'<div style="font-size:.65rem;color:#ffd700;margin-top:.2rem;animation:fadeInUp .4s .6s both">'+c.ltdEv.badge+' '+c.ltdEv.name+'</div>':''}
+      ${c.isLtd?'<div style="font-size:.65rem;color:#ffd700;margin-top:.2rem;animation:fadeInUp .4s .6s both;font-family:var(--font-display)">'+c.ltdEv.badge+' '+c.ltdEv.name+'</div>':''}
       ${c.isDupeActual&&!c.isNewShiny&&!c.isNewFlash?'<div style="font-size:.55rem;color:var(--accent);margin-top:.2rem;animation:fadeInUp .4s .7s both">重複 → 🔮碎片</div>'
         :c.isDupeActual&&(c.isNewShiny||c.isNewFlash)?'<div style="font-size:.55rem;color:#ffd700;margin-top:.2rem;animation:fadeInUp .4s .7s both">🌟 NEW 效果解鎖！</div>'
         :'<div style="font-size:.55rem;color:var(--mint);margin-top:.2rem;animation:fadeInUp .4s .7s both">✦ NEW!</div>'}
-      <div style="font-size:.5rem;color:var(--text-dim);margin-top:.8rem;animation:fadeInUp .4s .8s both">點擊任意處繼續</div></div>`;
+      <div style="font-size:.5rem;color:var(--text-dim);margin-top:.9rem;letter-spacing:.08em;animation:fadeInUp .4s .8s both">點擊任意處繼續</div></div>`;
     burst();burst();
     document.getElementById('pull-result').onclick=()=>{document.getElementById('pull-result').onclick=null;showNext()}}
   showNext()}
 
 function showPullGrid(){
   const container=document.getElementById('pull-result');
-  const rarityColors={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
   const pc=window._pullCards;
   const isSingle=pc.length===1;
   const cw=isSingle?120:pc.length<=5?75:60,ch=isSingle?160:pc.length<=5?100:80;
 
   const cards=pc.map((c,ci)=>{
     const cls=c.isShiny?'shiny-card':c.isFlash?'flash-card':c.isLtd?'ltd-card ltd-'+c.ltdEv.id:'';
-    const glow=c.isShiny?'0 0 15px #ffd70088':c.isFlash?'0 0 12px #7c4dff88':c.isLtd?'none':c.rarity==='SSR'?'0 0 15px #ffd70044':c.rarity==='SR'?'0 0 10px #e879f944':'none';
+    const glow=c.isShiny?`0 0 15px ${SHINY_HEX}88`:c.isFlash?`0 0 12px ${FLASH_HEX}88`:c.isLtd?'none':c.rarity==='SSR'?`0 0 15px ${RARITY_HEX.SSR}44`:c.rarity==='SR'?`0 0 10px ${RARITY_HEX.SR}44`:'none';
     const bg=c.isLtd&&c.ltdEv?getSeasonalBg(c.ltdEv.id):c.g.bg;
     const deco=c.isLtd&&c.ltdEv?getSeasonalDecoSVG(c.ltdEv.id,cw,ch):'';
     const miniFloaters=c.isLtd&&c.ltdEv?getSeasonalFloatersMini(c.ltdEv.id):'';
-    const borderClr=c.isShiny?'#ffd700':c.isFlash?'#7c4dff':c.isLtd?'transparent':rarityColors[c.rarity]+'66';
-    return `<div style="width:${cw}px;text-align:center;animation:fadeInUp .4s ease-out both;animation-delay:${ci*0.08}s;cursor:pointer" onclick="showPullCardZoom(${ci})">
-      <div class="${cls}" style="width:${cw}px;height:${ch}px;border-radius:${isSingle?10:8}px;background:${bg};
+    const borderClr=c.isShiny?SHINY_HEX:c.isFlash?FLASH_HEX:c.isLtd?'transparent':RARITY_HEX[c.rarity]+'66';
+    return `<div style="width:${cw}px;text-align:center;animation:fadeInUp .4s var(--spring) both;animation-delay:${ci*0.08}s;cursor:pointer" onclick="showPullCardZoom(${ci})">
+      <div class="${cls} scale-press" style="width:${cw}px;height:${ch}px;border-radius:${isSingle?10:8}px;background:${bg};
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;
         box-shadow:${glow};border:2px solid ${borderClr}">
         <div class="ci-shine"></div>${c.rarity==='SSR'||c.rarity==='SR'||c.isShiny?'<div class="holo"></div>':''}${deco}${miniFloaters}
         <div style="position:relative;z-index:2">${chibiSVG(c.m,isSingle?55:35,c.g)}</div>
         <div style="position:relative;z-index:3;font-size:${isSingle?'.55rem':'.38rem'};font-weight:700">${c.m.name}</div></div>
-      <div style="font-size:.45rem;font-weight:700;margin-top:.15rem">${c.isShiny?'<span class="shiny-badge">✦ SHINY</span>':c.isFlash?'<span style="background:linear-gradient(90deg,#7c4dff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡ FLASH</span>':'<span style="color:'+rarityColors[c.rarity]+'">'+c.rarity+'</span>'}</div>
+      <div style="font-size:.45rem;font-weight:700;margin-top:.15rem;font-family:var(--font-display)">${c.isShiny?'<span class="shiny-badge">✦ SHINY</span>':c.isFlash?`<span style="background:linear-gradient(90deg,${FLASH_HEX},#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡ FLASH</span>`:'<span style="color:'+RARITY_HEX[c.rarity]+'">'+c.rarity+'</span>'}</div>
       <div style="font-size:.35rem;color:var(--text-dim)">${c.g.name}</div>
-      ${c.isLtd?'<div style="font-size:.3rem;color:#ffd700">'+c.ltdEv.badge+' 限定</div>':''}
+      ${c.isLtd?`<div style="font-size:.3rem;color:${SHINY_HEX}">${c.ltdEv.badge} 限定</div>`:''}
       ${c.isDupeActual?'<div style="font-size:.3rem;color:var(--accent)">重複→🔮</div>':'<div style="font-size:.3rem;color:var(--mint)">✦ NEW!</div>'}</div>`;
   }).join('');
 
   container.innerHTML=`
-    <div style="text-align:center;margin-bottom:.6rem">
-      <div style="font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,#ff6ec7,#c77dff,#ffe66d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
-        ✦ 抽卡結果 ✦</div>
-      <div style="font-size:.5rem;color:var(--text-dim);margin-top:.2rem">點擊卡片可放大欣賞</div></div>
-    <div style="display:flex;justify-content:center;gap:${isSingle?'0':'.4rem'};flex-wrap:wrap;margin-bottom:.8rem">${cards}</div>
-    <button class="btn btn-primary btn-sm" style="display:block;margin:0 auto" onclick="closePull()">確認 ✦</button>`;
+    <div style="text-align:center;margin-bottom:.8rem;animation:fadeInUp .4s var(--spring) both">
+      <div class="aurora-text" style="font-size:1.35rem;font-weight:700;letter-spacing:.04em">✦ 抽卡結果 ✦</div>
+      <div style="font-size:.55rem;color:var(--text-dim);margin-top:.25rem;letter-spacing:.06em">點擊卡片可放大欣賞</div></div>
+    <div style="display:flex;justify-content:center;gap:${isSingle?'0':'.4rem'};flex-wrap:wrap;margin-bottom:.9rem">${cards}</div>
+    <button class="btn btn-primary btn-sm scale-press" style="display:block;margin:0 auto;font-family:var(--font-display);font-weight:600;letter-spacing:.05em;padding:.55rem 1.8rem" onclick="closePull()">確認 ✦</button>`;
   burst();
 }
 
@@ -2992,30 +3063,32 @@ function showPullCardZoom(idx){
   const floaters=c.isLtd&&c.ltdEv?getSeasonalFloaters(c.ltdEv.id):'';
   const chibiClass=c.isFlash?'flash-chibi-anim':c.isLtd&&c.ltdEv?getLtdChibiClass(c.ltdEv.id):'';
   const chibi=chibiSVG(c.m,80,c.g);
-  const rarityColors={SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'};
-  const borderClr=c.isShiny?'#ffd700':c.isFlash?'#7c4dff':c.isLtd?'transparent':rarityColors[c.rarity];
-  const typeLabel=c.isShiny?'<span class="shiny-badge" style="font-size:.85rem">✦ SHINY</span>':
-    c.isFlash?'<span style="font-size:.85rem;background:linear-gradient(90deg,#7c4dff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">⚡ FLASH</span>':
-    c.isLtd?'<span style="font-size:.85rem;color:#ffd700;font-weight:900">'+c.ltdEv.badge+' 限定版</span>':
-    '<span style="color:'+rarityColors[c.rarity]+';font-size:.85rem;font-weight:700">'+c.rarity+'</span>';
-  container.innerHTML=`<div style="text-align:center;animation:specialRevealIn .4s ease-out both">
+  const borderClr=c.isShiny?SHINY_HEX:c.isFlash?FLASH_HEX:c.isLtd?'transparent':RARITY_HEX[c.rarity];
+  const typeLabel=c.isShiny?'<span class="shiny-badge" style="font-size:.9rem;font-family:var(--font-display)">✦ SHINY</span>':
+    c.isFlash?`<span style="font-size:.9rem;background:linear-gradient(90deg,${FLASH_HEX},#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;font-family:var(--font-display)">⚡ FLASH</span>`:
+    c.isLtd?'<span class="aurora-text" style="font-size:.9rem;font-weight:900">'+c.ltdEv.badge+' 限定版</span>':
+    c.rarity==='SSR'?'<span class="aurora-text" style="font-size:.9rem;font-weight:900">★ SSR</span>':
+    `<span style="color:${RARITY_HEX[c.rarity]};font-size:.9rem;font-weight:700;font-family:var(--font-display);letter-spacing:.05em">${c.rarity}</span>`;
+  container.innerHTML=`<div style="text-align:center;animation:specialRevealIn .45s var(--spring) both">
     <div class="${cls}" style="width:150px;height:210px;border-radius:12px;background:${bg};
       margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
       position:relative;overflow:hidden;border:3px solid ${borderClr};
-      box-shadow:0 0 25px ${borderClr}55,0 0 50px ${borderClr}22">
+      box-shadow:0 0 25px ${borderClr}55,0 0 50px ${borderClr}22,0 16px 40px rgba(0,0,0,.5)">
       <div class="ci-shine"></div>${c.isShiny||c.rarity==='SSR'||c.rarity==='SR'?'<div class="holo"></div>':''}${deco}${floaters}
       <div style="position:relative;z-index:8" class="${chibiClass}">${chibi}</div>
       <div style="position:relative;z-index:3;font-size:.7rem;font-weight:700">${c.m.name}</div></div>
-    <div style="margin-top:.5rem">${typeLabel}</div>
-    <div style="font-size:1.18rem;font-weight:900;margin-top:.2rem">${c.m.name}</div>
-    <div style="font-size:.6rem;color:var(--text-dim);margin-top:.1rem">${c.g.name} · ${c.g.concept}</div>
-    ${c.isLtd?'<div style="font-size:.55rem;color:#ffd700;margin-top:.2rem">'+c.ltdEv.badge+' '+c.ltdEv.name+'</div>':''}
-    <button class="btn btn-secondary btn-xs" style="margin-top:.6rem" onclick="showPullGrid()">← 返回</button></div>`;
+    <div style="margin-top:.6rem;animation:fadeInUp .35s .15s var(--spring) both">${typeLabel}</div>
+    <div style="font-size:1.18rem;font-weight:900;margin-top:.2rem;animation:fadeInUp .35s .25s var(--spring) both">${c.m.name}</div>
+    <div style="font-size:.6rem;color:var(--text-dim);margin-top:.15rem;letter-spacing:.04em;animation:fadeInUp .35s .32s var(--spring) both">${c.g.name} · ${c.g.concept}</div>
+    ${c.isLtd?`<div style="font-size:.55rem;color:${SHINY_HEX};margin-top:.2rem;font-family:var(--font-display);animation:fadeInUp .35s .4s var(--spring) both">${c.ltdEv.badge} ${c.ltdEv.name}</div>`:''}
+    <button class="btn btn-secondary btn-xs scale-press" style="margin-top:.7rem;font-family:var(--font-display);letter-spacing:.05em" onclick="showPullGrid()">← 返回</button></div>`;
 }
 
 function closePull(){
   if(window._rvTimer)clearInterval(window._rvTimer);
-  document.getElementById('pull-overlay').style.display='none';
+  const ov=document.getElementById('pull-overlay');
+  ov.style.display='none';
+  const sb=ov.querySelector('.skip-btn');if(sb)sb.style.display='none';
   showGacha();
 }
 
