@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wordstar-v8';
+const CACHE_NAME = 'wordstar-v9';
 
 // Core assets pre-cached on install
 const CORE_ASSETS = [
