@@ -866,7 +866,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('spell')"><div class="action-icon">⭐</div><div class="action-title">星光大道</div><div class="action-desc">拼出單字</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('reverse')"><div class="action-icon">📺</div><div class="action-title">宣傳通告</div><div class="action-desc">中文選英文</div></div>
     <div class="action-card" onclick="goTo('wrong-screen');showWrongReview()"><div class="action-icon">🎬</div><div class="action-title">NG 重拍</div><div class="action-desc">針對性複習</div></div>
-    <div class="action-card" style="grid-column:span 2" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">複習錯題·高獎勵</div></div></div>
+    <div class="action-card" onclick="goTo('quiz-screen');startQuiz('listen')"><div class="action-icon">📻</div><div class="action-title">電台放送</div><div class="action-desc">聽發音選意思</div></div>
+    <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">複習錯題·高獎勵</div></div></div>
   <div class="section-title">🎤 雙人模式</div>
   <div class="action-grid">
     <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">同台表演</div><div class="action-desc">雙人合作答題</div></div>
@@ -965,6 +966,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="title-wall">
       <div class="title-wall-title">🏆 稱號牆</div>
       <div class="title-grid" id="prof-titles"></div>
+    </div>
+    <div style="margin-top:1rem" id="tts-settings">
+      <button id="tts-toggle" class="btn" style="width:100%;background:var(--card);color:var(--text);border:1px solid rgba(255,255,255,.12);font-size:.7rem;padding:.5rem;border-radius:.5rem" onclick="toggleTTS()">🔊 單字發音：開啟</button>
+      <div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center">
+        <select id="tts-voice-sel" onchange="setTTSVoice(this.value)" style="flex:1;background:var(--card);color:var(--text);border:1px solid rgba(255,255,255,.12);font-size:.65rem;padding:.45rem .4rem;border-radius:.5rem;min-width:0">
+          <option value="">載入語音中…</option>
+        </select>
+        <button class="btn btn-sm" style="background:var(--card);color:var(--text);border:1px solid rgba(255,255,255,.12);font-size:.65rem;padding:.45rem .6rem;border-radius:.5rem;white-space:nowrap" onclick="speak('Hello! This is a sample. Apple. Beautiful. Question.',null,true)">▶ 試聽</button>
+      </div>
+      <div style="font-size:.5rem;color:var(--text-muted);margin-top:.3rem;line-height:1.5">發音品質取決於裝置內建語音。標 ⭐（Natural）或 ✦（Google）的語音較自然清晰；都沒有的話，建議改用 Edge 或 Chrome 開啟本遊戲。</div>
     </div>
     <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.06)">
       <button class="btn" style="width:100%;background:rgba(255,60,60,.15);color:#ff6b6b;border:1px solid rgba(255,60,60,.25);font-size:.7rem;padding:.5rem;border-radius:.5rem" onclick="confirmResetAll()">🗑️ 重置所有資料</button>
@@ -1736,7 +1747,7 @@ const TITLES=[
   {id:'all-mode-master',name:'全能高手',desc:'達到300題里程碑',tier:'diamond',check:s=>s.totalCorrect>=300&&s.totalPulls>=150}
 ];
 
-let S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0};
+let S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0,tts:true};
 let Q={qs:[],cur:0,combo:0,maxCombo:0,coins:0,mode:'choice',done:false};
 
 // === SAVE / LOAD STATE ===
@@ -1758,11 +1769,67 @@ function loadState(){
 function resetGame(){
   if(!confirm('確定要重置所有進度嗎？這將清除所有收集的卡片和星星！'))return;
   localStorage.removeItem('wordstar_save');
-  S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0};
+  S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0,tts:true};
   updateHome();
   floatTxt('進度已重置','var(--danger)');
 }
 
+// === TTS 單字發音 (Web Speech API) ===
+const TTS={voice:null,enVoices:[]};
+function _ttsPickVoice(){
+  if(!('speechSynthesis' in window))return;
+  const vs=speechSynthesis.getVoices();if(!vs.length)return;
+  TTS.enVoices=vs.filter(v=>/^en[-_]/i.test(v.lang));
+  const en=TTS.enVoices;
+  // 使用者指定的語音優先
+  const saved=S.ttsVoice&&en.find(v=>v.name===S.ttsVoice);
+  TTS.voice=saved
+    ||en.find(v=>/en[-_]US/i.test(v.lang)&&/Natural/i.test(v.name))
+    ||en.find(v=>/en[-_]US/i.test(v.lang)&&/Google|Online/i.test(v.name))
+    ||en.find(v=>/en[-_]US/i.test(v.lang))||en[0]||null;
+  updateTTSVoiceSel();
+}
+if('speechSynthesis' in window){_ttsPickVoice();speechSynthesis.onvoiceschanged=_ttsPickVoice}
+function updateTTSVoiceSel(){
+  const sel=document.getElementById('tts-voice-sel');if(!sel)return;
+  const en=TTS.enVoices;
+  if(!en.length){sel.innerHTML='<option value="">（無可用語音）</option>';return}
+  sel.innerHTML=en.map(v=>{
+    const tag=/Natural/i.test(v.name)?' ⭐':(/Google|Online/i.test(v.name)?' ✦':'');
+    return`<option value="${v.name.replace(/"/g,'&quot;')}"${TTS.voice&&TTS.voice.name===v.name?' selected':''}>${v.name}（${v.lang}）${tag}</option>`;
+  }).join('');
+}
+function setTTSVoice(name){
+  const v=TTS.enVoices.find(x=>x.name===name);
+  if(!v)return;
+  S.ttsVoice=name;saveState();TTS.voice=v;
+  speak('Hello! This is a sample. Apple. Beautiful. Question.',null,true);
+}
+function ttsOn(){return ('speechSynthesis' in window)&&S.tts!==false}
+// force=true：聽力模式必須發音，不受開關影響
+function speak(text,rate,force){
+  if(!('speechSynthesis' in window))return;
+  if(!force&&S.tts===false)return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='en-US';if(TTS.voice)u.voice=TTS.voice;
+    u.rate=rate||0.95;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function updateTTSBtn(){
+  const b=document.getElementById('tts-toggle');if(!b)return;
+  if(!('speechSynthesis' in window)){const w=document.getElementById('tts-settings');if(w)w.style.display='none';return}
+  const on=S.tts!==false;
+  b.textContent=on?'🔊 單字發音：開啟':'🔇 單字發音：關閉';
+  b.style.opacity=on?'1':'.6';
+  if(!TTS.voice)_ttsPickVoice();else updateTTSVoiceSel();
+}
+function toggleTTS(){
+  S.tts=S.tts===false;saveState();updateTTSBtn();
+  if(S.tts!==false)speak('Hello! Word Star!');
+}
 
 // Init
 (function(){
@@ -1786,7 +1853,7 @@ function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   const m={'home-screen':0,'gacha-screen':1,'collection-screen':2,'profile-screen':3};
   if(m[id]!=null)document.querySelectorAll('.nav-item')[m[id]]?.classList.add('active')}
-function startGame(){loadState();goTo('home-screen');updateHome()}
+function startGame(){loadState();updateTTSBtn();goTo('home-screen');updateHome()}
 
 // ===== DAILY MISSIONS =====
 function toggleDM(){
@@ -1799,9 +1866,9 @@ function toggleDM(){
 function getDailyMissions(){
   const today=new Date().toDateString();
   if(!S._dmDate||S._dmDate!==today){
-    S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0};S._dmClaimed=false;
+    S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0,listen_done:0};S._dmClaimed=false;
     // Clear individual claim flags for new day
-    ['choice_done','reverse_done','combo8','spell_correct','wrong_done','duet_done'].forEach(k=>delete S['_dmc_'+k]);
+    ['choice_done','reverse_done','combo8','spell_correct','wrong_done','duet_done','listen_done'].forEach(k=>delete S['_dmc_'+k]);
     saveState();
   }
   return[
@@ -1809,16 +1876,17 @@ function getDailyMissions(){
     {id:'reverse_done',label:'完成 5 次宣傳通告',icon:'📢',goal:5,reward:50,progress:Math.min(S._dm.reverse_done||0,5)},
     {id:'combo8',label:'達成 3 次 8 Combo',icon:'💥',goal:3,reward:20,progress:Math.min(S._dm.combo8||0,3)},
     {id:'spell_correct',label:'星光大道答對 5 題',icon:'⭐',goal:5,reward:100,progress:Math.min(S._dm.spell_correct||0,5)},
+    ...(('speechSynthesis' in window)?[{id:'listen_done',label:'完成 3 次電台放送',icon:'📻',goal:3,reward:60,progress:Math.min(S._dm.listen_done||0,3)}]:[]),
     {id:'wrong_done',label:'參與 10 次 NG 重拍',icon:'🎬',goal:10,reward:120,progress:Math.min(S._dm.wrong_done||0,10)},
     {id:'duet_done',label:'同台表演取得 S 級',icon:'🎶',goal:1,reward:120,progress:Math.min(S._dm.duet_done||0,1)}
   ];
 }
 function _dmInit(){
   const today=new Date().toDateString();
-  if(!S._dmDate||S._dmDate!==today){S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0};S._dmClaimed=false;
-    ['choice_done','reverse_done','combo8','spell_correct','wrong_done','duet_done'].forEach(k=>delete S['_dmc_'+k]);
+  if(!S._dmDate||S._dmDate!==today){S._dmDate=today;S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0,listen_done:0};S._dmClaimed=false;
+    ['choice_done','reverse_done','combo8','spell_correct','wrong_done','duet_done','listen_done'].forEach(k=>delete S['_dmc_'+k]);
   }
-  if(!S._dm)S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0};
+  if(!S._dm)S._dm={choice_done:0,reverse_done:0,combo8:0,spell_correct:0,wrong_done:0,duet_done:0,listen_done:0};
 }
 function trackDailyMission(type,val){
   _dmInit();
@@ -1829,6 +1897,7 @@ function trackDailyMission(type,val){
   else if(type==='boss_done'){S._dm.boss_done=(S._dm.boss_done||0)+1}
   else if(type==='wrong_done'){S._dm.wrong_done=(S._dm.wrong_done||0)+1}
   else if(type==='duet_done'){S._dm.duet_done=(S._dm.duet_done||0)+1}
+  else if(type==='listen_done'){S._dm.listen_done=(S._dm.listen_done||0)+1}
   saveState();
 }
 function updateDailyMissions(){
@@ -1946,6 +2015,7 @@ function updateHome(){
 
 // Quiz
 function startQuiz(mode){
+  if(mode==='listen'&&!('speechSynthesis' in window)){floatTxt('此裝置不支援語音發音','var(--danger)');mode='choice'}
   Q.mode=mode;Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
   let pool;
   if(mode==='boss'){
@@ -1975,6 +2045,7 @@ function startQuiz(mode){
   Q.qs.forEach((q,i)=>{
     if(mode==='spell')q._t='spell';else if(mode==='reverse')q._t='reverse';
     else if(mode==='choice')q._t='choice';
+    else if(mode==='listen')q._t='listen';
     else if(mode==='boss'){const ts=['choice','reverse'];q._t=ts[i%ts.length]}
     else{const ts=['choice','choice','spell','reverse','choice'];q._t=ts[i%ts.length]}});
   Q.mistakes=[];
@@ -1987,6 +2058,7 @@ function endQuiz(){
   else if(Q.mode==='reverse')trackDailyMission('reverse_done',1);
   else if(Q.mode==='boss')trackDailyMission('boss_done',1);
   else if(Q.mode==='wrong')trackDailyMission('wrong_done',1);
+  else if(Q.mode==='listen')trackDailyMission('listen_done',1);
   if(Q.mistakes&&Q.mistakes.length>0){showQuizReview()}
   else{
     // Perfect run — show stats overlay
@@ -2011,7 +2083,7 @@ function showQuizReview(){
   const mistakeCards=Q.mistakes.map((m,i)=>`<div id="rv-${i}" style="background:var(--card);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;border:2px solid transparent;transition:all .3s" onclick="markReviewed(${i})">
     <div style="min-width:40px;text-align:center"><div class="rv-icon" style="font-size:.6rem;color:var(--danger);font-weight:700">✗</div>
       <div style="font-size:.45rem;color:var(--text-dim)">${lvLabels[m.lv]||''}</div></div>
-    <div style="flex:1"><div style="font-weight:700;font-size:.85rem;color:var(--danger)">${m.w}</div>
+    <div style="flex:1"><div style="font-weight:700;font-size:.85rem;color:var(--danger)">${m.w} <span onclick="event.stopPropagation();speak('${esc(m.w)}')" style="cursor:pointer;font-size:.75rem;opacity:.8">🔊</span></div>
       <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">${m.m}</div></div>
     <div class="rv-check" style="font-size:.7rem;color:var(--text-dim)">👆 點擊確認</div></div>`).join('');
   window._rvTotal=Q.mistakes.length;window._rvDone=0;window._rvTimer=null;window._rvUnlocked=false;
@@ -2077,6 +2149,7 @@ function showQ(){
         if(Q.mode==='spell')types=['spell'];
         else if(Q.mode==='reverse')types=['reverse'];
         else if(Q.mode==='choice')types=['choice'];
+        else if(Q.mode==='listen')types=['listen'];
         else if(Q.mode==='boss')types=['choice','reverse'];
         else types=['choice','reverse','spell'];
         extra.push({w:pick.w,m:pick.m,p:pick.p,lv:pick.lv,_t:types[i%types.length]});
@@ -2104,17 +2177,27 @@ function showQ(){
         <div style="position:relative;z-index:2">${chibi}</div>
         <div class="pc-name">${rm.name}</div></div>
       <div class="enc-word" style="font-size:1.3rem">${q.m}</div><div class="enc-pos">${q.p}</div>`}
-  else{
-    const wordDisplay=q._t==='spell'?q.w[0]+'···'+q.w[q.w.length-1]:q.w;
+  else if(q._t==='listen'){
     stg.innerHTML=`<div class="stage-lights"></div>
       <div class="photocard" style="background:${cardBg};box-shadow:0 5px 20px ${cardGlow}">
         <div class="pc-shine"></div><div class="holo"></div>
         <div style="position:relative;z-index:2">${chibi}</div>
         <div class="pc-name">${rm.name}</div></div>
-      <div class="enc-word">${wordDisplay}</div><div class="enc-pos">${q.p}</div>`}
+      <div class="enc-word" id="listen-word" onclick="speak('${esc(q.w)}',null,true)" style="cursor:pointer;letter-spacing:.1em">📻 🔊</div><div class="enc-pos">${q.p}</div>`}
+  else{
+    const wordDisplay=q._t==='spell'?q.w[0]+'···'+q.w[q.w.length-1]:q.w;
+    const speakBtn=q._t==='choice'&&ttsOn()?` <span style="font-size:1.1rem;vertical-align:middle;opacity:.75">🔊</span>`:'';
+    const speakAttr=q._t==='choice'?` onclick="speak('${esc(q.w)}')" style="cursor:pointer"`:'';
+    stg.innerHTML=`<div class="stage-lights"></div>
+      <div class="photocard" style="background:${cardBg};box-shadow:0 5px 20px ${cardGlow}">
+        <div class="pc-shine"></div><div class="holo"></div>
+        <div style="position:relative;z-index:2">${chibi}</div>
+        <div class="pc-name">${rm.name}</div></div>
+      <div class="enc-word"${speakAttr}>${wordDisplay}${speakBtn}</div><div class="enc-pos">${q.p}</div>`}
 
   const ct=document.getElementById('qcontent');
-  if(q._t==='spell')renderSpell(ct,q);else if(q._t==='reverse')renderRev(ct,q);else renderChoice(ct,q);
+  if(q._t==='spell')renderSpell(ct,q);else if(q._t==='reverse')renderRev(ct,q);else if(q._t==='listen')renderListen(ct,q);else renderChoice(ct,q);
+  if(q._t==='choice'||q._t==='listen')setTimeout(()=>{if(Q.qs[Q.cur]===q&&!Q.done)speak(q.w,null,q._t==='listen')},300);
   const ce=document.getElementById('combo');
   if(Q.combo>=2){ce.classList.add('active');document.getElementById('ccount').textContent=Q.combo}
   else ce.classList.remove('active');
@@ -2265,6 +2348,12 @@ function renderRev(el,q){
   el.innerHTML=`<div class="quiz-prompt">✦ 選出正確的英文單字</div>
     <div class="answer-grid">${shuf([cor,...wr]).map(a=>`<button class="answer-btn" style="font-weight:700" onclick="chk(this,'${esc(a)}','${esc(cor)}')">${a}</button>`).join('')}</div>
     <div style="margin-top:.5rem;padding:.4rem .6rem;background:rgba(255,255,255,.04);border-radius:.5rem;border:1px solid rgba(255,255,255,.06);font-size:.85rem;color:var(--text-dim);line-height:1.6;text-align:center"><span style="color:var(--mint);font-weight:700;margin-right:.3rem">💡 例句</span>${ex}</div>`}
+function renderListen(el,q){
+  if(!('speechSynthesis' in window)){renderChoice(el,q);return}
+  const cor=q.m;let wr=W.filter(x=>x.w!==q.w).map(x=>x.m);wr=shuf(wr).slice(0,3);
+  el.innerHTML=`<div class="quiz-prompt">✦ 聽發音，選出正確的意思</div>
+    <div style="text-align:center;margin-bottom:.5rem"><button class="btn btn-secondary btn-sm" onclick="speak('${esc(q.w)}',null,true)">🔊 再聽一次</button></div>
+    <div class="answer-grid">${shuf([cor,...wr]).map(a=>`<button class="answer-btn" onclick="chk(this,'${esc(a)}','${esc(cor)}')">${a}</button>`).join('')}</div>`}
 function chk(btn,sel,cor){if(Q.done)return;Q.done=true;const ok=sel===cor;
   document.querySelectorAll('.answer-btn').forEach(b=>{
     const t=b.textContent;if(t===cor.replace(/&quot;/g,'"'))b.classList.add('correct');
@@ -2320,6 +2409,9 @@ function subS(){if(Q.done)return;Q.done=true;const t=window._st,h=window._hinted
 
 function handleRes(ok){
   const q=Q.qs[Q.cur];upDot(Q.cur,ok);
+  // 聽力題揭曉單字；拼字/反向題此時才首次聽到發音
+  if(q._t==='listen'){const lw=document.getElementById('listen-word');if(lw){lw.textContent=q.w;lw.style.letterSpacing=''}}
+  else if(q._t==='spell'||q._t==='reverse')speak(q.w);
   if(ok){Q.combo++;if(Q.combo>Q.maxCombo)Q.maxCombo=Q.combo;S.totalCorrect++;const cb=Math.min(Q.combo,10);
     const bossBonus=Q.mode==='boss'?5:0;
     // Limited event banner
@@ -2727,6 +2819,7 @@ function showWrongReview(){
       <div class="rv-info">
         <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
           <div class="rv-word">${w.w}</div>
+          <span onclick="speak('${esc(w.w)}')" style="cursor:pointer;font-size:.75rem;opacity:.8">🔊</span>
           <div class="rv-status ${sc}" style="font-size:.5rem">${st}</div>
         </div>
         <div class="rv-meaning">${w.m}</div>
