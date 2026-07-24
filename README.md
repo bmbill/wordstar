@@ -22,6 +22,7 @@ WordStar 是一款以**偶像小卡收集**包裝的英文單字學習 PWA。答
 | 👑 年末大賞 | 複習錯題・高獎勵 |
 
 - **TTS 單字發音**（Web Speech API），可選語音
+- **例句提示**：全 6,574 個單字皆有「簡單／進階」兩句挖空例句，題目下方輪流出現（`sentences.json`）
 - **每日任務**與星星經濟、連擊 Combo、等級成長
 
 ### 抽卡 / 小卡收集
@@ -62,6 +63,7 @@ python -m http.server 8080
 
 ```
 word-star.html   # 整個遊戲（HTML + CSS + JS 單檔）
+sentences.json   # 全單字例句庫（word → {e:簡單, h:進階} 挖空例句）
 manifest.json    # PWA manifest
 sw.js            # Service Worker（離線快取）
 icon-192.png     # App icon
