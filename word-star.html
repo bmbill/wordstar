@@ -1397,7 +1397,7 @@ const GROUP_QUOTES={
 };
 // Leader-specific quotes (member idx 0 of each group)
 const LEADER_QUOTES={
-  nbahof:{correct:['把球給我','失敗過才懂贏','我生來就要贏','無所畏懼'],wrong:['我能接受失敗，不能接受放棄','再試一次','失敗是成功之母'],combo:['關鍵時刻交給我','第六冠來了','Flu Game 精神'],lvup:['封神時刻','GOAT 養成中']},
+  nbahof:{correct:['歡迎來到名人堂','見證歷史','傳奇降臨','殿堂級表現'],wrong:['傳奇也會失手','重整旗鼓','下一球見真章'],combo:['傳奇集結！','名人堂之夜','殿堂全開火'],lvup:['封神時刻','入主名人堂']},
   kimetsu:{correct:['為了禰豆子...','絕對斬鬼！','和煦之人會發光'],wrong:['對不起…禰豆子…','一定要再變強'],combo:['壹ノ型・水面斬！','生生流轉！','日之呼吸・第一型！']},
   jjk:{correct:['讓一千人正常死去','哇喔抓到訣竅','哈？我贏了'],wrong:['再吃一個宿儺手指','我超強的…等等'],combo:['黑閃！','散華！']},
   spyfam:{correct:['為了任務','偽裝成功','和平守護者'],wrong:['這不在預料中','重整計劃'],combo:['Twilight 行動','任務優先']},
@@ -1416,6 +1416,21 @@ const LEADER_QUOTES={
   seraph1m:{correct:['Sakura 來了','天使 leader','我來領隊'],wrong:['再重新一次','我會調整'],combo:['Sakura 上場','絕不後退']},
   gidle:{correct:['Miyeon here','女王門面','5 個公主'],wrong:['再加油','重新來'],combo:['Queens 一起','Nxde！']}
 };
+// Per-member classic quotes, keyed by group id then member name (takes priority over group pool).
+const MEMBER_QUOTES={
+  nbahof:{
+    '喬丹':{correct:['把球給我','失敗過才懂贏','我生來就要贏','無所畏懼'],wrong:['我能接受失敗，不能接受放棄','再試一次','失敗是成功之母'],combo:['關鍵時刻交給我','第六冠來了','Flu Game 精神'],lvup:['封神時刻','GOAT 養成中']},
+    '柯比':{correct:['曼巴精神！','Job\'s not finished','出手就進','凌晨四點的洛城'],wrong:['再練一萬次','失敗是燃料','沒有藉口'],combo:['單場 81 分','無視防守','關鍵球我來']},
+    '魔術強森':{correct:['Showtime！','妙傳助攻','天賦不夠努力補'],wrong:['傳球再準一點','調整節奏','別急'],combo:['No-look pass','快攻風暴','Showtime 開演']},
+    '大鳥博德':{correct:['空心三分','基本功見真章','我來就是拿冠軍'],wrong:['手感冷了','再投就進','別緊張'],combo:['三分雨','垃圾話+進球','你們爭第二吧']},
+    '歐尼爾':{correct:['禁區我最大','暴力灌籃','大鯊魚來了'],wrong:['罰球再練','別笑我罰球','下次補上'],combo:['碎籃板灌籃','禁區統治','無人擋得住鯊魚']},
+    '鄧肯':{correct:['穩穩擦板進','Good, better, best','石佛出手'],wrong:['冷靜處理','再來一次','別慌'],combo:['教科書打法','穩定輸出','大基本功']},
+    '艾佛森':{correct:['The Answer','crossover 過人','矮個也能封神'],wrong:['我們在講練習？','再過一次','絕不放棄'],combo:['連過三人','答案就是我','小個子大心臟']},
+    '歐拉朱旺':{correct:['夢幻腳步','蓋你這球','大夢醒了'],wrong:['腳步再細膩','調整重心','下球補防'],combo:['Dream Shake','火箭升空','內線之王']},
+    '羅德曼':{correct:['籃板全包','拼搏到底','防守就是一切'],wrong:['再拼一個','卡好位置','別鬆懈'],combo:['連抓籃板','蟲哥發威','防守鎖死']},
+    '皮朋':{correct:['團隊至上','全能一擊','攻防一體'],wrong:['再補防','團隊調整','別急著單打'],combo:['最佳第二人','攻守轉換','翼側鎖死']},
+  }
+};
 const FALLBACK_QUOTES={correct:['做得好！','漂亮！','繼續加油'],wrong:['再試一次','沒關係','下次會更好'],combo:['精彩連擊！','太強了！','繼續！'],lvup:['恭喜升等！','更上一層樓']};
 
 // Show idol popup with chibi + speech bubble on quiz screen
@@ -1429,10 +1444,11 @@ function showIdolPopup(trigger){
   const mi=parseInt(miStr);
   const g=GROUPS.find(x=>x.id===gid);if(!g)return;
   const member=g.members[mi];if(!member)return;
-  // Pick quote: leader-specific if idx 0, else group pool, else fallback
+  // Pick quote: member-specific first, then leader (idx 0), group pool, then fallback
   const groupPool=GROUP_QUOTES[gid]||{};
   const leaderPool=mi===0?(LEADER_QUOTES[gid]||{}):{};
-  const merged=[...(leaderPool[trigger]||[]),...(groupPool[trigger]||[]),...(FALLBACK_QUOTES[trigger]||[])];
+  const memberPool=(typeof MEMBER_QUOTES!=='undefined'?(MEMBER_QUOTES[gid]||{}):{})[member.name]||{};
+  const merged=[...(memberPool[trigger]||[]),...(leaderPool[trigger]||[]),...(groupPool[trigger]||[]),...(FALLBACK_QUOTES[trigger]||[])];
   if(!merged.length)return;
   const quote=merged[Math.floor(Math.random()*merged.length)];
   // Remove existing popup
