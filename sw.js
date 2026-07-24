@@ -1,10 +1,11 @@
-const CACHE_NAME = 'wordstar-v12';
+const CACHE_NAME = 'wordstar-v13';
 
 // Core assets pre-cached on install
 const CORE_ASSETS = [
   './',
   './word-star.html',
   './manifest.json',
+  './sentences.json',
   './icon-192.png',
   './icon-512.png',
   './audio/pk-01.mp3',
