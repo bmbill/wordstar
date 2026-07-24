@@ -1439,7 +1439,11 @@ function showIdolPopup(trigger){
   // Build popup
   const pop=document.createElement('div');pop.id='idol-popup';pop.className='idol-popup show';
   const bubbleClass=trigger==='correct'?'correct':trigger==='wrong'?'wrong':trigger==='combo'?'combo':'';
-  pop.innerHTML=`<div class="idol-bubble ${bubbleClass}">${quote}</div><div class="idol-chibi">${chibiSVG(member,60,g)}</div>`;
+  // If the avatar's card is an illustrated 繪卡, pop the artwork; otherwise the Q 版 chibi.
+  const favCard=S.cards[favKey];
+  const useArt=isArtView(favCard,member,g);
+  const figure=useArt?`<img src="${CARD_ART[g.id+'::'+member.name]}" alt="${member.name}" draggable="false" style="width:100%;height:100%;object-fit:contain">`:chibiSVG(member,60,g);
+  pop.innerHTML=`<div class="idol-bubble ${bubbleClass}">${quote}</div><div class="idol-chibi"${useArt?' style="width:82px;height:104px"':''}>${figure}</div>`;
   document.body.appendChild(pop);
   _idolPopupTimer=setTimeout(()=>{
     pop.classList.remove('show');pop.classList.add('hide');
@@ -1990,7 +1994,7 @@ function claimDailyBonus(){
 }
 
 function updateHome(){
-  const cardCount=Object.keys(S.cards).length;
+  const cardCount=ALL_MEMBERS.filter(m=>S.cards[m.groupId+'_'+m.memberIdx]).length;
   const totalMembers=ALL_MEMBERS.length;
   const completedGroups=GROUPS.filter(g=>g.members.every((_,mi)=>{
     const key=g.id+'_'+mi;return S.cards[key]})).length;
@@ -2000,13 +2004,11 @@ function updateHome(){
   // Home avatar
   const haEl=document.getElementById('home-avatar');
   if(haEl&&S.avatarKey&&S.cards[S.avatarKey]){
-    const [hgid,hmi]=S.avatarKey.replace(/^ltd_[^_]+_/,'').split('_');
-    const hg=GROUPS.find(x=>x.id===hgid);const hm=hg?hg.members[parseInt(hmi)]:null;
-    const hv=S.avatarVariant||'normal';
-    if(hg&&hm){haEl.innerHTML=chibiSVG(hm,20,hg);
-      haEl.style.borderColor=hv==='shiny'?'#ffd700':hv==='flash'?'#b388ff':hv==='ltd'?'#ff6ec7':'';
-      haEl.style.boxShadow=hv==='shiny'?'0 0 8px #ffd70066':hv==='flash'?'0 0 8px #7c4dff66':hv==='ltd'?'0 0 8px #ff6ec766':'none';
-      haEl.style.border=hv!=='normal'?'2px solid '+(hv==='shiny'?'#ffd700':hv==='flash'?'#b388ff':'#ff6ec7'):''}
+    const hs=avatarStyleFor(S.avatarKey);
+    haEl.style.position='relative';haEl.style.overflow='hidden';
+    haEl.innerHTML=avatarFigure(S.avatarKey,20);
+    haEl.style.boxShadow=hs.glow;
+    haEl.style.border=hs.border&&hs.border!=='var(--accent)'?'2px solid '+hs.border:'';
   }
   document.getElementById('coins').textContent=S.stars;
   document.getElementById('pk-pts-home').textContent=S.pkPoints||0;
@@ -2558,7 +2560,7 @@ function showColl(fv=0,gid=''){
     `<button class="filter-tab ${fv===-2?'active':''}" onclick="showColl(-2)">稀有度</button>`+
     `<button class="filter-tab ${fv===-3?'active':''}" onclick="showColl(-3)">星等</button>`;
   const totalCards=ALL_MEMBERS.length;
-  const gotCards=Object.keys(S.cards).length;
+  const gotCards=ALL_MEMBERS.filter(m=>S.cards[m.groupId+'_'+m.memberIdx]).length;
   document.getElementById('cc').textContent=gotCards+'/'+totalCards;
 
   const body=document.getElementById('coll-body');
@@ -2583,7 +2585,7 @@ function showColl(fv=0,gid=''){
           return`<div class="group-member-card" style="position:relative" ${card?`onclick="showCardDet('${key}')"`:''}>
             ${card?getCardBadge(card):''}
             <div class="gmc-chibi ${card?'':'locked'} ${dCls}" style="background:${dBg}">
-              ${card&&dSh?'<div class="ci-shine"></div>':''}${chibiSVG(mem,40,g,card&&card.art)}${isPKd?`<div class="pk-partner-sm">${chibiSVG(getPKPartnerMem(g.id,mi)||mem,16,g)}</div>`:''}</div>
+              ${card&&dSh?'<div class="ci-shine"></div>':''}${isArtView(card,mem,g)?artImgFull(mem,g,2,'top'):chibiSVG(mem,40,g)}${isPKd?`<div class="pk-partner-sm">${chibiSVG(getPKPartnerMem(g.id,mi)||mem,16,g)}</div>`:''}</div>
             <div class="gmc-name">${card?(styleTag?styleTag+' ':'')+mem.name:'???'}</div>
             <div style="font-size:.35rem;color:${card?g.theme:'var(--text-muted)'}">${starStr||'未解鎖'}</div>
             ${card?`<div style="font-size:.3rem;color:${({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||'N']}">${card.rarity||'N'}</div>`:''}
@@ -2606,7 +2608,7 @@ function showColl(fv=0,gid=''){
           return`<div class="card-item fade-in${dCls?' '+dCls:''}" style="background:${dBg};box-shadow:${getCardShadow(card,g)}" onclick="showCardDet('${key}')">
             ${getCardBadge(card)}${getCardMiniFloaters(card)}${getPKMiniExtras(card,m)}<div class="ci-shine"></div>${dSh||r==='SSR'||r==='SR'?'<div class="holo"></div>':''}${dDeco}
             <div class="ci-lv" style="font-size:.3rem;color:${dSh?'#ffd700':g.theme}">${'★'.repeat(card.stars)}</div>
-            <div class="ci-content">${chibiSVG(m,26,g,card&&card.art)}<div class="ci-word">${m.name}</div></div></div>`}).join('')}${locked.map(()=>`<div class="card-item locked" style="background:var(--card)"><div class="ci-content"><div style="font-size:.5rem;color:var(--text-muted)">?</div></div></div>`).join('')}</div></div>`}).join('');
+            ${thumbContent(m,g,card)}</div>`}).join('')}${locked.map(()=>`<div class="card-item locked" style="background:var(--card)"><div class="ci-content"><div style="font-size:.5rem;color:var(--text-muted)">?</div></div></div>`).join('')}</div></div>`}).join('');
     return}
 
   // Star level filter view
@@ -2624,7 +2626,7 @@ function showColl(fv=0,gid=''){
           return`<div class="card-item fade-in${dCls?' '+dCls:''}" style="background:${dBg};box-shadow:${getCardShadow(card,g)}" onclick="showCardDet('${key}')">
             ${getCardBadge(card)}${getCardMiniFloaters(card)}${getPKMiniExtras(card,m)}<div class="ci-shine"></div>${dSh||card.rarity==='SSR'||card.rarity==='SR'?'<div class="holo"></div>':''}${dDeco}
             <div class="ci-lv" style="font-size:.3rem;color:${dSh?'#ffd700':g.theme}">${card.rarity||'N'}</div>
-            <div class="ci-content">${chibiSVG(m,26,g,card&&card.art)}<div class="ci-word">${m.name}</div></div></div>`}).join('')}</div></div>`}).join('');
+            ${thumbContent(m,g,card)}</div>`}).join('')}</div></div>`}).join('');
     return}
 
   // All cards grid
@@ -2637,7 +2639,7 @@ function showColl(fv=0,gid=''){
       return`<div class="card-item fade-in${dCls?' '+dCls:''}" style="background:${dBg};box-shadow:${getCardShadow(card,g)}" onclick="showCardDet('${key}')">
         ${getCardBadge(card)}${getCardMiniFloaters(card)}${getPKMiniExtras(card,m)}<div class="ci-shine"></div>${dSh||card.rarity==='SSR'||card.rarity==='SR'?'<div class="holo"></div>':''}${dDeco}
         <div class="ci-lv" style="font-size:.3rem;color:${dSh?'#ffd700':g.theme}">${dSh?'✦'+starStr:starStr}</div>
-        <div class="ci-content">${chibiSVG(m,26,g,card&&card.art)}<div class="ci-word">${m.name}</div></div></div>`}
+        ${thumbContent(m,g,card)}</div>`}
     return`<div class="card-item locked" style="background:var(--card)">
       <div class="ci-content"><div style="font-size:.5rem;color:var(--text-muted)">?</div></div></div>`}).join('')}</div>`;
 }
@@ -2673,7 +2675,7 @@ function showCardDet(key){
     variants.push({id:'ltd_'+evId,label:getEvBadge(evId)+' '+getEvName(evId),cls:'ltd-card ltd-'+evId,bg:getSeasonalBg(evId),deco:evId,ltdKey:lk,selected:curDisplay==='ltd_'+evId})});
   // Gallery cards HTML - match collection grid style
   const galleryCards=variants.map((v,i)=>{
-    const chibi=chibiSVG(mem,26,g,card.art);
+    const chibi=chibiSVG(mem,26,g,card.art&&!card.chibiView);
     const sel=v.selected?'border:2px solid #ffd700;box-shadow:0 0 12px #ffd70066':'border:2px solid transparent';
     const showHolo=v.id==='shiny'||(card.rarity==='SSR'||card.rarity==='SR');
     return`<div style="flex-shrink:0;text-align:center;cursor:pointer;scroll-snap-align:center" onclick="selectCardStyle('${baseKey}','${v.id}',${i})">
@@ -2685,21 +2687,16 @@ function showCardDet(key){
   // Current display style for main preview
   const selVar=variants.find(v=>v.selected)||variants[0];
   const previewCls=selVar.cls;const previewBg=selVar.bg;
-  const previewDeco=selVar.deco?getSeasonalDecoSVG(selVar.deco,140,195):'';
-  const previewHolo=selVar.id==='shiny'||(card.rarity==='SSR'||card.rarity==='SR');
   const previewBorder=selVar.id==='shiny'?'#c9a44c':selVar.id==='flash'?'#7c4dff':selVar.id==='pkstyle'?'#00e5ff':g.theme+'66';
-  const previewChibi=chibiSVG(mem,70,g,card.art);
   const rarityClr=({SSR:'#ffd700',SR:'#e879f9',R:'#60a5fa',N:'#9ca3af'})[card.rarity||'N'];
 
   document.getElementById('mod-content').innerHTML=`<div class="modal-handle"></div>
     <div style="display:flex;flex-direction:column;align-items:center">
-      <div id="det-preview" class="${previewCls}" style="width:140px;height:195px;border-radius:12px;background:${previewBg};
+      <div id="det-preview" class="${previewCls}" ${isArtView(card,mem,g)?`onclick="showArtFullscreen('${key}')"`:''} style="width:min(70vw,250px);aspect-ratio:1/1.4;border-radius:14px;background:${previewBg};
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;
-        border:2px solid ${previewBorder};box-shadow:0 4px 25px ${previewBorder}44;transition:all .3s">
-        <div class="ci-shine"></div>${previewHolo?'<div class="holo"></div>':''}${previewDeco}
-        ${selVar.deco?getSeasonalFloaters(selVar.deco):''}
-        ${selVar.id==='pkstyle'?getPKDuetStage(mem,g,gid,mi,55):`<div style="position:relative;z-index:8" class="${selVar.id==='flash'?'flash-chibi-anim':selVar.id.startsWith('ltd_')?getLtdChibiClass(selVar.deco):''}">${previewChibi}</div>`}
-        <div style="position:relative;z-index:9;font-size:.65rem;font-weight:700">${mem.name}</div></div>
+        border:2px solid ${previewBorder};box-shadow:0 4px 25px ${previewBorder}44;transition:all .3s;cursor:${isArtView(card,mem,g)?'zoom-in':'default'}">
+        ${buildDetPreviewInner(mem,g,card,selVar,gid,mi)}</div>
+      ${isArtView(card,mem,g)?'<div style="font-size:.5rem;color:var(--text-dim);margin-top:.3rem">🔍 點擊圖片全螢幕欣賞</div>':''}
       <div style="margin-top:.4rem;font-size:1.1rem;font-weight:900">${mem.name}</div>
       <div style="display:flex;align-items:center;gap:.3rem;margin-top:.15rem">
         <span style="color:${rarityClr};font-weight:700;font-size:.7rem">${card.rarity||'N'}</span>
@@ -2716,6 +2713,7 @@ function showCardDet(key){
       <div style="font-size:.5rem;color:var(--text-dim);text-align:center;margin-bottom:.25rem">← 滑動選擇展示樣式 →</div>
       <div id="style-gallery" style="display:flex;gap:.4rem;overflow-x:auto;padding:.2rem .3rem;justify-content:${variants.length<=3?'center':'flex-start'};scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
         ${galleryCards}</div></div>`:''}
+    ${card.art&&hasCardArt(mem,g)?`<button class="btn btn-sm" style="width:100%;margin-top:.5rem;font-size:.65rem;background:var(--card);border:1px solid #ff6ec766;color:#ff6ec7;font-weight:700" onclick="toggleChibiView('${key}')">${card.chibiView?'🎨 顯示繪圖':'🙂 顯示 Q 版'}</button>`:''}
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;margin-top:.5rem">
       <div style="background:var(--card);border-radius:.5rem;padding:.35rem;text-align:center"><div style="font-weight:700;color:${g.theme};font-size:.75rem">${card.stars}★</div><div style="font-size:.5rem;color:var(--text-dim)">星等</div></div>
       <div style="background:var(--card);border-radius:.5rem;padding:.35rem;text-align:center"><div style="font-weight:700;font-size:.75rem">x${card.dupes+1}</div><div style="font-size:.5rem;color:var(--text-dim)">持有</div></div>
@@ -2725,6 +2723,23 @@ function showCardDet(key){
     ${card.fragments>=10&&card.stars<5?`<button class="btn btn-primary btn-sm" style="width:100%;margin-top:.35rem" onclick="upgradeCard('${key}')">升星 ⬆ (10🔮)</button>`:''}
     <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:.35rem" onclick="closeMod()">關閉</button>`;
   document.getElementById('det-modal').classList.add('active')}
+// Toggle an art card between its illustration (繪圖) and the generated Q 版 chibi.
+function toggleChibiView(key){const c=S.cards[key];if(!c)return;c.chibiView=!c.chibiView;saveState();showCardDet(key)}
+// Full-screen view of a card's illustration (滿版). Tap anywhere to close.
+function showArtFullscreen(key){
+  const card=S.cards[key];if(!card)return;
+  const baseKey=key.startsWith('ltd_')?key.split('_').slice(2).join('_'):key;
+  const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return;
+  const mem=g.members[parseInt(mi)];if(!mem||!isArtView(card,mem,g))return;
+  let ov=document.getElementById('art-fs');
+  if(!ov){ov=document.createElement('div');ov.id='art-fs';document.body.appendChild(ov)}
+  ov.style.cssText='position:fixed;inset:0;z-index:999;background:'+(g.bg||'#0a0014')+';display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeInUp .25s both';
+  ov.onclick=()=>ov.remove();
+  ov.innerHTML=`<img src="${CARD_ART[g.id+'::'+mem.name]}" alt="${mem.name}" draggable="false" style="max-width:96vw;max-height:80vh;object-fit:contain;filter:drop-shadow(0 10px 34px rgba(0,0,0,.6))">
+    <div style="margin-top:.8rem;font-size:1.4rem;font-weight:900;text-shadow:0 2px 6px #000">${mem.name}</div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.75);margin-top:.25rem">${g.name} · ${g.concept}</div>
+    <div style="position:absolute;bottom:1.6rem;font-size:.6rem;color:rgba(255,255,255,.6);letter-spacing:.08em">點擊任意處關閉</div>`;
+}
 
 function getSeasonalFloatersMini(evId){
   const particles={
@@ -2808,6 +2823,53 @@ function getCardShadow(card,g){
   if(isCardDisplayPK(card))return'none';
   if(isCardDisplayLtd(card))return'none';
   return'0 1px 5px '+g.theme+'33'}
+// Should this card render its full illustration (繪圖) rather than the Q 版 chibi?
+// card.chibiView lets the player opt back to the generated chibi for an art card.
+function isArtView(card,m,g){return !!(card&&card.art&&!card.chibiView&&g&&m&&hasCardArt(m,g))}
+// Full-bleed art image that fills its (position:relative) container.
+function artImgFull(m,g,z,pos){return`<img src="${CARD_ART[g.id+'::'+m.name]}" alt="${m.name}" draggable="false" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center ${pos||'top'};z-index:${z||2};border-radius:inherit">`}
+// Inner content of a small collection card-item: full-bleed art (+name overlay) or chibi.
+function thumbContent(m,g,card){
+  if(isArtView(card,m,g))
+    return`${artImgFull(m,g,2,'top')}<div class="ci-word" style="position:absolute;left:0;right:0;bottom:0;z-index:5;padding:2px 1px 1px;background:linear-gradient(transparent,rgba(0,0,0,.6));text-shadow:0 1px 2px #000">${m.name}</div>`;
+  return`<div class="ci-content">${chibiSVG(m,26,g)}<div class="ci-word">${m.name}</div></div>`;
+}
+// Avatar content for a card key: full illustration (繪圖) or Q 版 chibi.
+function avatarFigure(key,size){
+  const card=S.cards[key];if(!card)return'👤';
+  const baseKey=key.startsWith('ltd_')?key.split('_').slice(2).join('_'):key;
+  const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return'👤';
+  const mem=g.members[parseInt(mi)];if(!mem)return'👤';
+  if(isArtView(card,mem,g))return`<img src="${CARD_ART[g.id+'::'+mem.name]}" alt="${mem.name}" draggable="false" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%">`;
+  return chibiSVG(mem,size,g);
+}
+// Border/glow accent for an avatar, derived from the card's representative display.
+function avatarStyleFor(key){
+  const c=S.cards[key];if(!c)return{border:'var(--accent)',glow:'none',cls:''};
+  const ds=c.displayStyle||'normal';
+  if(ds==='shiny'&&c.shiny)return{border:'#ffd700',glow:'0 0 12px #ffd70066',cls:'av-shiny'};
+  if(ds==='flash'&&c.flash)return{border:'#b388ff',glow:'0 0 12px #7c4dff66',cls:'av-flash'};
+  if(ds.startsWith('ltd_')||c.ltd)return{border:'#ff6ec7',glow:'0 0 12px #ff6ec766',cls:'av-ltd'};
+  if(c.art&&!c.chibiView)return{border:'#ff6ec7',glow:'0 0 12px #ff6ec766',cls:''};
+  return{border:'var(--accent)',glow:'none',cls:''};
+}
+// Inner HTML of the #det-preview card for a given style variant (sel: {id, deco}).
+// Art cards ("繪卡") always render the full illustration as a big image; switching the
+// style variant (閃卡/動態/限定…) layers that variant's holo/prism effects OVER the art
+// instead of reverting to the generated chibi SVG.
+function buildDetPreviewInner(mem,g,card,sel,gid,mi){
+  const showHolo=sel.id==='shiny'||(card.rarity==='SSR'||card.rarity==='SR');
+  const base=`<div class="ci-shine"></div>${showHolo?'<div class="holo"></div>':''}${sel.deco?getSeasonalDecoSVG(sel.deco,250,350):''}${sel.deco?getSeasonalFloaters(sel.deco):''}`;
+  if(isArtView(card,mem,g)){
+    return`${base}
+      ${artImgFull(mem,g,3,'top')}
+      <div style="position:absolute;left:0;right:0;bottom:0;z-index:9;padding:.5rem .3rem .3rem;background:linear-gradient(transparent,rgba(0,0,0,.6));font-size:.7rem;font-weight:700;text-align:center;text-shadow:0 1px 3px #000">${mem.name}</div>`;
+  }
+  const isFlash=sel.id==='flash',isLtd=(sel.id||'').startsWith('ltd_'),isPK=sel.id==='pkstyle';
+  return`${base}
+    ${isPK?getPKDuetStage(mem,g,gid,mi,55):`<div style="position:relative;z-index:8" class="${isFlash?'flash-chibi-anim':isLtd?getLtdChibiClass(sel.deco):''}">${chibiSVG(mem,70,g)}</div>`}
+    <div style="position:relative;z-index:9;font-size:.65rem;font-weight:700">${mem.name}</div>`;
+}
 function selectCardStyle(baseKey,styleId,idx){
   const card=S.cards[baseKey];if(!card)return;
   card.displayStyle=styleId;saveState();
@@ -2837,11 +2899,7 @@ function selectCardStyle(baseKey,styleId,idx){
         variants.push({id:'ltd_'+evId,cls:'ltd-card ltd-'+evId,bg:getSeasonalBg(evId),deco:evId,border:ltdBorders[evId]||g.theme+'66'})});
       const sel=variants.find(v=>v.id===styleId)||variants[0];
       prev.className=sel.cls;prev.style.background=sel.bg;prev.style.borderColor=sel.border;prev.style.boxShadow='0 4px 25px '+sel.border+'44';
-      const showHolo=sel.id==='shiny'||(card.rarity==='SSR'||card.rarity==='SR');
-      const isFlash=sel.id==='flash';const isLtd=sel.id.startsWith('ltd_');const isPK=sel.id==='pkstyle';
-      prev.innerHTML=`<div class="ci-shine"></div>${showHolo?'<div class="holo"></div>':''}${sel.deco?getSeasonalDecoSVG(sel.deco,140,195):''}${sel.deco?getSeasonalFloaters(sel.deco):''}
-        ${isPK?getPKDuetStage(mem,g,gid,mi,55):`<div style="position:relative;z-index:8" class="${isFlash?'flash-chibi-anim':isLtd?getLtdChibiClass(sel.deco):''}">${chibiSVG(mem,70,g)}</div>`}
-        <div style="position:relative;z-index:9;font-size:.65rem;font-weight:700">${mem.name}</div>`}}}
+      prev.innerHTML=buildDetPreviewInner(mem,g,card,sel,gid,mi)}}}
   floatTxt('已設為展示樣式 ✓','#ffd700')}
 
 function upgradeCard(key){
@@ -3405,16 +3463,12 @@ function showProfile(){
   document.getElementById('prof-name-display').textContent=S.playerName||'玩家';
   const avEl=document.getElementById('prof-avatar');
   if(S.avatarKey&&S.cards[S.avatarKey]){
-    const [gid,mi]=S.avatarKey.replace(/^ltd_[^_]+_/,'').split('_');
-    const ag=GROUPS.find(x=>x.id===gid);const am=ag?ag.members[parseInt(mi)]:null;
-    const v=S.avatarVariant||'normal';
     avEl.classList.remove('av-shiny','av-flash','av-ltd');
-    if(ag&&am){
-      avEl.innerHTML=chibiSVG(am,40,ag);
-      avEl.style.borderColor=v==='shiny'?'#ffd700':v==='flash'?'#b388ff':v==='ltd'?'#ff6ec7':'var(--accent)';
-      avEl.style.boxShadow=v==='shiny'?'0 0 12px #ffd70066':v==='flash'?'0 0 12px #7c4dff66':v==='ltd'?'0 0 12px #ff6ec766':'none';
-      if(v!=='normal')avEl.classList.add('av-'+v);
-    }else{avEl.innerHTML='👤';avEl.style.borderColor='var(--accent)';avEl.style.boxShadow='none'}
+    const as=avatarStyleFor(S.avatarKey);
+    avEl.innerHTML=avatarFigure(S.avatarKey,40);
+    avEl.style.borderColor=as.border;
+    avEl.style.boxShadow=as.glow;
+    if(as.cls)avEl.classList.add(as.cls);
   }else{avEl.classList.remove('av-shiny','av-flash','av-ltd');avEl.innerHTML='👤';avEl.style.borderColor='var(--accent)';avEl.style.boxShadow='none'}
   document.getElementById('prof-level').textContent='等級 '+S.level;
   document.getElementById('prof-cards').textContent=cards;
@@ -3460,18 +3514,20 @@ function setAvFilter(type,val){_avFilter[type]=val;showAvatarPicker()}
 function showAvatarPicker(){
   const owned=Object.entries(S.cards||{});
   if(!owned.length){floatTxt('先去抽卡吧！','var(--text-dim)');return}
-  // Build list of all selectable variants
+  // One entry per owned MEMBER (matching the 小卡 grid), preferring the base card
+  // over its limited variants, and showing that card's representative display.
+  const rep={};
+  owned.forEach(([key])=>{
+    const isLtd=key.startsWith('ltd_');
+    const baseKey=isLtd?key.split('_').slice(2).join('_'):key;
+    if(!rep[baseKey]||!isLtd)rep[baseKey]=key; // base card wins over ltd
+  });
   const items=[];
-  owned.forEach(([key,card])=>{
-    const baseKey=key.startsWith('ltd_')?key.split('_').slice(2).join('_'):key;
+  Object.entries(rep).forEach(([baseKey,key])=>{
     const [gid,mi]=baseKey.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return;
     const mem=g.members[parseInt(mi)];if(!mem)return;
-    const rarity=card.rarity||mem.rarity||'N';
-    const isLtd=key.startsWith('ltd_');
-    items.push({key,variant:'normal',g,mem,rarity,border:'transparent',badge:'',bg:g.bg});
-    if(card.shiny)items.push({key,variant:'shiny',g,mem,rarity,border:'#ffd700',badge:'✦',badgeClr:'#ffd700',bg:g.bg,glow:'0 0 8px #ffd70066'});
-    if(card.flash)items.push({key,variant:'flash',g,mem,rarity,border:'#b388ff',badge:'⚡',badgeClr:'#b388ff',bg:g.bg,glow:'0 0 8px #7c4dff66'});
-    if(isLtd)items.push({key,variant:'ltd',g,mem,rarity,border:'#ff6ec7',badge:'🎪',badgeClr:'#ff6ec7',bg:g.bg,glow:'0 0 8px #ff6ec766'});
+    const card=S.cards[key];
+    items.push({key,card,g,mem,rarity:card.rarity||mem.rarity||'N'});
   });
   // Apply filters
   let filtered=items;
@@ -3500,23 +3556,21 @@ function showAvatarPicker(){
     <div style="text-align:center;font-size:.55rem;color:var(--text-muted);margin-bottom:.35rem">共 ${filtered.length} 張</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;max-height:48vh;overflow-y:auto;padding:2px">
     ${filtered.length===0?'<div style="grid-column:span 3;text-align:center;color:var(--text-dim);font-size:.7rem;padding:1.5rem">沒有符合條件的卡</div>':filtered.map(it=>{
-      const selKey=S.avatarKey===it.key&&(S.avatarVariant||'normal')===it.variant;
+      const selKey=S.avatarKey===it.key;
       const rc=rarityColor[it.rarity]||'#9ca3af';
-      return`<div style="text-align:center;cursor:pointer;border:2px solid ${selKey?'var(--mint)':it.border};border-radius:.6rem;padding:3px;${it.glow?'box-shadow:'+it.glow:''};background:${it.bg};position:relative" onclick="setAvatar('${it.key}','${it.variant}')">
-        <div style="display:flex;flex-direction:column;align-items:center;padding:4px 2px">
-          <div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-bottom:2px">
-            <div style="font-size:.5rem;font-weight:900;color:${rc};background:rgba(0,0,0,.35);padding:1px 4px;border-radius:3px">${it.rarity}</div>
-            ${it.badge?`<div style="font-size:.6rem;color:${it.badgeClr}">${it.badge}</div>`:'<div></div>'}
-          </div>
-          ${chibiSVG(it.mem,42,it.g)}
-          <div style="font-size:.65rem;font-weight:700;margin-top:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)">${it.mem.name}</div>
-          <div style="font-size:.5rem;color:rgba(255,255,255,.75);margin-top:1px">${it.g.name}</div>
-          ${selKey?'<div style="font-size:.55rem;color:var(--mint);font-weight:900;margin-top:2px">✓ 使用中</div>':''}
-        </div></div>`}).join('')}</div>
+      const as=avatarStyleFor(it.key);
+      const dBg=getCardDisplayBg(it.card,it.g);const dCls=getCardDisplayClass(it.card);const dSh=isCardDisplayShiny(it.card);
+      return`<div style="text-align:center;cursor:pointer;border:2px solid ${selKey?'var(--mint)':(as.border==='var(--accent)'?'transparent':as.border)};border-radius:.6rem;padding:3px;${as.glow!=='none'?'box-shadow:'+as.glow+';':''}position:relative" onclick="setAvatar('${it.key}')">
+        <div class="card-item ${dCls}" style="width:100%;aspect-ratio:1/1.2;max-height:none;background:${dBg}">
+          <div class="ci-shine"></div>${dSh||it.rarity==='SSR'||it.rarity==='SR'?'<div class="holo"></div>':''}
+          <div class="ci-lv" style="font-size:.42rem;color:${dSh?'#ffd700':it.g.theme}">${it.rarity}</div>
+          ${thumbContent(it.mem,it.g,it.card)}</div>
+        <div style="font-size:.5rem;color:rgba(255,255,255,.75);margin-top:2px">${it.g.name}</div>
+        ${selKey?'<div style="font-size:.5rem;color:var(--mint);font-weight:900">✓ 使用中</div>':''}</div>`}).join('')}</div>
     <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:.5rem" onclick="closeMod()">關閉</button>`;
   document.getElementById('det-modal').classList.add('active');
 }
-function setAvatar(key,variant){S.avatarKey=key;S.avatarVariant=variant||'normal';saveState();showProfile();closeMod()}
+function setAvatar(key){S.avatarKey=key;S.avatarVariant='normal';saveState();showProfile();closeMod()}
 function showTitlePicker(){
   const titles=checkTitles();
   if(!titles.length){floatTxt('尚未解鎖任何稱號','var(--text-dim)');return}
