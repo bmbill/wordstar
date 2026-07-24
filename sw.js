@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wordstar-v8';
+const CACHE_NAME = 'wordstar-v12';
 
 // Core assets pre-cached on install
 const CORE_ASSETS = [
@@ -40,8 +40,8 @@ self.addEventListener('activate', e => {
 
 // Fetch strategy:
 // - Audio files: cache-first (never fetch again once cached)
-// - Page navigations: stale-while-revalidate (instant load from cache,
-//     background update so slow networks never block the splash)
+// - Page navigations: network-first (always load the latest HTML when online, so updates
+//     take effect on refresh; fall back to cached page only when offline)
 // - Everything else: network-first, fall back to cache
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
@@ -63,33 +63,19 @@ self.addEventListener('fetch', e => {
   if (e.request.mode === 'navigate') {
     e.respondWith(
       caches.open(CACHE_NAME).then(cache =>
-        cache.match(e.request).then(cached => {
-          const networkUpdate = fetch(e.request).then(resp => {
-            if (resp.ok) {
-              cache.put(e.request, resp.clone());
-              if (cached) {
-                self.clients.matchAll().then(clients => {
-                  clients.forEach(c => c.postMessage({ type: 'UPDATE_AVAILABLE' }));
-                });
-              }
-            }
-            return resp;
-          });
-
-          if (cached) {
-            // Serve cache instantly; background update runs silently
-            networkUpdate.catch(() => {});
-            return cached;
-          }
-
-          // No cache yet: wait for network, fall back to precached HTML on failure
-          return networkUpdate.catch(() =>
-            cache.match('./word-star.html').then(fallback => fallback || new Response(
+        // Network-first: fetch the latest HTML when online and refresh the cache; only fall
+        // back to the cached page (or precached HTML) when the network is unavailable.
+        fetch(e.request).then(resp => {
+          if (resp.ok) cache.put(e.request, resp.clone());
+          return resp;
+        }).catch(() =>
+          cache.match(e.request).then(cached =>
+            cached || cache.match('./word-star.html').then(fallback => fallback || new Response(
               '<h1>離線中</h1><p>請連接網路後重新整理</p>',
               { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
             ))
-          );
-        })
+          )
+        )
       )
     );
     return;
