@@ -1,4 +1,9 @@
-const CACHE_NAME = 'wordstar-v13';
+const CACHE_NAME = 'wordstar-v14';
+
+// Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
 // Core assets pre-cached on install
 const CORE_ASSETS = [
