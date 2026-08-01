@@ -1493,7 +1493,7 @@ function hasCardArt(member,group){return !!(group&&member&&CARD_ART[group.id+'::
 // Register sliced AI art for groups that have it. Members of these groups can roll the rare
 // illustrated "art card" (1%); groups without art keep the generated SVG.
 // Value = how many members (from index 0) actually have an image (eighteen only has Sheet A = 7/13).
-const ART_SHEETS={nbahof:10,bt7:7,'4pink':4,thrice:9,lostkidz:8,nudenim:5,aesthe:4,we6:6,eighteen:13,seraph1m:5,gidle:5,kimetsu:8,jjk:7,haikyuu:8,slamdunk:8,hxh:7};
+const ART_SHEETS={nbahof:10,bt7:7,'4pink':4,thrice:9,lostkidz:8,nudenim:5,aesthe:4,we6:6,eighteen:13,seraph1m:5,gidle:5,kimetsu:8,jjk:7,haikyuu:8,slamdunk:8,hxh:7,spyfam:5,bnha:8};
 Object.entries(ART_SHEETS).forEach(([gid,n])=>{
   if(!GROUPS.find(x=>x.id===gid))return;
   Object.assign(CARD_ART, buildGroupArt(gid, Array.from({length:n},(_,i)=>`art/${gid}/${i}.png`)));
