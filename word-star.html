@@ -1898,6 +1898,8 @@ function loadState(){
       const saved=JSON.parse(d);
       // Merge saved data into S, keeping defaults for any new fields
       Object.keys(saved).forEach(k=>{S[k]=saved[k]});
+      const fixed=repairLtdCards();
+      if(fixed)console.log('[存檔修復] 補回 '+fixed+' 張只存在限定版、圖鑑看不到的卡');
       return true;
     }
   }catch(e){}
@@ -2977,6 +2979,38 @@ function getLimitedCardData(member,ev){
 function getLtdVersions(baseKey){
   const k=baseKey.startsWith('ltd_')?baseKey.split('_').slice(2).join('_'):baseKey;
   return Object.keys(S.cards).filter(ck=>ck.startsWith('ltd_')&&ck.endsWith('_'+k))}
+// 限定卡存在 'ltd_<活動>_<團體>_<編號>'，但圖鑑（以及成就、進度統計）只查基本 key，
+// 所以只抽到限定版的角色會整張從圖鑑消失，卡上的 ✦閃卡 / ⚡動態 / 🎨繪卡 旗標也沒人讀得到。
+// 每張限定卡都同步一張基本卡出來，限定外觀仍留在 ltd key 當 variant。
+function syncLtdBase(baseKey,ltdCard){
+  if(!ltdCard)return false;
+  const rr=ltdCard.rarity||'N';
+  let base=S.cards[baseKey],changed=false;
+  if(!base){
+    base=S.cards[baseKey]={stars:rr==='SSR'?3:rr==='SR'?2:1,dupes:0,fragments:0,t:ltdCard.t||Date.now(),
+      ltd:null,rarity:rr,shiny:false,flash:false,art:false,isNew:true};
+    changed=true;
+  }
+  if(!base.rarity){base.rarity=rr;changed=true}
+  [['shiny','newShiny'],['flash','newFlash'],['art','newArt']].forEach(([f,nf])=>{
+    if(ltdCard[f]&&!base[f]){base[f]=true;base[nf]=true;base.isNew=true;changed=true}
+  });
+  return changed;
+}
+// 舊存檔修復：把過去掉進 ltd key、在圖鑑裡看不到的卡補回基本卡。
+function repairLtdCards(){
+  let fixed=0;
+  Object.keys(S.cards||{}).forEach(k=>{
+    if(!k.startsWith('ltd_'))return;
+    const baseKey=k.split('_').slice(2).join('_');
+    const [gid,mi]=baseKey.split('_');
+    const g=GROUPS.find(x=>x.id===gid);
+    if(!g||!g.members[parseInt(mi)])return; // 團體或成員已不存在就跳過
+    if(syncLtdBase(baseKey,S.cards[k]))fixed++;
+  });
+  if(fixed)saveState();
+  return fixed;
+}
 function getEvBadge(evId){return{newyear:'🎍',valentine:'💝',spring:'🌸',summer:'🏖️',halloween:'🎃',xmas:'🎄',debut:'💫',summer2:'🌊'}[evId]||'✨'}
 function getEvName(evId){return{newyear:'新年限定',valentine:'情人節限定',spring:'春日限定',summer:'夏日限定',halloween:'萬聖限定',xmas:'聖誕限定',debut:'出道紀念',summer2:'盛夏回歸'}[evId]||'限定版'}
 function getSeasonalBg(evId){
@@ -3175,6 +3209,8 @@ function showPullResult(results){
       const fragReward=r.member.rarity==='SSR'?5:r.member.rarity==='SR'?3:r.member.rarity==='R'?2:1;
       S.cards[actualKey].fragments+=fragReward;saveState();
     }
+    // 限定卡：同步一張基本卡，否則這張卡（和它的閃卡／動態／繪卡）在圖鑑裡是隱形的
+    if(isLtd&&syncLtdBase(key,S.cards[actualKey]))saveState();
     return{m,g,rarity:r.rarity,isShiny,isFlash,isArt,isLtd,ltdEv,isDupeActual,actualKey,isSpecial,isNewShiny,isNewFlash,isNewArt,isNewLtd};
   });
 
