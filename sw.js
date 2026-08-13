@@ -4,7 +4,7 @@ const CACHE_NAME = 'wordstar-v20';
 // Keep a one-line summary here — the waiting SW is already the new version and can
 // answer GET_INFO, so the banner can say what the update contains before reloading.
 const APP_VERSION = 'v20';
-const UPDATE_NOTE = '動漫卡池新增兩組：草帽海賊團、復仇者聯盟（各 10 位）';
+const UPDATE_NOTE = '動漫卡池新增兩組：草帽海賊團、復仇者聯盟（各 10 位，含繪卡）';
 
 self.addEventListener('message', e => {
   // Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)

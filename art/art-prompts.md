@@ -10,6 +10,7 @@
 >
 > 拿到圖後把檔案放到 `art/<groupId>-sheet.png`（或直接貼給我），我負責切割 + 去背 + 接進遊戲（圖片優先、無圖時 fallback 回原 SVG）。
 > 建議每張 ≤ 10 個角色；超過的組（18-1 有 13 人）我已幫你拆成兩張。
+> 復仇者聯盟也拆成兩張 —— 不是因為人數，是十人同框會被判定成知名英雄陣容而擋圖。
 
 ---
 
@@ -472,30 +473,52 @@ Characters (left to right, top row then bottom row):
 
 ---
 
-## 🛡️ avengers 復仇者聯盟（10 人・地球最強英雄）— 美漫英雄貼紙風
+## 🛡️ avengers 復仇者聯盟（10 人・地球最強英雄）— 美漫英雄貼紙風 · 拆兩張
+
+> 十人同框會被判定為「知名英雄陣容」，所以拆成兩張各 5 人，服裝也全部改成原創款：
+> 沒有徽章／面罩／披風／招牌武器，只留配色與配件。
+> Sheet A → `art/avengers-sheet.png`（成員 1–5）、Sheet B → `art/avengers2-sheet.png`（成員 6–10）。
+
+### Sheet A（5 人）
 
 ```
-Create ONE sticker sheet image: 10 cute chibi superheroes in a strict
-5 columns x 2 rows grid, evenly spaced, plain flat dark-navy background with a
-faint gold radial glow.
+Create ONE sticker sheet image: 5 cute chibi action heroes in a strict
+5 columns x 1 row, evenly spaced, plain flat dark-navy background with a faint
+gold radial glow.
 STYLE: adorable glossy chibi mascot stickers, big head / small body, bold
-comic-book colors with soft cel-shading and a gold rim-light, thick clean white
-die-cut outline, subtle holographic shimmer. All 10 SAME art style and SAME
-scale, front-facing, each fully inside its own cell, generous even gaps, no
-overlap, no cropping, NO text/labels/logos, wide high-res image.
-Give each a DIFFERENT heroic pose. Do NOT copy any existing character design or
-trademarked emblem — use only the described generic features, plain shapes only.
-Characters (left to right, top row then bottom row):
-1. Man, short dark-brown hair with a neat goatee, light-tan skin, red-and-gold plated armor suit, glowing round sparkle on the chest, one palm raised forward mid-blast, smug confident smirk.
-2. Man, short blond hair, fair skin, blue uniform with a plain white star on the chest, holding a plain round blue-and-red disc shield, steady heroic stance, earnest determined face.
-3. Man, long wavy dirty-blond hair with a short beard, light-tan skin, silver armor with a red cape, small lightning-bolt accent, raising a plain short-handled hammer overhead, booming grin.
-4. Huge muscular man, dark-green skin, short dark-green messy hair, torn purple shorts, small broken-chain accent, both fists slamming down, wide open-mouth roar.
-5. Woman, wavy red shoulder-length hair, fair skin, black bodysuit with a slim belt, small silver earring, crouched ready combat stance, cool focused stare.
-6. Man, short light-brown hair, light-tan skin, dark slate-grey tactical vest with purple trim, small crescent accent, drawing a simple bow, one eye squinted in aim.
-7. Teen boy, brown messy hair, fair skin, red-and-blue full bodysuit with thin black web-lines, a small backpack cap accent, crouched wall-perch pose with one hand shooting a thin white line, playful energetic vibe.
-8. Man, very short black hair, dark-brown skin, matte black ribbed bodysuit with silver-purple trim, small purple crystal accent, sleek panther-like crouch, calm regal expression.
-9. Man, black hair with grey temples, light-tan skin, blue tunic with a long red cloak, a small round gem pendant, hands tracing glowing orange circles in the air, serene mystic focus.
-10. Woman, long auburn hair, fair skin, crimson-red coat over black, small red flame accent, both hands raised with swirling red energy wisps, intense glowing eyes.
+comic-book colors, soft cel-shading with a warm gold rim-light, thick clean
+white die-cut outline, subtle holographic shimmer. All 5 SAME art style and
+SAME scale, front-facing, each fully inside its own cell, generous even gaps,
+no overlap, no cropping, NO text/labels/logos, wide high-res image.
+Costumes are plain and understated: no capes, no masks, no chest emblems or
+crests, no signature weapons. Give each a DIFFERENT confident pose.
+Characters (left to right):
+1. Man, short dark-brown hair, light-tan skin, crimson pilot's flight suit with brass buckles and a plain smooth chest panel, goggles pushed up on the forehead, small gold sparkle at the fingertips, one arm swung back mid-take-off, smug confident smirk.
+2. Man, short sandy-blond hair, fair skin, royal-blue field uniform with white trim, a tiny gold star charm on the collar, one arm raised in a rally gesture, earnest steady face.
+3. Man, long wavy golden hair, light-tan skin, bright blue eyes, deep-red tunic with silver shoulder straps, small lightning-bolt accent, both fists on hips with tiny sparks of light around them, booming grin.
+4. Very large man, moss-green skin, dark-green messy hair, deep-purple padded strongman vest and long trousers, small chain accent, hoisting a plain round boulder overhead, cheerful open-mouth shout.
+5. Woman, wavy scarlet shoulder-length hair, fair skin, matte black scout bodysuit with a slim belt, small silver earring, low ready crouch, cool focused stare.
+```
+
+### Sheet B（5 人）
+
+```
+Create ONE sticker sheet image: 5 cute chibi action heroes in a strict
+5 columns x 1 row, evenly spaced, plain flat dark-navy background with a faint
+gold radial glow.
+STYLE: adorable glossy chibi mascot stickers, big head / small body, bold
+comic-book colors, soft cel-shading with a warm gold rim-light, thick clean
+white die-cut outline, subtle holographic shimmer. All 5 SAME art style and
+SAME scale, front-facing, each fully inside its own cell, generous even gaps,
+no overlap, no cropping, NO text/labels/logos, wide high-res image.
+Costumes are plain and understated: no capes, no masks, no chest emblems or
+crests, no signature weapons. Give each a DIFFERENT confident pose.
+Characters (left to right):
+1. Man, short light-brown hair, light-tan skin, slate-grey ranger coat, small crescent accent, tossing and catching a plain wooden ring, one eye squinted playfully.
+2. Teen boy, brown messy hair, wheat skin, red hooded track jacket with a small cap, mid-air acrobatic flip with arms out, playful energetic grin.
+3. Man, very short black hair, dark-brown skin, deep-purple ceremonial long coat with fine silver stitching, small violet crystal pendant, standing tall with arms folded, calm regal expression.
+4. Man, black hair with grey temples, light-tan skin, teal scholar's robe with a wide sash, a small round gem pendant, palms apart weaving faint pale-blue rune sparks, serene focus.
+5. Woman, long auburn hair, fair skin, crimson hooded cloak over dark clothes, small ember-flame accent, warm orange sparks drifting around her raised hand, gentle glowing gaze.
 ```
 
 ---

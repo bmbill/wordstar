@@ -1580,7 +1580,7 @@ function hasCardArt(member,group){return !!(group&&member&&CARD_ART[group.id+'::
 // Register sliced AI art for groups that have it. Members of these groups can roll the rare
 // illustrated "art card" (1%); groups without art keep the generated SVG.
 // Value = how many members (from index 0) actually have an image (eighteen only has Sheet A = 7/13).
-const ART_SHEETS={nbahof:10,bt7:7,'4pink':4,thrice:9,lostkidz:8,nudenim:5,aesthe:4,we6:6,eighteen:13,seraph1m:5,gidle:5,kimetsu:8,jjk:7,haikyuu:8,slamdunk:8,hxh:7,spyfam:5,bnha:8,wcup26:10,hkstar:10};
+const ART_SHEETS={nbahof:10,bt7:7,'4pink':4,thrice:9,lostkidz:8,nudenim:5,aesthe:4,we6:6,eighteen:13,seraph1m:5,gidle:5,kimetsu:8,jjk:7,haikyuu:8,slamdunk:8,hxh:7,spyfam:5,bnha:8,wcup26:10,hkstar:10,onepiece:10,avengers:10};
 Object.entries(ART_SHEETS).forEach(([gid,n])=>{
   if(!GROUPS.find(x=>x.id===gid))return;
   Object.assign(CARD_ART, buildGroupArt(gid, Array.from({length:n},(_,i)=>`art/${gid}/${i}.png`)));
@@ -2053,8 +2053,12 @@ function startGame(){loadState();updateTTSBtn();goTo('home-screen');updateHome()
 
 // ===== 更新紀錄 =====
 // APP_VERSION 要跟 sw.js 的 CACHE_NAME 同步（sw.js 也放一份摘要，讓更新橫幅在重整前就講得出內容）。
-const APP_VERSION='v19';
+const APP_VERSION='v20';
 const CHANGELOG=[
+  {v:'v20',date:'2026-08-13',title:'動漫卡池新增兩組',items:[
+    '草帽海賊團、復仇者聯盟登場，各 10 位，抽卡與圖鑑都吃得到',
+    '兩組都有 🎨 SP 繪卡，全 22 組 167 位角色繪卡收集完整度回到 100%',
+  ]},
   {v:'v19',date:'2026-08-13',title:'解不開的成就修好了',items:[
     '修好「追星達人」：集滿一組團體本來永遠不會解鎖，應援團長／團粉／全團制霸也是同一個問題',
     '修好「Combo之王」：最高連擊以前打完就忘記，沒有存進存檔',
