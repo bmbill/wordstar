@@ -1,8 +1,17 @@
 const CACHE_NAME = 'wordstar-v17';
 
-// Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
+// The update banner runs in the OLD page, so it can't read the new build's CHANGELOG.
+// Keep a one-line summary here — the waiting SW is already the new version and can
+// answer GET_INFO, so the banner can say what the update contains before reloading.
+const APP_VERSION = 'v17';
+const UPDATE_NOTE = '修好限定卡／繪卡在圖鑑看不到的問題，弄丟的卡會自動找回';
+
 self.addEventListener('message', e => {
+  // Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (e.data && e.data.type === 'GET_INFO' && e.ports && e.ports[0]) {
+    e.ports[0].postMessage({ version: APP_VERSION, note: UPDATE_NOTE });
+  }
 });
 
 // Core assets pre-cached on install

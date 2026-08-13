@@ -1992,7 +1992,47 @@ function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   const m={'home-screen':0,'gacha-screen':1,'collection-screen':2,'profile-screen':3};
   if(m[id]!=null)document.querySelectorAll('.nav-item')[m[id]]?.classList.add('active')}
-function startGame(){loadState();updateTTSBtn();goTo('home-screen');updateHome()}
+function startGame(){loadState();updateTTSBtn();goTo('home-screen');updateHome();
+  setTimeout(()=>{if(!showWhatsNew())flushRepairToast()},600)}
+
+// ===== 更新紀錄 =====
+// APP_VERSION 要跟 sw.js 的 CACHE_NAME 同步（sw.js 也放一份摘要，讓更新橫幅在重整前就講得出內容）。
+const APP_VERSION='v17';
+const CHANGELOG=[
+  {v:'v17',date:'2026-08-13',title:'限定卡不再從圖鑑消失',items:[
+    '修好「抽到卡但圖鑑看不到」：限定版的卡（含 🎨 SP 繪卡、✦ 閃卡、⚡ 動態卡）過去存在另一個位置，圖鑑不會去讀它',
+    '以前弄丟的卡會自動找回來，不用重抽',
+    '卡在限定卡上花不掉的碎片 🔮 也會一起還給你',
+  ]},
+];
+function showWhatsNew(){
+  let seen=null;try{seen=localStorage.getItem('wordstar_ver')}catch(e){}
+  try{localStorage.setItem('wordstar_ver',APP_VERSION)}catch(e){}
+  if(seen===APP_VERSION)return false;
+  if(!seen)return false;              // 第一次玩不用看更新紀錄
+  const e=CHANGELOG[0];if(!e)return false;
+  document.getElementById('mod-content').innerHTML=`<div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:.6rem">
+      <div style="font-size:1.5rem">✨</div>
+      <div style="font-size:.95rem;font-weight:900;color:var(--primary)">已更新到 ${e.v}</div>
+      <div style="font-size:.6rem;color:var(--text-dim)">${e.title}</div></div>
+    <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.6rem">
+      ${e.items.map(t=>`<div style="display:flex;gap:.4rem;align-items:flex-start;background:var(--card);border-radius:.5rem;padding:.45rem .55rem">
+        <span style="color:var(--mint);font-size:.7rem;line-height:1.4">✓</span>
+        <span style="font-size:.65rem;line-height:1.5">${t}</span></div>`).join('')}
+    </div>
+    ${_repairedCount?`<div style="text-align:center;font-size:.65rem;color:var(--mint);font-weight:700;margin-bottom:.5rem">🎉 已幫你找回 ${_repairedCount} 張之前沒顯示的卡</div>`:''}
+    <button class="btn btn-primary btn-sm" style="width:100%" onclick="closeMod();showColl(_collFv,_collGid)">知道了</button>`;
+  document.getElementById('det-modal').classList.add('active');
+  _repairedCount=0;
+  return true;
+}
+// 沒跳更新視窗時，修復結果用小提示告知
+function flushRepairToast(){
+  if(!_repairedCount)return;
+  floatTxt('✨ 找回 '+_repairedCount+' 張卡！','var(--mint)');
+  _repairedCount=0;
+}
 
 // ===== DAILY MISSIONS =====
 function toggleDM(){
@@ -3002,6 +3042,8 @@ function syncLtdBase(baseKey,ltdCard){
   return changed;
 }
 // 舊存檔修復：把過去掉進 ltd key、在圖鑑裡看不到的卡補回基本卡。
+// 修好幾張記在 _repairedCount，開場時用更新視窗或小提示告訴玩家。
+let _repairedCount=0;
 function repairLtdCards(){
   let fixed=0;
   Object.keys(S.cards||{}).forEach(k=>{
@@ -3012,7 +3054,7 @@ function repairLtdCards(){
     if(!g||!g.members[parseInt(mi)])return; // 團體或成員已不存在就跳過
     if(syncLtdBase(baseKey,S.cards[k]))fixed++;
   });
-  if(fixed)saveState();
+  if(fixed){saveState();_repairedCount+=fixed}
   return fixed;
 }
 function getEvBadge(evId){return{newyear:'🎍',valentine:'💝',spring:'🌸',summer:'🏖️',halloween:'🎃',xmas:'🎄',debut:'💫',summer2:'🌊'}[evId]||'✨'}
@@ -3377,8 +3419,17 @@ if('serviceWorker' in navigator){
       if(document.getElementById('update-banner'))return;
       const b=document.createElement('div');
       b.id='update-banner';
-      b.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),var(--secondary));color:#fff;padding:12px 24px;border-radius:20px;font-size:14px;z-index:9999;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;animation:floatUp .5s ease';
-      b.innerHTML='✨ 有新版本！點擊更新';
+      b.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:min(88vw,340px);background:linear-gradient(135deg,var(--accent),var(--secondary));color:#fff;padding:12px 18px;border-radius:16px;font-size:14px;z-index:9999;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.3);animation:floatUp .5s ease;text-align:left;line-height:1.45';
+      const render=(title,note)=>{b.innerHTML=`<div style="font-weight:700">${title}</div>`+
+        (note?`<div style="font-size:11px;opacity:.9;margin-top:3px">${note}</div>`:'')+
+        `<div style="font-size:11px;opacity:.8;margin-top:5px">👉 點我更新</div>`};
+      render('✨ 有新版本！','');
+      // 問等待中的 SW（它已經是新版）這次更新了什麼，讓玩家更新前就看得到
+      try{
+        const ch=new MessageChannel();
+        ch.port1.onmessage=ev=>{const d=ev.data||{};render('✨ 有新版本 '+(d.version||'')+'！',d.note||'')};
+        worker&&worker.postMessage({type:'GET_INFO'},[ch.port2]);
+      }catch(e){}
       b.onclick=()=>{b.innerHTML='⏳ 更新中...';b.style.pointerEvents='none';b.style.opacity='.7';try{worker&&worker.postMessage({type:'SKIP_WAITING'})}catch(e){}setTimeout(()=>location.reload(),400)};
       document.body.appendChild(b);
       if(!document.getElementById('update-banner-style')){
