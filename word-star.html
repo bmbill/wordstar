@@ -1884,7 +1884,7 @@ const TITLES=[
   {id:'all-mode-master',name:'全能高手',desc:'達到300題里程碑',tier:'diamond',check:s=>s.totalCorrect>=300&&s.totalPulls>=150}
 ];
 
-let S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0,tts:true};
+let S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},recentWords:[],dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0,tts:true};
 let Q={qs:[],cur:0,combo:0,maxCombo:0,coins:0,mode:'choice',done:false};
 
 // === SAVE / LOAD STATE ===
@@ -1908,7 +1908,7 @@ function loadState(){
 function resetGame(){
   if(!confirm('確定要重置所有進度嗎？這將清除所有收集的卡片和星星！'))return;
   localStorage.removeItem('wordstar_save');
-  S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0,tts:true};
+  S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},recentWords:[],dailyNew:0,totalPulls:0,totalCorrect:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0,tts:true};
   updateHome();
   floatTxt('進度已重置','var(--danger)');
 }
@@ -1997,8 +1997,13 @@ function startGame(){loadState();updateTTSBtn();goTo('home-screen');updateHome()
 
 // ===== 更新紀錄 =====
 // APP_VERSION 要跟 sw.js 的 CACHE_NAME 同步（sw.js 也放一份摘要，讓更新橫幅在重整前就講得出內容）。
-const APP_VERSION='v17';
+const APP_VERSION='v18';
 const CHANGELOG=[
+  {v:'v18',date:'2026-08-13',title:'出題不再一直重複同一個字',items:[
+    '修好「同一個單字每場都出現」：每場保留的複習名額，在複習池太小時會反覆抓同一個字，現在池子夠大才給名額，用不掉就換新單字',
+    '最近 3 場出現過的單字不會馬上再出現',
+    '只玩一種模式也能提升熟練度（以前純選擇題會永遠卡在 Lv1，然後被複習名額鎖住）',
+  ]},
   {v:'v17',date:'2026-08-13',title:'限定卡不再從圖鑑消失',items:[
     '修好「抽到卡但圖鑑看不到」：限定版的卡（含 🎨 SP 繪卡、✦ 閃卡、⚡ 動態卡）過去存在另一個位置，圖鑑不會去讀它',
     '以前弄丟的卡會自動找回來，不用重抽',
@@ -2191,6 +2196,14 @@ function updateHome(){
       <div style="font-size:.4rem;font-weight:700;position:relative;z-index:1">${mem.name}</div></div>`}).join('')}
 
 // Quiz
+// 最近幾場出過的單字先不排進來，避免同一個字連續轟炸。
+// S.recentWords 存成「每場一個陣列」，只留最近 REVIEW_COOLDOWN 場。
+const REVIEW_COOLDOWN=3;
+function recentWordSet(){const r=new Set();(S.recentWords||[]).forEach(a=>(a||[]).forEach(w=>r.add(w)));return r}
+function pushRecent(words){
+  S.recentWords=[...(S.recentWords||[]),words].slice(-REVIEW_COOLDOWN);
+  saveState();
+}
 function startQuiz(mode){
   if(mode==='listen'&&!('speechSynthesis' in window)){floatTxt('此裝置不支援語音發音','var(--danger)');mode='choice'}
   Q.mode=mode;Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
@@ -2207,17 +2220,25 @@ function startQuiz(mode){
     if(pool.length<10){for(const w of shuf(W)){if(!seen.has(w.w)){seen.add(w.w);pool.push(w);if(pool.length>=10)break}}}
   }
   else {
-    const critical=W.filter(x=>!S.wordsAnswered[x.w]||(S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===0));
-    const struggling=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===1);
-    const mastered=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv>=2);
-    const strugglePick=shuf(struggling).slice(0,2);
-    const masteredPick=shuf(mastered).slice(0,1);
+    // 每場固定留 2 題「熟悉」+ 1 題「精通」複習，但這兩個池早期只有一兩個字，
+    // 硬湊名額會讓同一個字每場都出現。改成池子夠大才給名額（每 4 個字 1 個），
+    // 並且跳過最近幾場出現過的字，名額用不掉就還給新單字。
+    const recent=recentWordSet();
+    const notRecent=x=>!recent.has(x.w);
+    const critical=W.filter(x=>!S.wordsAnswered[x.w]||(S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===0)).filter(notRecent);
+    const struggling=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv===1).filter(notRecent);
+    const mastered=W.filter(x=>S.wordsAnswered[x.w]&&S.wordsAnswered[x.w].lv>=2).filter(notRecent);
+    const slots=(n,max)=>Math.min(max,Math.floor(n/4));
+    const strugglePick=shuf(struggling).slice(0,slots(struggling.length,2));
+    const masteredPick=shuf(mastered).slice(0,slots(mastered.length,1));
     const usedWords=new Set([...strugglePick,...masteredPick].map(x=>x.w));
-    const criticalPick=shuf(critical.filter(x=>!usedWords.has(x.w))).slice(0,10-strugglePick.length-masteredPick.length);
+    const newPool=critical.length?critical:W;   // 全部練到 Lv1 以上時的保底
+    const criticalPick=shuf(newPool.filter(x=>!usedWords.has(x.w))).slice(0,10-strugglePick.length-masteredPick.length);
     pool=[...criticalPick,...strugglePick,...masteredPick];
   }
   if(pool.length<4)pool=W.slice();
   Q.qs=shuf(pool).slice(0,10);
+  pushRecent(Q.qs.map(q=>q.w));
   Q.origLen=Q.qs.length;
   Q.qs.forEach((q,i)=>{
     if(mode==='spell')q._t='spell';else if(mode==='reverse')q._t='reverse';
@@ -2489,7 +2510,12 @@ function handleRes(ok){
     else if(q._t==='reverse')wa.re=(wa.re||0)+1;
     else wa.ch=(wa.ch||0)+1;
     // Mastery levels: 0=初見 1=熟悉 2=精通 3=大師
-    const wlv=Math.min(3,(wa.ch>=2?1:0)+(wa.sp>=2?1:0)+(wa.re>=2?1:0));
+    // 兩條路都能升級：練過幾種題型（原本的規則），或同一題型累積答對次數。
+    // 只玩單一模式（例如打歌舞台全是選擇題）以前永遠卡在 Lv1，會被複習名額鎖住。
+    const byType=(wa.ch>=2?1:0)+(wa.sp>=2?1:0)+(wa.re>=2?1:0);
+    const totalOk=(wa.ch||0)+(wa.sp||0)+(wa.re||0);
+    const byCount=totalOk>=6?3:totalOk>=4?2:totalOk>=2?1:0;
+    const wlv=Math.min(3,Math.max(byType,byCount));
     if(wlv>wa.lv){wa.lv=wlv;const mlbl=['','熟悉！','精通！✨','大師！🏆'][wlv];floatTxt('單字'+mlbl,'var(--mint)')}
     wa.m=wlv>=2;
     S.dailyNew++;
