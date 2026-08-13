@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wordstar-v15';
+const CACHE_NAME = 'wordstar-v16';
 
 // Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
 self.addEventListener('message', e => {

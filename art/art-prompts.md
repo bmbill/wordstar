@@ -1,4 +1,4 @@
-# WordStar 小卡 AI 美術提示詞（全 18 組）
+# WordStar 小卡 AI 美術提示詞（全 20 組）
 
 > 用法：一組 = 一張 sticker sheet。把該組的整段英文貼進 ChatGPT / DALL·E。
 > 每段都已內含排版與切割規則，直接複製即可。
@@ -13,7 +13,7 @@
 
 ---
 
-## 🏀 nbahof 名人堂（10 人）— 運動貼紙風
+## 🏀 nbahof NBA 傳奇（10 人）— 運動貼紙風
 
 ```
 Create ONE sticker sheet image: 10 cute chibi basketball players in a strict
@@ -387,6 +387,60 @@ Characters (left to right, top to bottom):
 5. Tall man, red slicked-back hair, porcelain skin, magenta outfit, a star face-paint mark, sly grin holding playing cards.
 6. Black short hair, porcelain skin, dark cloak, chain, mysterious calm face with arms crossed.
 7. Black messy hair, tan skin, brown outfit, sparkle, carefree wide grin, waving.
+```
+
+---
+
+## ⚽ wcup26 世界盃（10 人・2026 綠茵之巔）— 球場貼紙風
+
+```
+Create ONE sticker sheet image: 10 cute chibi soccer players in a strict
+5 columns x 2 rows grid, evenly spaced, plain flat pale-mint background.
+STYLE: adorable glossy chibi mascot stickers, big head / small body, soft
+cel-shading, thick clean white die-cut outline, subtle holographic sparkle,
+tiny stadium-confetti specks. All 10 SAME art style and SAME scale, front-facing,
+each fully inside its own cell, generous even gaps, no overlap, no cropping,
+NO text/labels/numbers/logos/flags, wide high-res image.
+Give each a DIFFERENT dynamic soccer pose.
+Characters (left to right, top row then bottom row):
+1. Short dark-brown hair with a short beard, light-tan skin, tiny gold crown floating above head, sky-blue-and-white striped kit, balancing the ball on one foot, calm quiet smile.
+2. Very short black hair, dark skin, deep-blue kit, small lightning-bolt accent, explosive sprint pose leaning forward, focused eyes.
+3. Short dark-brown styled hair, light-tan skin, crimson-red kit, gold star sparkle, mid-air header pose, intense determined face.
+4. Long light-blond hair tied back in a low ponytail, fair skin, bright-red kit, small orange flame accent, powerful strike pose with one leg swinging, fierce open-mouth roar.
+5. Black messy curly hair, medium-dark skin, scarlet-red kit, small blue gem accent, cheeky step-over dribble, playful teen grin.
+6. Very short black hair, brown skin, off-white kit, star accent, arms spread wide in a celebration pose, joyful shout.
+7. Short black hair, dark skin, golden-yellow kit, sparkle accent, flashy samba-style dribble twist, big cheerful smile.
+8. Brown spiky hair, tan skin, golden-yellow kit, small silver earring, sliding-celebration pose on knees, excited face.
+9. Short light-brown hair, fair skin, off-white kit, star accent, sturdy poacher's tap-in pose, focused calm look.
+10. Shoulder-length blond hair, fair skin, red-and-white kit, silver chain necklace, elegant long-pass pose mid-swing, composed expression.
+```
+
+---
+
+## 🎬 hkstar 港星殿堂（10 人・港片黃金年代）— 霓虹港味貼紙風
+
+```
+Create ONE sticker sheet image: 10 cute chibi movie stars in a strict
+5 columns x 2 rows grid, evenly spaced, plain flat dark-navy background with
+soft neon pink/cyan glow (1980s-90s Hong Kong street-sign mood).
+STYLE: adorable glossy chibi mascot stickers, big head / small body, soft
+cel-shading with neon rim-light, thick clean white die-cut outline, subtle
+holographic shimmer. All 10 SAME art style and SAME scale, front-facing, each
+fully inside its own cell, generous even gaps, no overlap, no cropping,
+NO text/labels/logos/Chinese characters, wide high-res image.
+Give each a DIFFERENT cinematic pose. Do NOT depict any real person —
+use only the described generic features.
+Characters (left to right, top row then bottom row):
+1. Man, black messy hair, light-tan skin, charcoal-grey suit, gold star sparkle, goofy over-the-top comedic pose with both hands up, huge silly grin.
+2. Man, short black hair, tan skin, red kung-fu jacket, small orange flame accent, mid martial-arts kick with fists ready, cheerful confident face.
+3. Man, neat short black hair, fair skin, long dark-brown trench coat, black sunglasses, coat flaring as he turns, cool half-smile with a toothpick.
+4. Man, black bowl-cut hair, tan skin, bright-yellow one-piece tracksuit, small lightning-bolt accent, iconic ready fighting stance, fierce focused stare.
+5. Man, black center-parted curtain hair, porcelain skin, deep-pink stage jacket, a single red rose, elegant hand-on-heart singing pose, gentle charming smile.
+6. Woman, black-and-purple hair in a tall updo, porcelain skin, purple sequin stage gown, small tiara, dramatic diva pose with one arm raised, powerful confident look.
+7. Man, short black hair, fair skin, blue sparkly stage outfit, holding a microphone, mid-song point toward viewer, bright warm smile.
+8. Woman, long straight black hair, porcelain skin, teal floral cheongsam dress, small flower hairpin, graceful over-the-shoulder turn, serene elegant expression.
+9. Man, black slightly messy hair, fair skin, dark navy-black suit, small blue gem accent, quiet close-up pose with hand near chin, melancholic soulful eyes.
+10. Woman, very long flowing black hair, porcelain skin, flowing white ghostly robe, small butterfly accent, floating pose with sleeves drifting, ethereal soft smile.
 ```
 
 ---
