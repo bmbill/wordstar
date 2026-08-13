@@ -1,4 +1,4 @@
-# WordStar 小卡 AI 美術提示詞（全 20 組）
+# WordStar 小卡 AI 美術提示詞（全 22 組）
 
 > 用法：一組 = 一張 sticker sheet。把該組的整段英文貼進 ChatGPT / DALL·E。
 > 每段都已內含排版與切割規則，直接複製即可。
@@ -441,6 +441,61 @@ Characters (left to right, top row then bottom row):
 8. Woman, long straight black hair, porcelain skin, teal floral cheongsam dress, small flower hairpin, graceful over-the-shoulder turn, serene elegant expression.
 9. Man, black slightly messy hair, fair skin, dark navy-black suit, small blue gem accent, quiet close-up pose with hand near chin, melancholic soulful eyes.
 10. Woman, very long flowing black hair, porcelain skin, flowing white ghostly robe, small butterfly accent, floating pose with sleeves drifting, ethereal soft smile.
+```
+
+---
+
+## ⚓ onepiece 草帽海賊團（10 人・偉大航路）— 大海冒險貼紙風
+
+```
+Create ONE sticker sheet image: 10 cute chibi pirate adventurers in a strict
+5 columns x 2 rows grid, evenly spaced, plain flat light-aqua background with
+tiny wave doodles.
+STYLE: adorable glossy chibi mascot stickers kids love, big head / small body,
+bright saturated colors, soft cel-shading, thick clean white die-cut outline,
+subtle holographic sparkle. All 10 SAME art style and SAME scale, front-facing,
+each fully inside its own cell, generous even gaps, no overlap, no cropping,
+NO text/labels/logos, wide high-res image. Give each a DIFFERENT lively pose.
+Do NOT copy any existing character design — use only the described features.
+Characters (left to right, top row then bottom row):
+1. Boy, black messy hair, plain wide-brim straw hat, tan skin, small scar under one eye, open red vest, both fists thrown forward with a huge carefree grin.
+2. Man, short moss-green spiky hair, tan skin, three tiny silver earrings on one ear, dark-green coat with a green waist sash, arms crossed holding a wooden practice sword, cool serious frown.
+3. Girl, long bright-orange hair, fair skin, small blue gem accent, orange top with a white skirt, holding a rolled paper map and winking with a clever smile.
+4. Man, golden-blond hair with a long swoopy fringe covering one eye, fair skin, black suit with thin tie, small orange flame accent, mid high-kick pose, suave confident look.
+5. Boy, black hair in a short dreadlocked ponytail, dark skin, a notably long nose, yellow overalls, small lightning-bolt accent, aiming a wooden slingshot, nervous-but-brave face.
+6. Tiny chibi reindeer mascot, soft brown fur, small antlers, pink brimmed hat, red shorts, tiny heart accent, standing on hind legs with hooves on cheeks, adorable teary sparkle eyes.
+7. Woman, long straight black hair, fair skin, small purple flower hair accent, deep-purple sleeveless top, arms crossed elegantly, calm knowing smile.
+8. Man, bright-blue pompadour hair, tan skin, huge muscular metal-plated forearms, small chain accent, tiny star sunglasses, striking a wide flexing pose, big goofy grin.
+9. Tall thin man, black curly afro hair, ghostly bone-white skin, small round black sunglasses, purple tailcoat with a cravat, holding a violin, polite skeleton-thin smile.
+10. Large man, dark hair in a small topknot, pale teal-blue fish-person skin, small crescent accent, red-orange kimono with a rope belt, seated calm martial-arts palm pose, dignified expression.
+```
+
+---
+
+## 🛡️ avengers 復仇者聯盟（10 人・地球最強英雄）— 美漫英雄貼紙風
+
+```
+Create ONE sticker sheet image: 10 cute chibi superheroes in a strict
+5 columns x 2 rows grid, evenly spaced, plain flat dark-navy background with a
+faint gold radial glow.
+STYLE: adorable glossy chibi mascot stickers, big head / small body, bold
+comic-book colors with soft cel-shading and a gold rim-light, thick clean white
+die-cut outline, subtle holographic shimmer. All 10 SAME art style and SAME
+scale, front-facing, each fully inside its own cell, generous even gaps, no
+overlap, no cropping, NO text/labels/logos, wide high-res image.
+Give each a DIFFERENT heroic pose. Do NOT copy any existing character design or
+trademarked emblem — use only the described generic features, plain shapes only.
+Characters (left to right, top row then bottom row):
+1. Man, short dark-brown hair with a neat goatee, light-tan skin, red-and-gold plated armor suit, glowing round sparkle on the chest, one palm raised forward mid-blast, smug confident smirk.
+2. Man, short blond hair, fair skin, blue uniform with a plain white star on the chest, holding a plain round blue-and-red disc shield, steady heroic stance, earnest determined face.
+3. Man, long wavy dirty-blond hair with a short beard, light-tan skin, silver armor with a red cape, small lightning-bolt accent, raising a plain short-handled hammer overhead, booming grin.
+4. Huge muscular man, dark-green skin, short dark-green messy hair, torn purple shorts, small broken-chain accent, both fists slamming down, wide open-mouth roar.
+5. Woman, wavy red shoulder-length hair, fair skin, black bodysuit with a slim belt, small silver earring, crouched ready combat stance, cool focused stare.
+6. Man, short light-brown hair, light-tan skin, dark slate-grey tactical vest with purple trim, small crescent accent, drawing a simple bow, one eye squinted in aim.
+7. Teen boy, brown messy hair, fair skin, red-and-blue full bodysuit with thin black web-lines, a small backpack cap accent, crouched wall-perch pose with one hand shooting a thin white line, playful energetic vibe.
+8. Man, very short black hair, dark-brown skin, matte black ribbed bodysuit with silver-purple trim, small purple crystal accent, sleek panther-like crouch, calm regal expression.
+9. Man, black hair with grey temples, light-tan skin, blue tunic with a long red cloak, a small round gem pendant, hands tracing glowing orange circles in the air, serene mystic focus.
+10. Woman, long auburn hair, fair skin, crimson-red coat over black, small red flame accent, both hands raised with swirling red energy wisps, intense glowing eyes.
 ```
 
 ---
