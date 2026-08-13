@@ -1,10 +1,10 @@
-const CACHE_NAME = 'wordstar-v18';
+const CACHE_NAME = 'wordstar-v19';
 
 // The update banner runs in the OLD page, so it can't read the new build's CHANGELOG.
 // Keep a one-line summary here — the waiting SW is already the new version and can
 // answer GET_INFO, so the banner can say what the update contains before reloading.
-const APP_VERSION = 'v18';
-const UPDATE_NOTE = '修好同一個單字每場重複出現的問題，出題會更平均';
+const APP_VERSION = 'v19';
+const UPDATE_NOTE = '修好幾個永遠解不開的成就（追星達人、Combo之王、完美收藏）';
 
 self.addEventListener('message', e => {
   // Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
