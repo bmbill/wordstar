@@ -2995,6 +2995,10 @@ function syncLtdBase(baseKey,ltdCard){
   [['shiny','newShiny'],['flash','newFlash'],['art','newArt']].forEach(([f,nf])=>{
     if(ltdCard[f]&&!base[f]){base[f]=true;base[nf]=true;base.isNew=true;changed=true}
   });
+  // 碎片與持有數也要搬過來：升星只看基本卡，留在 ltd key 上的碎片永遠花不掉。
+  // 搬完歸零，避免每次載入重複累加。
+  if(ltdCard.fragments>0){base.fragments=(base.fragments||0)+ltdCard.fragments;ltdCard.fragments=0;changed=true}
+  if(ltdCard.dupes>0){base.dupes=(base.dupes||0)+ltdCard.dupes;ltdCard.dupes=0;changed=true}
   return changed;
 }
 // 舊存檔修復：把過去掉進 ltd key、在圖鑑裡看不到的卡補回基本卡。
