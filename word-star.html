@@ -5597,7 +5597,7 @@ const RAID_MOVES=[
   {n:'這題是送分題',t:'trap',mul:0},
   {n:'把課本翻到第 87 頁',t:'shuffle',mul:0}
 ];
-const RAID_MAX_PLAYERS=6, RAID_PARTY_REF=4, RAID_MAX_HP=150;
+const RAID_MAX_PLAYERS=10, RAID_PARTY_REF=4, RAID_MAX_HP=150;
 const RAID_CAST_MS=1500;
 // 補考要連續答對幾題才救得起來。一題就能救的話，倒地幾乎沒有代價；
 // 連對 3 題代表救人的那位要放掉 3 題的輸出，中間答錯還會歸零重來。
@@ -6154,7 +6154,10 @@ function raidRenderCombo(){
 function raidRenderParty(){
   const ps=RaidRoom.players||{};
   const list=Object.entries(ps).sort((a,b)=>(a[1].joinAt||0)-(b[1].joinAt||0));
-  document.getElementById('rd-party').innerHTML=list.map(([u,p])=>
+  const el=document.getElementById('rd-party');
+  // 三個一排，但 10 人改成四欄 —— 不然最後一排只剩一張卡，看起來像沒排完
+  el.style.gridTemplateColumns='repeat('+(list.length>9?4:3)+',1fr)';
+  el.innerHTML=list.map(([u,p])=>
     `<div class="rd-pmem ${p.alive?'':'rd-down'} ${p.online===false?'rd-off':''} ${u===Net.uid?'rd-me':''}">
       <div class="rd-pmem-name">${p.name||'?'}</div>
       <div class="rd-pmem-hp"><span style="width:${Math.min(100,(p.hp||0)/RAID_MAX_HP*100)}%"></span></div>
