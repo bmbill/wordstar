@@ -6302,7 +6302,10 @@ async function raidFinish(state){
   const progress=bossLeft.maxHp?Math.max(0,Math.min(1,1-(bossLeft.hp||0)/bossLeft.maxHp)):0;
   if(!won)stars=Math.round(stars*progress*0.6);
   const bonuses=[];
-  if(won&&isMvp){stars=Math.round(stars*1.5);bonuses.push('🏅 榜首 ×1.5')}
+  // 單人不給榜首加成 —— 全班只有一個人的時候「第一名」沒有意義，
+  // 而且單刷本來就必定同時是榜首和壓線過，不擋的話單刷會是刷獎勵最快的路。
+  const mvpBonus=isMvp&&!soloRun;
+  if(won&&mvpBonus){stars=Math.round(stars*1.5);bonuses.push('🏅 榜首 ×1.5')}
   if(won&&isLastHit){const b={1:25,2:40,3:60}[tier.k];stars+=b;bonuses.push('🎯 壓線過 +'+b)}
   if(won&&allAlive&&!soloRun){const b={1:20,2:30,3:50}[tier.k];stars+=b;bonuses.push('💯 全員存活 +'+b)}
   if(won&&soloRun){stars=Math.round(stars*1.3);bonuses.push('🔥 單刷 ×1.3')}
@@ -6321,11 +6324,15 @@ async function raidFinish(state){
   // 成績單（寶箱）：榜首／壓線過才有機會，難度越高機率越高；打滿 8 場必給一次保底
   let chest=null;
   if(won){
-    const rate=(isMvp?{1:.5,2:.62,3:.75}[tier.k]:0)+(isLastHit?{1:.3,2:.38,3:.45}[tier.k]:0);
+    // 人人有底，前兩名加成。舊版只有榜首／壓線過才有機會，導致單刷（必定兩個都是）
+    // 每場 80%，而四人隊每人平均只有 20%，揪人反而虧。
+    const rate=(share>=0.10?{1:.15,2:.20,3:.25}[tier.k]:0)
+              +(mvpBonus?{1:.25,2:.30,3:.35}[tier.k]:0)
+              +(isLastHit?{1:.15,2:.18,3:.20}[tier.k]:0);
     const pity=(S.raidPity||0)>=8;
     if(pity||Math.random()<rate){chest=raidGrantChest();S.raidPity=0;saveState()}
   }
-  raidShowResult({won,stars,bonuses,share,myDmg,isMvp,isLastHit,tier,chest,ps,overQuota,progress});
+  raidShowResult({won,stars,bonuses,share,myDmg,isMvp:mvpBonus,isLastHit,tier,chest,ps,overQuota,progress});
 }
 
 // 每日全額配額：同一隻魔王共用，不分難度 —— 這樣「今天這幾次要打哪個難度」本身就是個選擇，
