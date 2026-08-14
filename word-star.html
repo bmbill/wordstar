@@ -6135,7 +6135,12 @@ function raidShowResult(r){
 function raidCloseResult(){
   const ov=document.getElementById('rd-result-ov');if(ov)ov.style.display='none';
   raidUnsub();
-  if(RaidRoom.code&&Net.ready)Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{online:false}).catch(()=>{});
+  if(RaidRoom.code&&Net.ready){
+    Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{online:false}).catch(()=>{});
+    // 房主負責收拾房間，否則房號用過就再也開不了。延遲 90 秒是要等其他人的結算
+    // 讀完資料 —— 結算會去讀 meta 和 players，太早刪掉他們的獎勵會算成 0。
+    if(RaidRoom.isHost){const c=RaidRoom.code;setTimeout(()=>{Net.set('rooms/'+c,null).catch(()=>{})},90000)}
+  }
   RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
   RAID=null;
   goTo('home-screen');updateHome();

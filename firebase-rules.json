@@ -12,7 +12,9 @@
         ".validate": "$code.matches(/^[0-9]{4}$/)",
 
         // 開房：房號沒被占用時才能整個建立，而且 meta.host 必須是自己。
-        ".write": "auth != null && !data.exists() && newData.child('meta/host').val() === auth.uid",
+        // 另外允許房主刪掉自己的房間 —— 沒有這條的話房間只進不出，資料會一直累積，
+        // 而且房號用過就再也開不了（建立規則要求該節點不存在）。
+        ".write": "auth != null && ((!data.exists() && newData.child('meta/host').val() === auth.uid) || (!newData.exists() && data.child('meta/host').val() === auth.uid))",
 
         "meta": {
           // 房主可以改 meta 底下任何東西（難度、關門、開打時間）。
@@ -47,8 +49,9 @@
           // 多人同時扣血是 transaction，所以房內玩家都要能寫。
           ".write": "auth != null && root.child('rooms/'+$code+'/players/'+auth.uid).exists()",
           "hp": {
-            // 血量只能往下扣。房主例外，因為開打當下要設定初始血量。
-            ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() <= data.val() || root.child('rooms/'+$code+'/meta/host').val() === auth.uid)"
+            // 血量只能往下扣。唯一例外是「還在大廳、而且是房主」的初始設定 ——
+            // 這個例外一定要綁時機，否則房主整場都能把魔王補滿。
+            ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() <= data.val() || (root.child('rooms/'+$code+'/meta/state').val() === 'lobby' && root.child('rooms/'+$code+'/meta/host').val() === auth.uid))"
           },
           "maxHp": { ".validate": "newData.isNumber() && newData.val() > 0" }
         },
