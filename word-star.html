@@ -871,12 +871,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-pmem-hp span{display:block;height:100%;background:linear-gradient(90deg,#00e676,#7ff5dc);transition:width .3s}
 .rd-pmem-dmg{font-size:.44rem;color:var(--text-dim)}
 .rd-pmem-tag{position:absolute;top:-5px;right:-3px;font-size:.5rem}
-.rd-selfbar{display:flex;align-items:center;gap:.4rem;padding:0 .6rem .2rem}
-.rd-selfhp-track{flex:1;height:9px;background:rgba(0,0,0,.55);border-radius:5px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
-.rd-selfhp-fill{height:100%;background:linear-gradient(90deg,#00e676,#7ff5dc);transition:width .3s}
-.rd-selfhp-fill.rd-low{background:linear-gradient(90deg,#ff3b3b,#ff9800)}
-.rd-selfhp-txt{font-size:.6rem;font-weight:900;font-family:var(--font-display);min-width:26px;text-align:right}
-.rd-combo{font-size:.62rem;font-weight:900;color:#ffd700;min-width:52px;text-align:right;opacity:0;transition:opacity .2s}
+.rd-selfbar{display:flex;align-items:center;gap:.45rem;padding:.1rem .6rem .35rem}
+.rd-selfhp-track{position:relative;flex:1;height:20px;background:rgba(0,0,0,.6);border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 4px rgba(0,0,0,.5)}
+.rd-selfhp-fill{position:absolute;inset:0;background:linear-gradient(90deg,#00e676,#7ff5dc);transition:width .3s;z-index:1}
+.rd-selfhp-fill.rd-low{background:linear-gradient(90deg,#ff3b3b,#ff9800);animation:pulse 1s infinite}
+.rd-selfhp-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;
+  font-size:.72rem;font-weight:900;font-family:var(--font-display);letter-spacing:.04em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.rd-combo{font-size:.66rem;font-weight:900;color:#ffd700;min-width:56px;text-align:right;opacity:0;transition:opacity .2s}
 .rd-combo.on{opacity:1}
 .rd-qtimer{height:4px;margin:.15rem .6rem;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden}
 .rd-qtimer-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--accent));width:100%}
@@ -892,7 +893,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 /* 防禦題：大招打斷答題時，整個下半部換成這個 */
 .rd-defmode .rd-qtimer-fill{background:linear-gradient(90deg,#ff3b3b,#ffb03b)}
 .rd-defmode .rd-stage{filter:brightness(.6) saturate(.7)}
-.rd-defmode .rd-party,.rd-defmode .rd-selfbar{opacity:.45}
+/* 防禦時隊伍列退到背景，但自己的血量要留著 —— 正要挨打的時候最需要看它 */
+.rd-defmode .rd-party{opacity:.45}
 .rd-def-head{font-size:.82rem;font-weight:900;color:#ff5252;letter-spacing:.04em;text-shadow:0 0 12px rgba(255,59,59,.5);animation:pulse 1s infinite}
 .rd-def-hint{font-size:.56rem;color:#ffb03b;font-weight:700;margin-top:.1rem;letter-spacing:.06em}
 .rd-def-word{font-size:1.5rem;font-weight:900;margin-top:.15rem}
@@ -1200,13 +1202,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       <div class="rd-floaters" id="rd-floaters"></div>
     </div>
     <div class="rd-party" id="rd-party"></div>
-    <div class="rd-selfbar" id="rd-selfbar">
-      <div class="rd-selfhp-track"><div class="rd-selfhp-fill" id="rd-selfhp-fill" style="width:100%"></div></div>
-      <div class="rd-selfhp-txt" id="rd-selfhp-txt">100</div>
-      <div class="rd-combo" id="rd-combo"></div>
-    </div>
     <div class="rd-qtimer"><div class="rd-qtimer-fill" id="rd-qtimer-fill" style="width:100%"></div></div>
     <div class="rd-word" id="rd-word">READY</div>
+    <!-- 自己的血量放在題目正下方：那是眼睛本來就在的位置 -->
+    <div class="rd-selfbar" id="rd-selfbar">
+      <div class="rd-selfhp-track">
+        <div class="rd-selfhp-fill" id="rd-selfhp-fill" style="width:100%"></div>
+        <div class="rd-selfhp-txt" id="rd-selfhp-txt">150 / 150</div>
+      </div>
+      <div class="rd-combo" id="rd-combo"></div>
+    </div>
     <div class="rd-ans" id="rd-ans"></div>
     <div class="rd-announce" id="rd-announce"></div>
   </div>
@@ -6119,7 +6124,7 @@ function raidRenderSelf(){
   const f=document.getElementById('rd-selfhp-fill');
   f.style.width=Math.min(100,RAID.hp/RAID_MAX_HP*100)+'%';
   f.classList.toggle('rd-low',RAID.hp<=RAID_MAX_HP*0.25);
-  document.getElementById('rd-selfhp-txt').textContent=RAID.hp;
+  document.getElementById('rd-selfhp-txt').textContent=RAID.hp+' / '+RAID_MAX_HP;
 }
 function raidRenderCombo(){
   const el=document.getElementById('rd-combo');
