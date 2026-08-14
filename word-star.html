@@ -889,6 +889,15 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-ans button.rd-no{background:rgba(255,59,59,.25);border-color:#ff3b3b}
 .rd-ans button:disabled{opacity:.55;cursor:default}
 .rd-ans.rd-rescue button{border-color:rgba(255,215,0,.55);box-shadow:0 0 10px rgba(255,215,0,.15)}
+/* 防禦題：大招打斷答題時，整個下半部換成這個 */
+.rd-defmode .rd-qtimer-fill{background:linear-gradient(90deg,#ff3b3b,#ffb03b)}
+.rd-defmode .rd-stage{filter:brightness(.6) saturate(.7)}
+.rd-defmode .rd-party,.rd-defmode .rd-selfbar{opacity:.45}
+.rd-def-head{font-size:.82rem;font-weight:900;color:#ff5252;letter-spacing:.04em;text-shadow:0 0 12px rgba(255,59,59,.5);animation:pulse 1s infinite}
+.rd-def-hint{font-size:.56rem;color:#ffb03b;font-weight:700;margin-top:.1rem;letter-spacing:.06em}
+.rd-def-word{font-size:1.5rem;font-weight:900;margin-top:.15rem}
+.rd-ans.rd-defend button{border-color:rgba(255,59,59,.6);background:rgba(255,59,59,.12);box-shadow:0 0 12px rgba(255,59,59,.18)}
+#raid-screen .rd-wrap.rd-defmode{background:linear-gradient(180deg,#1a0a10,#2a1020 55%,#3a1220)}
 .rd-announce{position:absolute;top:38%;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:1.5rem;font-weight:900;color:#ffd700;text-shadow:0 3px 14px #000;pointer-events:none;opacity:0}
 .rd-announce.on{animation:rdAnn 1.5s ease-out}
 @keyframes rdAnn{0%{opacity:0;transform:scale(.6)}18%{opacity:1;transform:scale(1.1)}80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
@@ -5551,21 +5560,23 @@ const Net=(function(){
 const RAID_BOSS={
   id:'mockexam',name:'模擬考',
   tiers:[
-    {k:1,name:'一模',hp:5800,atkGap:8000,ansMs:6000,lv:[1,3],dmg:10,selfDmg:14,stars:380,enrage:420000},
-    {k:2,name:'二模',hp:10000,atkGap:7000,ansMs:5000,lv:[3,4],dmg:14,selfDmg:18,stars:700,enrage:480000},
-    {k:3,name:'三模',hp:16000,atkGap:6000,ansMs:4000,lv:[4,6],dmg:18,selfDmg:22,stars:1200,enrage:540000}
+    {k:1,name:'一模',hp:5800,atkGap:12000,ansMs:6000,lv:[1,3],dmg:10,selfDmg:14,stars:380,enrage:420000,defMs:3000},
+    {k:2,name:'二模',hp:10000,atkGap:10000,ansMs:5000,lv:[3,4],dmg:14,selfDmg:18,stars:700,enrage:480000,defMs:2800},
+    {k:3,name:'三模',hp:16000,atkGap:8000,ansMs:4000,lv:[4,6],dmg:18,selfDmg:22,stars:1200,enrage:540000,defMs:2500}
   ]
 };
 // 主要傷害來源是「自己沒答對」，魔王招式多半是機制而不是硬扣血 —— 否則一場 5 分鐘要挨
 // 三四十次攻擊，血條再厚都撐不住，而且會變成跟玩家表現無關的固定傷害。
+// 只有 cast:true 的招會打斷答題、跳出防禦題。其他招直接落下、只跳一行提示 ——
+// 每一招都跑讀條的話畫面一直在閃，玩家也分不出哪一招才需要理它。
 const RAID_MOVES=[
-  {n:'這題上課有教過',t:'block',mul:1.0},
+  {n:'這題上課有教過',t:'block',mul:1.0,cast:true},
   {n:'這次全班平均 42 分',t:'aoe',mul:0.5},
   {n:'答案卡劃錯行',t:'scramble',mul:0},
   {n:'隨堂測驗',t:'quick',mul:0.35},
   {n:'訂正三遍',t:'aoe',mul:0.5},
   {n:'這題是送分題',t:'trap',mul:0},
-  {n:'隔壁的不要看',t:'blind',mul:0}
+  {n:'把課本翻到第 87 頁',t:'shuffle',mul:0}
 ];
 const RAID_MAX_PLAYERS=6, RAID_PARTY_REF=4, RAID_MAX_HP=150;
 const RAID_CAST_MS=1500;
@@ -5792,17 +5803,26 @@ function raidTick(){
   else{clock.textContent='收卷!';clock.classList.add('rd-enraged');
     if(!RAID.enraged){RAID.enraged=true;raidAnnounce('時間到，筆放下');}}
   const gap=RAID.enraged?tier.atkGap/2:tier.atkGap;
+
+  // 防禦題進行中：全場答題凍結，畫面上只剩這一件事要處理
+  if(RAID.defense){
+    const d=RAID.defense, rem=d.until-Date.now();
+    document.getElementById('rd-qtimer-fill').style.width=Math.max(0,rem/d.total*100)+'%';
+    const cd=document.getElementById('rd-def-count');
+    if(cd)cd.textContent=Math.max(0,Math.ceil(rem/1000));
+    if(rem<=0)raidEndDefense();
+    return;
+  }
+
   // 魔王招式：時間由 startAt 推算，每台機器自己算，不用傳訊息
   const due=RAID.startAt+RAID.nextAtk*gap;
-  if(!RAID.casting&&now>=due-RAID_CAST_MS){
+  if(now>=due){
     const mv=RAID_MOVES[(RAID.nextAtk-1)%RAID_MOVES.length];
-    RAID.casting={mv,at:due};
-    raidShowCast(mv);
+    RAID.nextAtk++;
+    if(mv.cast&&RAID.alive)raidBeginDefense(mv);
+    else raidResolveMove(mv);
   }
-  if(RAID.casting&&now>=RAID.casting.at){
-    const mv=RAID.casting.mv;RAID.casting=null;RAID.nextAtk++;
-    raidHideCast();raidResolveMove(mv);
-  }
+
   // 作答倒數
   if(RAID.word&&!RAID.answered){
     const rem=RAID.qDeadline-now;
@@ -5812,28 +5832,73 @@ function raidTick(){
   }
 }
 
-function raidShowCast(mv){
-  const cast=document.getElementById('rd-cast');
+// 大招打斷答題：原本那題的剩餘秒數先凍結起來，答題區整個換成防禦題。
+// 舊做法是讀條在上面跑、題目在下面繼續倒數，眼睛要顧兩邊，而且「擋下」的條件是
+// impact 前 1.2 秒內剛好答對 —— 等於擋到算運氣，不是玩家能主動做的動作。
+function raidBeginDefense(mv){
+  const now=Date.now();
+  const total=RAID.enraged?Math.round(RAID.tier.defMs*0.8):RAID.tier.defMs;
+  RAID.qFrozenRemain=(RAID.word&&!RAID.answered)?Math.max(0,RAID.qDeadline-now):null;
+  const w=raidPickWord();
+  const opts=raidBuildOptions(w);
+  RAID.defense={mv,word:w,options:opts,answered:false,ok:false,until:now+total,total};
   document.getElementById('rd-boss').classList.add('rd-casting');
-  cast.innerHTML=`<div class="rd-cast-name">${mv.n}</div><div class="rd-cast-bar"><div class="rd-cast-fill" id="rd-cast-fill"></div></div>`;
-  requestAnimationFrame(()=>{const f=document.getElementById('rd-cast-fill');
-    if(f){f.style.transition='width '+RAID_CAST_MS+'ms linear';f.style.width='100%'}});
+  const wrap=document.querySelector('.rd-wrap');if(wrap)wrap.classList.add('rd-defmode');
+  const wEl=document.getElementById('rd-word');
+  wEl.classList.remove('rd-scrambled');
+  wEl.innerHTML=`<div class="rd-def-head">⚠ ${mv.n}　<span id="rd-def-count">${Math.ceil(total/1000)}</span></div>
+    <div class="rd-def-hint">答對就擋下來</div>
+    <div class="rd-def-word">${w.w}</div>`;
+  const ansEl=document.getElementById('rd-ans');
+  ansEl.classList.add('rd-defend');ansEl.classList.remove('rd-rescue');
+  ansEl.innerHTML=opts.map((o,i)=>`<button onclick="raidDefend(${i})">${o}</button>`).join('');
+  try{playSfx('audio/sfx/damage.mp3',0.3)}catch(e){}
 }
-function raidHideCast(){
-  document.getElementById('rd-cast').innerHTML='';
+function raidDefend(idx){
+  if(!RAID||!RAID.defense||RAID.defense.answered)return;
+  const d=RAID.defense;d.answered=true;
+  d.ok=idx>=0&&d.options[idx]===d.word.m;
+  const ci=d.options.indexOf(d.word.m);
+  [...document.querySelectorAll('#rd-ans button')].forEach((b,i)=>{b.disabled=true;
+    if(i===ci)b.classList.add('rd-ok');else if(i===idx)b.classList.add('rd-no')});
+  d.until=Math.min(d.until,Date.now()+520);   // 答完就不用乾等剩餘秒數
+}
+function raidEndDefense(){
+  const d=RAID.defense;if(!d)return;
+  RAID.defense=null;
   document.getElementById('rd-boss').classList.remove('rd-casting');
+  const wrap=document.querySelector('.rd-wrap');if(wrap)wrap.classList.remove('rd-defmode');
+  document.getElementById('rd-ans').classList.remove('rd-defend');
+  if(d.ok){
+    raidAnnounce('擋下來了！');
+    if(RAID.alive&&RAID.hp<RAID_MAX_HP){RAID.hp=Math.min(RAID_MAX_HP,RAID.hp+2);raidRenderSelf();
+      Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:RAID.hp}).catch(()=>{})}
+  }else{
+    raidAnnounce(d.mv.n);
+    if(RAID.alive)raidTakeDamage(Math.round(RAID.tier.dmg*d.mv.mul));
+  }
+  if(!RAID.alive)return;
+  // 回到原本那題，剩餘秒數原封不動還給你
+  if(RAID.qFrozenRemain!=null&&RAID.word&&!RAID.answered){
+    RAID.qDeadline=Date.now()+RAID.qFrozenRemain;
+    RAID.qFrozenRemain=null;
+    raidRenderQuestionUI();
+  }else{raidNextQuestion()}
 }
 function raidResolveMove(mv){
   if(!RAID||!RAID.running)return;
   raidAnnounce(mv.n);
   if(mv.t==='scramble'){RAID.scramble=true}
-  if(mv.t==='blind'){RAID.blind=true;raidRenderParty();setTimeout(()=>{if(RAID){RAID.blind=false;raidRenderParty()}},6000)}
   if(mv.t==='trap'){RAID.trap=true}
+  // 「把課本翻到第 87 頁」：選項在你眼前重洗一次，剛剛看好的位置作廢
+  if(mv.t==='shuffle'&&RAID.word&&!RAID.answered){
+    for(let i=RAID.options.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));
+      [RAID.options[i],RAID.options[j]]=[RAID.options[j],RAID.options[i]]}
+    raidRenderQuestionUI();
+  }
   if(!RAID.alive)return;
-  // 「這題上課有教過」：讀條期間答對可以擋掉
-  if(mv.t==='block'&&Date.now()<RAID.blockedUntil){raidAnnounce('擋下來了！');return}
   const dmg=Math.round(RAID.tier.dmg*mv.mul);
-  raidTakeDamage(dmg);
+  if(dmg>0)raidTakeDamage(dmg);
 }
 
 function raidPickWord(){
@@ -5842,30 +5907,38 @@ function raidPickWord(){
   const src=pool.length>50?pool:W;
   return src[Math.floor(RAID.rng()*src.length)];
 }
-function raidNextQuestion(){
-  if(!RAID||!RAID.running)return;
-  if(!RAID.alive){document.getElementById('rd-word').textContent='被當掉了…';document.getElementById('rd-ans').innerHTML='';return}
-  const w=raidPickWord();
-  RAID.word=w;RAID.answered=false;RAID.qi++;
-  const wrongs=[];const seen=new Set([w.m]);
-  let guard=0;
+function raidBuildOptions(w){
+  const wrongs=[];const seen=new Set([w.m]);let guard=0;
   while(wrongs.length<3&&guard++<200){const c=W[Math.floor(RAID.rng()*W.length)];if(!seen.has(c.m)){seen.add(c.m);wrongs.push(c.m)}}
   const opts=[w.m,...wrongs];
   for(let i=opts.length-1;i>0;i--){const j=Math.floor(RAID.rng()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]]}
-  RAID.options=opts;
-  const total=RAID.enraged?RAID.tier.ansMs/2:RAID.tier.ansMs;
-  RAID.qDeadline=Date.now()+total;
+  return opts;
+}
+function raidRenderQuestionUI(){
+  if(!RAID||!RAID.word)return;
   const wEl=document.getElementById('rd-word');
-  wEl.textContent=w.w;
+  wEl.textContent=RAID.word.w;
   wEl.classList.toggle('rd-scrambled',!!RAID.scramble);
   const ansEl=document.getElementById('rd-ans');
+  ansEl.classList.remove('rd-defend');
   ansEl.classList.toggle('rd-rescue',!!RAID.rescueTarget);
-  ansEl.innerHTML=opts.map((o,i)=>`<button onclick="raidAnswer(${i})">${o}</button>`).join('');
+  ansEl.innerHTML=RAID.options.map((o,i)=>`<button onclick="raidAnswer(${i})">${o}</button>`).join('');
+}
+function raidNextQuestion(){
+  if(!RAID||!RAID.running)return;
+  if(!RAID.alive){document.getElementById('rd-word').textContent='被當掉了…';document.getElementById('rd-ans').innerHTML='';return}
+  if(RAID.defense)return;   // 防禦題進行中，等它結束才發下一題
+  const w=raidPickWord();
+  RAID.word=w;RAID.answered=false;RAID.qi++;
+  RAID.options=raidBuildOptions(w);
+  const total=RAID.enraged?RAID.tier.ansMs/2:RAID.tier.ansMs;
+  RAID.qDeadline=Date.now()+total;
+  raidRenderQuestionUI();
   document.getElementById('rd-qtimer-fill').style.width='100%';
   raidRenderRescue();
 }
 function raidAnswer(idx){
-  if(!RAID||!RAID.running||RAID.answered||!RAID.word)return;
+  if(!RAID||!RAID.running||RAID.answered||!RAID.word||RAID.defense)return;
   RAID.answered=true;
   // 「答案卡劃錯行」：你按的那格會往下位移一格
   let eff=idx;
@@ -5879,7 +5952,6 @@ function raidAnswer(idx){
   RAID.scramble=false;RAID.trap=false;
   if(ok){
     RAID.combo++;if(RAID.combo>RAID.maxCombo)RAID.maxCombo=RAID.combo;
-    RAID.blockedUntil=Date.now()+1200;
     if(RAID.rescueTarget){raidRescueProgress(true)}
     else{
       const remain=Math.max(0,RAID.qDeadline-Date.now());
@@ -6045,8 +6117,8 @@ function raidRenderBossHp(){
 function raidRenderSelf(){
   if(!RAID)return;
   const f=document.getElementById('rd-selfhp-fill');
-  f.style.width=RAID.hp+'%';
-  f.classList.toggle('rd-low',RAID.hp<=30);
+  f.style.width=Math.min(100,RAID.hp/RAID_MAX_HP*100)+'%';
+  f.classList.toggle('rd-low',RAID.hp<=RAID_MAX_HP*0.25);
   document.getElementById('rd-selfhp-txt').textContent=RAID.hp;
 }
 function raidRenderCombo(){
@@ -6057,14 +6129,13 @@ function raidRenderCombo(){
 function raidRenderParty(){
   const ps=RaidRoom.players||{};
   const list=Object.entries(ps).sort((a,b)=>(a[1].joinAt||0)-(b[1].joinAt||0));
-  document.getElementById('rd-party').innerHTML=list.map(([u,p])=>{
-    const hid=RAID&&RAID.blind&&u!==Net.uid;
-    return `<div class="rd-pmem ${p.alive?'':'rd-down'} ${u===Net.uid?'rd-me':''}">
+  document.getElementById('rd-party').innerHTML=list.map(([u,p])=>
+    `<div class="rd-pmem ${p.alive?'':'rd-down'} ${u===Net.uid?'rd-me':''}">
       <div class="rd-pmem-name">${p.name||'?'}</div>
-      <div class="rd-pmem-hp"><span style="width:${hid?0:(p.hp||0)}%"></span></div>
-      <div class="rd-pmem-dmg">${hid?'???':(p.alive?(p.dmg||0).toLocaleString():'當掉')}</div>
+      <div class="rd-pmem-hp"><span style="width:${Math.min(100,(p.hp||0)/RAID_MAX_HP*100)}%"></span></div>
+      <div class="rd-pmem-dmg">${p.alive?(p.dmg||0).toLocaleString():'當掉'}</div>
       ${p.online===false?'<div class="rd-pmem-tag">📵</div>':''}
-    </div>`}).join('');
+    </div>`).join('');
   raidCheckRevived();
   raidRenderRescue();
   raidRenderDownedNotice();
