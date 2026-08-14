@@ -990,7 +990,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('choice')"><div class="action-icon">🎤</div><div class="action-title">打歌舞台</div><div class="action-desc">英文選中文</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('spell')"><div class="action-icon">⭐</div><div class="action-title">星光大道</div><div class="action-desc">拼出單字</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('reverse')"><div class="action-icon">📺</div><div class="action-title">宣傳通告</div><div class="action-desc">中文選英文</div></div>
-    <div class="action-card" onclick="goTo('wrong-screen');showWrongReview()"><div class="action-icon">🎬</div><div class="action-title">NG 重拍</div><div class="action-desc">針對性複習</div></div>
+    <div class="action-card" onclick="goTo('wrong-screen');showWrongReview()"><div class="action-icon">🎬</div><div class="action-title">NG 重拍</div><div class="action-desc">錯字清單<span id="wrong-badge"></span></div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('listen')"><div class="action-icon">📻</div><div class="action-title">電台放送</div><div class="action-desc">聽發音選意思</div></div>
     <div class="action-card" onclick="goTo('quiz-screen');startQuiz('boss')"><div class="action-icon">👑</div><div class="action-title">年末大賞</div><div class="action-desc">複習錯題·高獎勵</div></div></div>
   <div class="section-title">🎤 雙人模式</div>
@@ -2348,6 +2348,14 @@ function claimDailyBonus(){
 }
 
 function updateHome(){
+  // 錯字數直接標在入口上 —— 不然沒人知道裡面有沒有東西，也想不到要點進去
+  const wb=document.getElementById('wrong-badge');
+  if(wb){
+    const n=Object.values(S.wordsAnswered||{}).filter(d=>(d.wr||0)>0).length;
+    wb.textContent=n?' · '+n+' 字待複習':'';
+    wb.style.color=n?'#ff9d5c':'';
+    wb.style.fontWeight=n?'700':'';
+  }
   const cardCount=ALL_MEMBERS.filter(m=>S.cards[m.groupId+'_'+m.memberIdx]).length;
   const totalMembers=ALL_MEMBERS.length;
   const completedGroups=GROUPS.filter(g=>g.members.every((_,mi)=>{
@@ -3201,7 +3209,7 @@ function showWrongReview(){
   const es=Object.entries(S.wordsAnswered||{}).filter(([_,d])=>(d.wr||0)>0);
   if(!es.length){
     summary.style.display='none';
-    list.innerHTML='<div class="empty-state">目前沒有錯題紀錄 🎉<br>在舞台模式答錯的單字會收進這裡</div>';
+    list.innerHTML='<div class="empty-state">目前沒有錯題紀錄 🎉<br>舞台模式和討伐模擬考答錯的單字都會收進這裡</div>';
     return;
   }
   es.sort((a,b)=>{const dw=(b[1].wr||0)-(a[1].wr||0);if(dw)return dw;return (b[1].lastWrong||0)-(a[1].lastWrong||0)});
@@ -6428,7 +6436,8 @@ function raidShowResult(r){
         ${r.mistakes.length>30?`<div style="font-size:.55rem;color:var(--text-muted);padding-top:.25rem">…另外還有 ${r.mistakes.length-30} 個</div>`:''}
       </div>
     </div>`:''}
-    <button class="btn btn-primary" style="width:100%;margin-top:.9rem" onclick="raidCloseResult()">回首頁</button>
+    ${(r.mistakes&&r.mistakes.length)?`<button class="btn btn-secondary" style="width:100%;margin-top:.6rem" onclick="raidCloseResult();goTo('wrong-screen');showWrongReview()">🎬 去看錯字清單</button>`:''}
+    <button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="raidCloseResult()">回首頁</button>
   </div>`;
   ov.style.display='flex';
 }
