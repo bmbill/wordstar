@@ -890,8 +890,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-selfhp-fill.rd-low{background:linear-gradient(90deg,#ff3b3b,#ff9800);animation:pulse 1s infinite}
 .rd-selfhp-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;
   font-size:.72rem;font-weight:900;font-family:var(--font-display);letter-spacing:.04em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)}
-.rd-combo{font-size:.66rem;font-weight:900;color:#ffd700;min-width:56px;text-align:right;opacity:0;transition:opacity .2s}
+.rd-combo{font-size:.66rem;font-weight:900;color:#ffd700;min-width:62px;text-align:right;opacity:0;transition:opacity .2s;white-space:nowrap}
 .rd-combo.on{opacity:1}
+.rd-combo.rd-dmgtally{color:var(--text-dim);font-size:.6rem}
 .rd-qtimer{height:4px;margin:.15rem .6rem;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden}
 .rd-qtimer-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--accent));width:100%}
 .rd-word{text-align:center;font-size:1.5rem;font-weight:900;font-family:var(--font-display);padding:.5rem .6rem .35rem;letter-spacing:.02em;min-height:2.2rem}
@@ -5808,7 +5809,7 @@ function raidStart(meta){
     if(!b||!RAID)return;
     RAID.bossHp=b.hp;RAID.bossMax=b.maxHp||b.hp;raidRenderBossHp();
   }));
-  raidRenderParty();
+  raidRenderParty();raidRenderSelf();raidRenderCombo();
   raidAnnounce('考試開始');
   RAID.tick=setInterval(raidTick,100);
   setTimeout(()=>{if(RAID&&RAID.running)raidNextQuestion()},1400);
@@ -6002,6 +6003,7 @@ function raidAnswer(idx){
 async function raidHitBoss(dmg){
   RAID.myDmg+=dmg;
   raidFloat('-'+dmg,false);
+  raidRenderCombo();
   const boss=document.getElementById('rd-boss');
   boss.classList.remove('rd-hurt');void boss.offsetWidth;boss.classList.add('rd-hurt');
   Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{dmg:RAID.myDmg}).catch(()=>{});
@@ -6146,19 +6148,20 @@ function raidRenderSelf(){
   f.classList.toggle('rd-low',RAID.hp<=RAID_MAX_HP*0.25);
   document.getElementById('rd-selfhp-txt').textContent=RAID.hp+' / '+RAID_MAX_HP;
 }
+// 這一格平常顯示自己的累積傷害（因為下面的隊友列不再放自己了），連擊起來才切成 COMBO
 function raidRenderCombo(){
   const el=document.getElementById('rd-combo');
-  if(RAID&&RAID.combo>=2){el.textContent='🔥 '+RAID.combo+' COMBO';el.classList.add('on')}
-  else el.classList.remove('on');
+  if(!RAID)return;
+  if(RAID.combo>=2){el.textContent='🔥 '+RAID.combo+' COMBO';el.classList.add('on');el.classList.remove('rd-dmgtally')}
+  else{el.textContent='⚔ '+RAID.myDmg.toLocaleString();el.classList.add('on','rd-dmgtally')}
 }
 function raidRenderParty(){
   const ps=RaidRoom.players||{};
   const list=Object.entries(ps).sort((a,b)=>(a[1].joinAt||0)-(b[1].joinAt||0));
   const el=document.getElementById('rd-party');
-  // 三個一排，但 10 人改成四欄 —— 不然最後一排只剩一張卡，看起來像沒排完
-  el.style.gridTemplateColumns='repeat('+(list.length>9?4:3)+',1fr)';
-  el.innerHTML=list.map(([u,p])=>
-    `<div class="rd-pmem ${p.alive?'':'rd-down'} ${p.online===false?'rd-off':''} ${u===Net.uid?'rd-me':''}">
+  // 自己的血量已經在題目下方那條粗的，這裡只列其他人：最多 9 個，剛好 3×3
+  el.innerHTML=list.filter(([u])=>u!==Net.uid).map(([u,p])=>
+    `<div class="rd-pmem ${p.alive?'':'rd-down'} ${p.online===false?'rd-off':''}">
       <div class="rd-pmem-name">${p.name||'?'}</div>
       <div class="rd-pmem-hp"><span style="width:${Math.min(100,(p.hp||0)/RAID_MAX_HP*100)}%"></span></div>
       <div class="rd-pmem-dmg">${p.alive?(p.dmg||0).toLocaleString():'當掉'}</div>
