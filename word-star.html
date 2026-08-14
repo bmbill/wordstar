@@ -957,9 +957,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   <div class="action-grid">
     <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">同台表演</div><div class="action-desc">雙人合作答題</div></div>
     <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽</div><div class="action-desc">雙人搶答</div></div></div>
+  <div id="raid-entry" style="display:none">
   <div class="section-title">📡 連線模式</div>
   <div class="action-grid">
     <div class="action-card" onclick="openRaidLobby()"><div class="action-icon">📝</div><div class="action-title">討伐模擬考</div><div class="action-desc">多人合作打王</div></div></div>
+  </div>
   <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
 <div class="section-title">🎭 偶像團體收集</div>
@@ -2167,7 +2169,7 @@ function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   const m={'home-screen':0,'gacha-screen':1,'collection-screen':2,'profile-screen':3};
   if(m[id]!=null)document.querySelectorAll('.nav-item')[m[id]]?.classList.add('active')}
-function startGame(){loadState();updateTTSBtn();goTo('home-screen');updateHome();
+function startGame(){loadState();updateTTSBtn();raidApplyGate();goTo('home-screen');updateHome();
   setTimeout(()=>{if(!showWhatsNew())flushRepairToast()},600)}
 
 // ===== 更新紀錄 =====
@@ -5570,6 +5572,19 @@ const RAID_CAST_MS=1500;
 
 let RAID=null;
 let RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
+
+// 這功能還沒要上線。正式站不顯示入口（config 已經在檔案裡，資料庫規則還沒收緊之前
+// 不能讓外面的人碰到），本機測試自動開啟；要在別的機器試就跑 raidEnable()。
+const RAID_ENABLED=(function(){
+  try{if(localStorage.getItem('wordstar_raid')==='1')return true}catch(e){}
+  const h=location.hostname;
+  return location.protocol==='file:'||h==='localhost'||h==='127.0.0.1'||h===''||h.endsWith('.local');
+})();
+function raidEnable(){try{localStorage.setItem('wordstar_raid','1')}catch(e){};location.reload()}
+function raidApplyGate(){
+  const el=document.getElementById('raid-entry');
+  if(el)el.style.display=RAID_ENABLED?'':'none';
+}
 
 // 血量次線性放大：人多打得快一點，但邊際遞減；人少血量降不了太多，所以單人是硬仗。
 function raidHpFor(tier,n){return Math.round(tier.hp*(0.45+0.55*(n/RAID_PARTY_REF)))}

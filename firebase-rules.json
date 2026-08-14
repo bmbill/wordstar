@@ -1,0 +1,55 @@
+{
+  "rules": {
+    "rooms": {
+      "$code": {
+        ".read": "auth != null",
+        ".validate": "$code.matches(/^[0-9]{4}$/)",
+
+        "//": "開房：只有房號還沒被占用時能整個建立，而且 meta.host 必須是自己",
+        ".write": "auth != null && !data.exists() && newData.child('meta/host').val() === auth.uid",
+
+        "meta": {
+          "//": "state / lastHit / endAt 任何房內玩家都能寫（宣告勝利、宣告全班重修不需要房主活著）",
+          "state":   { ".write": "auth != null && root.child('rooms/'+$code+'/players/'+auth.uid).exists()",
+                       ".validate": "newData.isString() && newData.val().matches(/^(lobby|playing|won|wiped)$/)" },
+          "lastHit": { ".write": "auth != null && root.child('rooms/'+$code+'/players/'+auth.uid).exists()" },
+          "endAt":   { ".write": "auth != null && root.child('rooms/'+$code+'/players/'+auth.uid).exists()" },
+
+          "//2": "難度、關門、開打時間這些只有房主能動",
+          "$other":  { ".write": "auth != null && root.child('rooms/'+$code+'/meta/host').val() === auth.uid" }
+        },
+
+        "seed": {
+          ".write": "auth != null && root.child('rooms/'+$code+'/meta/host').val() === auth.uid"
+        },
+
+        "boss": {
+          ".write": "auth != null && root.child('rooms/'+$code+'/players/'+auth.uid).exists()",
+          "hp": {
+            "//": "血量只能往下扣，不能加回去；只有房主能在開打時設定初始值",
+            ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() <= data.val() || root.child('rooms/'+$code+'/meta/host').val() === auth.uid)"
+          },
+          "maxHp": { ".validate": "newData.isNumber() && newData.val() > 0" }
+        },
+
+        "players": {
+          "$uid": {
+            "//": "自己那格自己寫；另外允許『活著的隊友把倒地的人拉起來』（補考），僅限 alive false→true",
+            ".write": "auth != null && ($uid === auth.uid || (root.child('rooms/'+$code+'/players/'+auth.uid+'/alive').val() === true && data.child('alive').val() === false && newData.child('alive').val() === true))",
+            ".validate": "newData.hasChildren(['name','hp'])",
+            "name":  { ".validate": "newData.isString() && newData.val().length <= 12" },
+            "hp":    { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300" },
+            "alive": { ".validate": "newData.isBoolean()" },
+            "dmg":   { ".validate": "newData.isNumber() && newData.val() >= 0" },
+            "online":{ ".validate": "newData.isBoolean()" },
+            "joinAt":{ ".validate": "newData.isNumber()" },
+            "$rest": { ".validate": false }
+          }
+        }
+      }
+    },
+
+    "//": "rooms 以外一律封死",
+    "$other": { ".read": false, ".write": false }
+  }
+}
