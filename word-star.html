@@ -847,9 +847,12 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-bosshp-ghost{position:absolute;inset:0;background:rgba(255,255,255,.35);transition:width .7s ease .25s;z-index:1}
 .rd-bosshp-fill{position:absolute;inset:0;background:linear-gradient(90deg,#ff3b3b,#ff8a3b);transition:width .22s ease;z-index:2}
 .rd-bosshp-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;font-family:var(--font-display);letter-spacing:.05em;color:#fff;text-shadow:0 1px 4px #000;z-index:3}
-.rd-stage{position:relative;flex:1;min-height:150px;display:flex;align-items:center;justify-content:center}
-/* 跟著畫面高度縮放，不然在高一點的手機上魔王會浮在一大片空白中間 */
-.rd-boss-card{height:clamp(170px,30vh,320px);aspect-ratio:5/6.3;background:linear-gradient(160deg,#f5f0e6,#ddd4c2);border-radius:5px;box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.15);position:relative;animation:rdBossIdle 3.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+.rd-stage{position:relative;flex:1 1 0;min-height:110px;display:flex;align-items:stretch;justify-content:center;overflow:hidden}
+.rd-boss{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+/* 跟著畫面高度縮放，不然在高一點的手機上魔王會浮在一大片空白中間。
+   但一定要收在舞台區高度以內 —— 只寫 clamp 的話，畫面被隊友列擠扁時卡片不會跟著縮，
+   會整張蓋到血條和題目上面（20 人、或矮螢幕手機都會踩到）。 */
+.rd-boss-card{height:min(clamp(150px,30vh,320px),86%);aspect-ratio:5/6.3;background:linear-gradient(160deg,#f5f0e6,#ddd4c2);border-radius:5px;box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.15);position:relative;animation:rdBossIdle 3.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
 .rd-boss-card::before{content:'';position:absolute;left:11px;right:11px;top:13px;height:1px;background:repeating-linear-gradient(180deg,rgba(0,0,0,.18) 0 1px,transparent 1px 14px);bottom:13px}
 .rd-boss-face{font-size:clamp(1.6rem,4.5vh,2.8rem);color:#c2185b;font-weight:900;letter-spacing:.1em;position:relative;z-index:2;text-shadow:0 1px 0 rgba(255,255,255,.6)}
 .rd-boss-marks{position:absolute;inset:0;background:radial-gradient(circle at 25% 70%,rgba(220,20,60,.32) 0 6px,transparent 7px),radial-gradient(circle at 72% 32%,rgba(220,20,60,.28) 0 5px,transparent 6px);pointer-events:none}
@@ -5782,6 +5785,8 @@ function leaveRaidLobby(){
 
 // ===== 戰鬥 =====
 function raidStart(meta){
+  // 上一場的計時器沒收掉的話會兩個 tick 同時跑（魔王出招會變兩倍快）
+  if(RAID&&RAID.tick){clearInterval(RAID.tick);RAID.tick=null}
   const tier=RAID_BOSS.tiers.find(t=>t.k===(meta.tier||1))||RAID_BOSS.tiers[0];
   RAID={
     running:true,tier,startAt:meta.startAt||Date.now(),
