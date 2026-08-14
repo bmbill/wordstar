@@ -834,21 +834,24 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 
 /* ===== 連線魔王戰 (RAID) ===== */
 #raid-screen.active{padding:0;flex-direction:column}
-.rd-wrap{display:flex;flex-direction:column;height:100%;width:100%;background:linear-gradient(180deg,#0d0a18,#1a1226 55%,#241528);overflow:hidden}
+/* height:100% 不行 —— 父層 .screen 只有 min-height:100dvh，百分比高度不會對 min-height
+   解析，整個 wrap 會塌成內容高度。既有的 .bt-container 就是寫死 100dvh。 */
+.rd-wrap{display:flex;flex-direction:column;height:100dvh;width:100%;background:linear-gradient(180deg,#0d0a18,#1a1226 55%,#241528);overflow:hidden}
 .rd-top{display:flex;align-items:center;gap:.5rem;padding:.45rem .6rem;padding-top:max(.45rem,env(safe-area-inset-top))}
 .rd-exit{background:rgba(255,255,255,.08);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:.75rem;cursor:pointer;flex-shrink:0}
 .rd-boss-name{flex:1;font-weight:900;font-size:.9rem;font-family:var(--font-display);letter-spacing:.05em;color:#ff6b6b;text-shadow:0 0 10px rgba(255,107,107,.4)}
 .rd-tier{font-size:.62rem;color:#ffd700;background:rgba(255,215,0,.12);padding:1px 6px;border-radius:6px;vertical-align:middle}
 .rd-clock{font-family:var(--font-display);font-size:.85rem;font-weight:900;color:var(--text-dim);flex-shrink:0}
 .rd-clock.rd-enraged{color:#ff3b3b;animation:pulse 1s infinite}
-.rd-bosshp-track{position:relative;height:16px;margin:0 .6rem;background:rgba(0,0,0,.55);border:1px solid rgba(255,107,107,.35);border-radius:3px;overflow:hidden}
+.rd-bosshp-track{position:relative;height:28px;margin:0 .6rem;background:rgba(0,0,0,.6);border:1px solid rgba(255,107,107,.45);border-radius:4px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,.55),0 0 14px rgba(255,59,59,.12)}
 .rd-bosshp-ghost{position:absolute;inset:0;background:rgba(255,255,255,.35);transition:width .7s ease .25s;z-index:1}
 .rd-bosshp-fill{position:absolute;inset:0;background:linear-gradient(90deg,#ff3b3b,#ff8a3b);transition:width .22s ease;z-index:2}
-.rd-bosshp-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;font-family:var(--font-display);color:#fff;text-shadow:0 1px 3px #000;z-index:3}
-.rd-stage{position:relative;flex:1;min-height:96px;display:flex;align-items:center;justify-content:center}
-.rd-boss-card{width:92px;height:116px;background:linear-gradient(160deg,#f5f0e6,#ddd4c2);border-radius:4px;box-shadow:0 8px 26px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.15);position:relative;animation:rdBossIdle 3.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
-.rd-boss-card::before{content:'';position:absolute;left:8px;right:8px;top:10px;height:1px;background:repeating-linear-gradient(180deg,rgba(0,0,0,.18) 0 1px,transparent 1px 11px);bottom:10px}
-.rd-boss-face{font-size:1.5rem;color:#c2185b;font-weight:900;letter-spacing:.1em;position:relative;z-index:2;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.rd-bosshp-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;font-family:var(--font-display);letter-spacing:.05em;color:#fff;text-shadow:0 1px 4px #000;z-index:3}
+.rd-stage{position:relative;flex:1;min-height:150px;display:flex;align-items:center;justify-content:center}
+/* 跟著畫面高度縮放，不然在高一點的手機上魔王會浮在一大片空白中間 */
+.rd-boss-card{height:clamp(170px,30vh,320px);aspect-ratio:5/6.3;background:linear-gradient(160deg,#f5f0e6,#ddd4c2);border-radius:5px;box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.15);position:relative;animation:rdBossIdle 3.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+.rd-boss-card::before{content:'';position:absolute;left:11px;right:11px;top:13px;height:1px;background:repeating-linear-gradient(180deg,rgba(0,0,0,.18) 0 1px,transparent 1px 14px);bottom:13px}
+.rd-boss-face{font-size:clamp(1.6rem,4.5vh,2.8rem);color:#c2185b;font-weight:900;letter-spacing:.1em;position:relative;z-index:2;text-shadow:0 1px 0 rgba(255,255,255,.6)}
 .rd-boss-marks{position:absolute;inset:0;background:radial-gradient(circle at 25% 70%,rgba(220,20,60,.32) 0 6px,transparent 7px),radial-gradient(circle at 72% 32%,rgba(220,20,60,.28) 0 5px,transparent 6px);pointer-events:none}
 @keyframes rdBossIdle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1.5deg)}}
 .rd-boss.rd-hurt .rd-boss-card{animation:rdBossHurt .22s}
@@ -862,14 +865,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-dmg{position:absolute;font-family:var(--font-display);font-weight:900;font-size:.9rem;color:#ffd700;text-shadow:0 2px 6px #000;animation:rdDmgUp 1s ease-out forwards;pointer-events:none}
 .rd-dmg.rd-dmg-self{color:#ff5252;font-size:.8rem}
 @keyframes rdDmgUp{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}100%{opacity:0;transform:translateY(-42px) scale(.95)}}
-.rd-party{display:flex;gap:.3rem;padding:.35rem .6rem;overflow-x:auto}
-.rd-pmem{flex:1;min-width:52px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:.45rem;padding:.25rem .2rem;text-align:center;position:relative;transition:opacity .3s}
+/* 三個一排的格線，不橫向捲動 —— 打到一半還要滑才看得到隊友是最糟的。
+   人多就往下長幾排，中間的舞台區是 flex:1，會自己讓出空間。 */
+.rd-party{display:grid;grid-template-columns:repeat(3,1fr);gap:.25rem;padding:.3rem .5rem;padding-bottom:max(.4rem,env(safe-area-inset-bottom))}
+.rd-pmem{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:.4rem;padding:.25rem .3rem;text-align:center;position:relative;transition:opacity .3s}
 .rd-pmem.rd-down{opacity:.42;border-color:rgba(255,82,82,.5)}
 .rd-pmem.rd-me{border-color:var(--accent)}
-.rd-pmem-name{font-size:.5rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rd-pmem-hp{height:4px;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden;margin:2px 0 1px}
+.rd-pmem-name{font-size:.58rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rd-pmem-hp{height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;margin:3px 0 2px}
 .rd-pmem-hp span{display:block;height:100%;background:linear-gradient(90deg,#00e676,#7ff5dc);transition:width .3s}
-.rd-pmem-dmg{font-size:.44rem;color:var(--text-dim)}
+.rd-pmem-dmg{font-size:.52rem;color:var(--text-dim)}
 .rd-pmem-tag{position:absolute;top:-5px;right:-3px;font-size:.5rem}
 .rd-selfbar{display:flex;align-items:center;gap:.45rem;padding:.1rem .6rem .35rem}
 .rd-selfhp-track{position:relative;flex:1;height:20px;background:rgba(0,0,0,.6);border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 4px rgba(0,0,0,.5)}
@@ -883,7 +888,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-qtimer-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--accent));width:100%}
 .rd-word{text-align:center;font-size:1.5rem;font-weight:900;font-family:var(--font-display);padding:.5rem .6rem .35rem;letter-spacing:.02em;min-height:2.2rem}
 .rd-word.rd-scrambled{color:#ff8a3b;text-shadow:0 0 12px rgba(255,138,59,.5)}
-.rd-ans{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;padding:0 .6rem;padding-bottom:max(.6rem,env(safe-area-inset-bottom))}
+.rd-ans{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;padding:0 .6rem .3rem}
 .rd-ans button{padding:.65rem .3rem;font-size:.72rem;font-weight:700;border-radius:.5rem;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;cursor:pointer;line-height:1.25;min-height:44px}
 .rd-ans button:active{transform:scale(.97)}
 .rd-ans button.rd-ok{background:rgba(0,230,118,.28);border-color:#00e676}
@@ -1201,7 +1206,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       <div class="rd-cast" id="rd-cast"></div>
       <div class="rd-floaters" id="rd-floaters"></div>
     </div>
-    <div class="rd-party" id="rd-party"></div>
     <div class="rd-qtimer"><div class="rd-qtimer-fill" id="rd-qtimer-fill" style="width:100%"></div></div>
     <div class="rd-word" id="rd-word">READY</div>
     <!-- 自己的血量放在題目正下方：那是眼睛本來就在的位置 -->
@@ -1213,6 +1217,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       <div class="rd-combo" id="rd-combo"></div>
     </div>
     <div class="rd-ans" id="rd-ans"></div>
+    <!-- 隊友列擺最下面：資訊重要但不是每一秒都要看，讓出中間給題目 -->
+    <div class="rd-party" id="rd-party"></div>
     <div class="rd-announce" id="rd-announce"></div>
   </div>
 </div>
@@ -6021,6 +6027,9 @@ async function raidDown(){
 }
 function raidRenderRescue(){
   const ps=RaidRoom.players||{};
+  // 離線的人不救 —— 花三題把已經離開的人拉起來是白費。他重連之後 online 會變回 true，
+  // 那時就會重新出現在可救名單裡。倒地卡片上會標「當掉·離線」，讓人知道為什麼沒有按鈕，
+  // 而不是以為壞掉了。
   const down=Object.entries(ps).filter(([u,p])=>!p.alive&&p.online!==false&&u!==Net.uid);
   const bar=document.getElementById('rd-selfbar');
   let btn=document.getElementById('rd-rescue-btn');
@@ -6034,9 +6043,10 @@ function raidRenderRescue(){
       btn.style.cssText='background:rgba(255,215,0,.18);border:1px solid #ffd700;color:#ffd700;font-size:.55rem;font-weight:700;border-radius:.4rem;padding:.2rem .4rem;cursor:pointer;white-space:nowrap';
       bar.appendChild(btn)}
     const target=down[0][0];
+    const more=down.length>1?'（還有 '+(down.length-1)+' 人倒地）':'';
     btn.textContent=RAID.rescueTarget
       ? '📝 補考 '+RAID.rescueN+'/'+RAID_RESCUE_NEED
-      : '📝 補考救 '+(down[0][1].name||'隊友');
+      : '📝 補考救 '+(down[0][1].name||'隊友')+more;
     btn.onclick=()=>{if(RAID.rescueTarget)return;
       RAID.rescueTarget=target;RAID.rescueN=0;raidRescueBroadcast();raidRenderRescue();
       document.getElementById('rd-ans').classList.add('rd-rescue');
@@ -6138,7 +6148,7 @@ function raidRenderParty(){
     `<div class="rd-pmem ${p.alive?'':'rd-down'} ${u===Net.uid?'rd-me':''}">
       <div class="rd-pmem-name">${p.name||'?'}</div>
       <div class="rd-pmem-hp"><span style="width:${Math.min(100,(p.hp||0)/RAID_MAX_HP*100)}%"></span></div>
-      <div class="rd-pmem-dmg">${p.alive?(p.dmg||0).toLocaleString():'當掉'}</div>
+      <div class="rd-pmem-dmg">${p.alive?(p.dmg||0).toLocaleString():(p.online===false?'當掉·離線':'當掉')}</div>
       ${p.online===false?'<div class="rd-pmem-tag">📵</div>':''}
     </div>`).join('');
   raidCheckRevived();
