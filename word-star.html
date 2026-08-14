@@ -865,9 +865,15 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-cast-fill{height:100%;background:linear-gradient(90deg,#ff3b3b,#ffb03b);width:0;transition:width .08s linear}
 .rd-cast-name{font-size:.58rem;text-align:center;color:#ffb03b;font-weight:700;margin-bottom:2px;text-shadow:0 1px 3px #000}
 .rd-floaters{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.rd-dmg{position:absolute;font-family:var(--font-display);font-weight:900;font-size:.9rem;color:#ffd700;text-shadow:0 2px 6px #000;animation:rdDmgUp 1s ease-out forwards;pointer-events:none}
-.rd-dmg.rd-dmg-self{color:#ff5252;font-size:.8rem}
-@keyframes rdDmgUp{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}100%{opacity:0;transform:translateY(-42px) scale(.95)}}
+.rd-dmg{position:absolute;font-family:var(--font-display);font-weight:900;font-size:2.1rem;line-height:1;color:#ffd700;
+  text-shadow:0 3px 0 #7a3b00,0 0 18px rgba(255,215,0,.55),0 4px 12px rgba(0,0,0,.9);
+  animation:rdDmgUp 1.05s cubic-bezier(.2,1.4,.4,1) forwards;pointer-events:none;white-space:nowrap}
+.rd-dmg.rd-dmg-self{color:#ff5252;text-shadow:0 3px 0 #6a0000,0 0 18px rgba(255,59,59,.6),0 4px 12px rgba(0,0,0,.9)}
+.rd-dmg.rd-dmg-crit{color:#fff3a0;font-size:3rem;text-shadow:0 3px 0 #b34700,0 0 26px rgba(255,180,0,.85),0 4px 14px rgba(0,0,0,.95)}
+@keyframes rdDmgUp{0%{opacity:0;transform:translateY(14px) scale(.4) rotate(-6deg)}
+  22%{opacity:1;transform:translateY(-6px) scale(1.25) rotate(2deg)}
+  38%{transform:translateY(-10px) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translateY(-70px) scale(.9)}}
 /* 三個一排的格線，不橫向捲動 —— 打到一半還要滑才看得到隊友是最糟的。
    人多就往下長幾排，中間的舞台區是 flex:1，會自己讓出空間。 */
 .rd-party{display:grid;grid-template-columns:repeat(3,1fr);gap:.25rem;padding:.3rem .5rem;padding-bottom:max(.4rem,env(safe-area-inset-bottom))}
@@ -896,7 +902,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-qtimer{height:4px;margin:.15rem .6rem;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden}
 .rd-qtimer-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--accent));width:100%}
 .rd-word{text-align:center;font-size:1.5rem;font-weight:900;font-family:var(--font-display);padding:.5rem .6rem .35rem;letter-spacing:.02em;min-height:2.2rem}
-.rd-word.rd-scrambled{color:#ff8a3b;text-shadow:0 0 12px rgba(255,138,59,.5)}
 .rd-ans{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;padding:0 .6rem .3rem}
 .rd-ans button{padding:.65rem .3rem;font-size:.72rem;font-weight:700;border-radius:.5rem;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;cursor:pointer;line-height:1.25;min-height:44px}
 .rd-ans button:active{transform:scale(.97)}
@@ -5592,7 +5597,6 @@ const RAID_BOSS={
 const RAID_MOVES=[
   {n:'這題上課有教過',t:'block',mul:1.0,cast:true},
   {n:'這次全班平均 42 分',t:'aoe',mul:0.5},
-  {n:'答案卡劃錯行',t:'scramble',mul:0},
   {n:'隨堂測驗',t:'quick',mul:0.35},
   {n:'訂正三遍',t:'aoe',mul:0.5},
   {n:'這題是送分題',t:'trap',mul:0},
@@ -5801,7 +5805,7 @@ function raidStart(meta){
     hp:RAID_MAX_HP,alive:true,combo:0,maxCombo:0,myDmg:0,
     qi:0,rng:_seededRng((RaidRoom.seed||'s')+'_'+Net.uid),
     word:null,options:[],answered:false,qDeadline:0,
-    nextAtk:1,casting:null,scramble:false,blind:false,trap:false,
+    nextAtk:1,casting:null,trap:false,
     blockedUntil:0,enraged:false,rescueTarget:null,rescueN:0,
     bossHp:1,bossMax:1,tick:null,qTimer:null
   };
@@ -5873,7 +5877,6 @@ function raidBeginDefense(mv){
   document.getElementById('rd-boss').classList.add('rd-casting');
   const wrap=document.querySelector('.rd-wrap');if(wrap)wrap.classList.add('rd-defmode');
   const wEl=document.getElementById('rd-word');
-  wEl.classList.remove('rd-scrambled');
   wEl.innerHTML=`<div class="rd-def-head">⚠ ${mv.n}　<span id="rd-def-count">${Math.ceil(total/1000)}</span></div>
     <div class="rd-def-hint">答對就擋下來</div>
     <div class="rd-def-word">${w.w}</div>`;
@@ -5916,7 +5919,6 @@ function raidEndDefense(){
 function raidResolveMove(mv){
   if(!RAID||!RAID.running)return;
   raidAnnounce(mv.n);
-  if(mv.t==='scramble'){RAID.scramble=true}
   if(mv.t==='trap'){RAID.trap=true}
   // 「把課本翻到第 87 頁」：選項在你眼前重洗一次，剛剛看好的位置作廢
   if(mv.t==='shuffle'&&RAID.word&&!RAID.answered){
@@ -5946,7 +5948,6 @@ function raidRenderQuestionUI(){
   if(!RAID||!RAID.word)return;
   const wEl=document.getElementById('rd-word');
   wEl.textContent=RAID.word.w;
-  wEl.classList.toggle('rd-scrambled',!!RAID.scramble);
   const ansEl=document.getElementById('rd-ans');
   ansEl.classList.remove('rd-defend');
   ansEl.classList.toggle('rd-rescue',!!RAID.rescueTarget);
@@ -5968,16 +5969,13 @@ function raidNextQuestion(){
 function raidAnswer(idx){
   if(!RAID||!RAID.running||RAID.answered||!RAID.word||RAID.defense)return;
   RAID.answered=true;
-  // 「答案卡劃錯行」：你按的那格會往下位移一格
-  let eff=idx;
-  if(RAID.scramble&&idx>=0)eff=(idx+1)%RAID.options.length;
-  const ok=idx>=0&&RAID.options[eff]===RAID.word.m;
+  const ok=idx>=0&&RAID.options[idx]===RAID.word.m;
   const correctIdx=RAID.options.indexOf(RAID.word.m);
   const btns=[...document.querySelectorAll('#rd-ans button')];
   btns.forEach((b,i)=>{b.disabled=true;if(i===correctIdx)b.classList.add('rd-ok');});
   if(idx>=0&&!ok)btns[idx]&&btns[idx].classList.add('rd-no');
-  const wasScramble=RAID.scramble, wasTrap=RAID.trap;
-  RAID.scramble=false;RAID.trap=false;
+  const wasTrap=RAID.trap;
+  RAID.trap=false;
   if(ok){
     RAID.combo++;if(RAID.combo>RAID.maxCombo)RAID.maxCombo=RAID.combo;
     if(RAID.rescueTarget){raidRescueProgress(true)}
@@ -6000,7 +5998,6 @@ function raidAnswer(idx){
     if(RAID.rescueTarget)raidRescueProgress(false);
     const mul=wasTrap?2:1;   // 「送分題」答錯扣兩倍
     raidTakeDamage(Math.round(RAID.tier.selfDmg*mul));
-    if(wasScramble)raidAnnounce('劃錯行了…');
   }
   raidRenderCombo();
   setTimeout(()=>{if(RAID&&RAID.running)raidNextQuestion()},ok?450:900);
@@ -6008,7 +6005,7 @@ function raidAnswer(idx){
 
 async function raidHitBoss(dmg){
   RAID.myDmg+=dmg;
-  raidFloat('-'+dmg,false);
+  raidFloat('-'+dmg,false,dmg);
   raidRenderCombo();
   const boss=document.getElementById('rd-boss');
   boss.classList.remove('rd-hurt');void boss.offsetWidth;boss.classList.add('rd-hurt');
@@ -6025,7 +6022,7 @@ async function raidHitBoss(dmg){
 function raidTakeDamage(dmg){
   if(!RAID||!RAID.alive)return;
   RAID.hp=Math.max(0,RAID.hp-dmg);
-  raidFloat('-'+dmg,true);
+  raidFloat('-'+dmg,true,dmg);
   try{playSfx('audio/sfx/damage.mp3',0.6)}catch(e){}
   raidRenderSelf();
   Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:RAID.hp}).catch(()=>{});
@@ -6127,14 +6124,20 @@ function raidCheckRevived(){
   }
 }
 
-function raidFloat(txt,self){
+// 傷害數字：舞台區本來就空著，數字就給它大。打得越重字越大，高連擊再跳一階。
+function raidFloat(txt,self,amount){
   const box=document.getElementById('rd-floaters');
   const d=document.createElement('div');
-  d.className='rd-dmg'+(self?' rd-dmg-self':'');
+  const crit=!self&&RAID&&RAID.combo>=5;
+  d.className='rd-dmg'+(self?' rd-dmg-self':'')+(crit?' rd-dmg-crit':'');
   d.textContent=txt;
-  d.style.left=(self?18:40)+Math.random()*24+'%';
-  d.style.top=(self?60:26)+Math.random()*14+'%';
-  box.appendChild(d);setTimeout(()=>d.remove(),1000);
+  if(!crit&&amount){                       // 一般傷害：字級隨傷害量微調
+    const scale=Math.min(1.7,Math.max(1,amount/28));
+    d.style.fontSize=(self?1.8:2.1*scale)+'rem';
+  }
+  d.style.left=(self?14:26)+Math.random()*30+'%';
+  d.style.top=(self?58:20)+Math.random()*16+'%';
+  box.appendChild(d);setTimeout(()=>d.remove(),1100);
 }
 function raidAnnounce(t){
   const el=document.getElementById('rd-announce');
