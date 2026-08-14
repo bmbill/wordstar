@@ -5613,6 +5613,111 @@ const RAID_DAILY_FULL=3, RAID_OVER_RATE=0.3;
 let RAID=null;
 let RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
 
+// ===== 魔王戰音效（Tone.js 即時合成，沒有音檔，離線一樣有聲音）=====
+// 單一正弦波的單音聽起來很廉價，所以每個音都是三層疊出來的：
+// 噪音瞬態（打擊感）＋ 音高本體（辨識度）＋ 殘響尾巴（空間感）。
+const RaidAudio=(function(){
+  let I=null, bgm=null, bgmOn=false;
+  function ok(){
+    if(typeof Tone==='undefined')return false;
+    try{if(Tone.context.state!=='running')Tone.context.resume()}catch(e){}
+    return true;
+  }
+  function init(){
+    if(I||!ok())return I;
+    // Tone.Compressor 沒有 .volume，要靠 Tone.Volume 節點控總音量
+    const comp=new Tone.Compressor({threshold:-16,ratio:3.2,attack:.003,release:.12}).toDestination();
+    const out=new Tone.Volume(-3).connect(comp);
+    const verb=new Tone.Reverb({decay:1.9,wet:.24}).connect(out);
+    const bright=new Tone.Filter(3400,'bandpass').connect(out);
+    I={
+      out,verb,
+      // 打擊瞬態
+      tick:new Tone.NoiseSynth({noise:{type:'white'},envelope:{attack:.001,decay:.055,sustain:0}}).connect(bright),
+      thud:new Tone.MembraneSynth({pitchDecay:.03,octaves:5,envelope:{attack:.001,decay:.28,sustain:0}}).connect(out),
+      // 金屬光澤（暴擊、擋下）
+      metal:new Tone.MetalSynth({frequency:180,envelope:{attack:.001,decay:.32,release:.12},harmonicity:5.1,modulationIndex:22,resonance:3600,octaves:1.4}).connect(verb),
+      // 音高本體
+      lead:new Tone.PolySynth(Tone.Synth,{oscillator:{type:'triangle'},envelope:{attack:.004,decay:.22,sustain:.05,release:.3}}).connect(verb),
+      sub:new Tone.MonoSynth({oscillator:{type:'sawtooth'},filter:{Q:2,type:'lowpass'},
+        envelope:{attack:.005,decay:.22,sustain:0,release:.2},
+        filterEnvelope:{attack:.002,decay:.16,sustain:0,baseFrequency:180,octaves:2.6}}).connect(out)
+    };
+    I.tick.volume.value=-16;I.thud.volume.value=-9;I.metal.volume.value=-26;
+    I.lead.volume.value=-13;I.sub.volume.value=-15;
+    return I;
+  }
+  const SCALE=['C4','D4','Eb4','G4','Ab4','C5','D5','Eb5','G5','C6'];
+  return {
+    // 命中：連擊越高音階越上去，聽得出來自己在疊
+    hit(combo){const a=init();if(!a)return;
+      const n=SCALE[Math.min(SCALE.length-1,Math.max(0,(combo||1)-1))];
+      a.tick.triggerAttackRelease('32n');
+      a.lead.triggerAttackRelease(n,'16n');
+    },
+    crit(){const a=init();if(!a)return;
+      a.tick.triggerAttackRelease('16n');
+      a.lead.triggerAttackRelease(['C5','G5','C6'],'8n');
+      a.metal.triggerAttackRelease('16n');
+    },
+    hurt(){const a=init();if(!a)return;
+      a.thud.triggerAttackRelease('G1','8n');
+      a.sub.triggerAttackRelease('Db2','16n');
+    },
+    // 擋下大招：往上的三音，明亮
+    blockOk(){const a=init();if(!a)return;
+      a.metal.triggerAttackRelease('32n');
+      a.lead.triggerAttackRelease(['G4','C5'],'16n');
+      setTimeout(()=>{try{a.lead.triggerAttackRelease(['E5','G5'],'8n')}catch(e){}},90);
+    },
+    blockFail(){const a=init();if(!a)return;
+      a.thud.triggerAttackRelease('F1','4n');
+      a.lead.triggerAttackRelease(['Db3','G3'],'8n');   // 減五度，刻意不和諧
+    },
+    // 大招讀條：往上爬的緊張感
+    cast(ms){const a=init();if(!a)return;
+      const steps=['C3','Eb3','G3','Bb3','D4'];
+      steps.forEach((n,i)=>setTimeout(()=>{try{a.sub.triggerAttackRelease(n,'16n')}catch(e){}},i*(ms||1500)/steps.length));
+    },
+    down(){const a=init();if(!a)return;
+      a.thud.triggerAttackRelease('C2','2n');
+      ['G3','Eb3','C3','G2'].forEach((n,i)=>setTimeout(()=>{try{a.lead.triggerAttackRelease(n,'8n')}catch(e){}},i*130));
+    },
+    revive(){const a=init();if(!a)return;
+      ['C4','Eb4','G4','C5'].forEach((n,i)=>setTimeout(()=>{try{a.lead.triggerAttackRelease(n,'16n')}catch(e){}},i*80));
+      setTimeout(()=>{try{a.metal.triggerAttackRelease('16n')}catch(e){}},320);
+    },
+    win(){const a=init();if(!a)return;
+      [['C4','E4','G4'],['D4','F4','A4'],['E4','G4','C5'],['G4','C5','E5']]
+        .forEach((c,i)=>setTimeout(()=>{try{a.lead.triggerAttackRelease(c,'8n');if(i===3)a.metal.triggerAttackRelease('8n')}catch(e){}},i*170));
+    },
+    wipe(){const a=init();if(!a)return;
+      [['C4','Eb4'],['Bb3','Db4'],['Ab3','B3'],['G3','Bb3']]
+        .forEach((c,i)=>setTimeout(()=>{try{a.lead.triggerAttackRelease(c,'4n');a.thud.triggerAttackRelease('C2','8n')}catch(e){}},i*260));
+    },
+    // BGM：低音脈動 + 時鐘滴答，狂暴後變快
+    startBgm(){const a=init();if(!a||bgmOn)return;bgmOn=true;
+      Tone.Transport.bpm.value=96;
+      let step=0;
+      bgm=new Tone.Loop(time=>{
+        const s=step++%8;
+        if(s%2===0)a.thud.triggerAttackRelease('C2','16n',time);        // 心跳
+        a.tick.triggerAttackRelease('64n',time+.001);                    // 秒針
+        if(s===0)a.sub.triggerAttackRelease('C2','8n',time);
+        if(s===4)a.sub.triggerAttackRelease('Ab1','8n',time);
+        if(s===6)a.sub.triggerAttackRelease('Bb1','8n',time);
+      },'8n').start(0);
+      Tone.Transport.start();
+    },
+    enrageBgm(){if(!bgmOn)return;try{Tone.Transport.bpm.rampTo(138,2)}catch(e){}},
+    stopBgm(){if(!bgmOn)return;bgmOn=false;
+      try{if(bgm){bgm.stop();bgm.dispose();bgm=null}Tone.Transport.stop()}catch(e){}},
+    // 試聽用：raidAudition('crit')
+    audition(name){const f=this[name];if(typeof f==='function')f.call(this,6)}
+  };
+})();
+function raidAudition(n){RaidAudio.audition(n)}
+
 // 這功能還沒要上線。正式站不顯示入口（config 已經在檔案裡，資料庫規則還沒收緊之前
 // 不能讓外面的人碰到），本機測試自動開啟；要在別的機器試就跑 raidEnable()。
 const RAID_ENABLED=(function(){
@@ -5833,7 +5938,7 @@ function raidTick(){
   const clock=document.getElementById('rd-clock');
   if(left>0){clock.textContent=Math.floor(left/60000)+':'+String(Math.floor(left/1000)%60).padStart(2,'0');}
   else{clock.textContent='收卷!';clock.classList.add('rd-enraged');
-    if(!RAID.enraged){RAID.enraged=true;raidAnnounce('時間到，筆放下');}}
+    if(!RAID.enraged){RAID.enraged=true;raidAnnounce('時間到，筆放下');try{RaidAudio.enrageBgm()}catch(e){}}}
   const gap=RAID.enraged?tier.atkGap/2:tier.atkGap;
 
   // 防禦題進行中：全場答題凍結，畫面上只剩這一件事要處理
@@ -5883,7 +5988,7 @@ function raidBeginDefense(mv){
   const ansEl=document.getElementById('rd-ans');
   ansEl.classList.add('rd-defend');ansEl.classList.remove('rd-rescue');
   ansEl.innerHTML=opts.map((o,i)=>`<button onclick="raidDefend(${i})">${o}</button>`).join('');
-  try{playSfx('audio/sfx/damage.mp3',0.3)}catch(e){}
+  try{RaidAudio.cast(total)}catch(e){}
 }
 function raidDefend(idx){
   if(!RAID||!RAID.defense||RAID.defense.answered)return;
@@ -5901,11 +6006,11 @@ function raidEndDefense(){
   const wrap=document.querySelector('.rd-wrap');if(wrap)wrap.classList.remove('rd-defmode');
   document.getElementById('rd-ans').classList.remove('rd-defend');
   if(d.ok){
-    raidAnnounce('擋下來了！');
+    raidAnnounce('擋下來了！');try{RaidAudio.blockOk()}catch(e){}
     if(RAID.alive&&RAID.hp<RAID_MAX_HP){RAID.hp=Math.min(RAID_MAX_HP,RAID.hp+2);raidRenderSelf();
       Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:RAID.hp}).catch(()=>{})}
   }else{
-    raidAnnounce(d.mv.n);
+    raidAnnounce(d.mv.n);try{RaidAudio.blockFail()}catch(e){}
     if(RAID.alive)raidTakeDamage(Math.round(RAID.tier.dmg*d.mv.mul));
   }
   if(!RAID.alive)return;
@@ -5992,7 +6097,7 @@ function raidAnswer(idx){
     const heal=RAID.combo>=5?2:1;
     if(RAID.hp<RAID_MAX_HP){RAID.hp=Math.min(RAID_MAX_HP,RAID.hp+heal);raidRenderSelf();
       Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:RAID.hp}).catch(()=>{})}
-    try{btPlayAttack(RAID.combo)}catch(e){}
+    try{RAID.combo>=5?RaidAudio.crit():RaidAudio.hit(RAID.combo)}catch(e){}
   }else{
     RAID.combo=0;
     if(RAID.rescueTarget)raidRescueProgress(false);
@@ -6023,7 +6128,7 @@ function raidTakeDamage(dmg){
   if(!RAID||!RAID.alive)return;
   RAID.hp=Math.max(0,RAID.hp-dmg);
   raidFloat('-'+dmg,true,dmg);
-  try{playSfx('audio/sfx/damage.mp3',0.6)}catch(e){}
+  try{RaidAudio.hurt()}catch(e){}
   raidRenderSelf();
   Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:RAID.hp}).catch(()=>{});
   if(RAID.hp<=0)raidDown();
@@ -6031,7 +6136,7 @@ function raidTakeDamage(dmg){
 async function raidDown(){
   RAID.alive=false;RAID.combo=0;
   raidRescueCancel();   // 自己倒了就沒資格救人，規則那邊也會擋
-  raidAnnounce('被當掉了');
+  raidAnnounce('被當掉了');try{RaidAudio.down()}catch(e){}
   document.getElementById('rd-word').textContent='被當掉了…等補考';
   document.getElementById('rd-ans').innerHTML='';
   await Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:0,alive:false});
@@ -6098,7 +6203,7 @@ async function raidDoRescue(){
   const p=(RaidRoom.players||{})[t];
   if(!p||p.alive){raidRenderRescue();return}
   await Net.update('rooms/'+RaidRoom.code+'/players/'+t,{hp:40,alive:true});
-  raidAnnounce('補考過了！');
+  raidAnnounce('補考過了！');try{RaidAudio.revive()}catch(e){}
   const a=document.getElementById('rd-ans');if(a)a.classList.remove('rd-rescue');
   raidRenderRescue();
 }
@@ -6119,7 +6224,7 @@ function raidCheckRevived(){
   const me=(RaidRoom.players||{})[Net.uid];
   if(me&&me.alive&&me.hp>0){
     RAID.alive=true;RAID.hp=me.hp;raidRenderSelf();
-    raidAnnounce('補考通過');
+    raidAnnounce('補考通過');try{RaidAudio.revive()}catch(e){}
     raidNextQuestion();
   }
 }
@@ -6202,6 +6307,7 @@ async function raidFinish(state){
   raidStop();
   const won=state==='won';
   raidAnnounce(won?'過關！':'全班重修…');
+  try{won?RaidAudio.win():RaidAudio.wipe()}catch(e){}
   const meta=(await Net.get('rooms/'+RaidRoom.code+'/meta'))||{};
   const ps=(await Net.get('rooms/'+RaidRoom.code+'/players'))||{};
   const tier=RAID.tier;
