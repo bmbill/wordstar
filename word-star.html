@@ -932,27 +932,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-announce{position:absolute;top:38%;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:1.5rem;font-weight:900;color:#ffd700;text-shadow:0 3px 14px #000;pointer-events:none;opacity:0}
 .rd-announce.on{animation:rdAnn 1.5s ease-out}
 @keyframes rdAnn{0%{opacity:0;transform:scale(.6)}18%{opacity:1;transform:scale(1.1)}80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
-/* 首頁的魔王陣容預告 */
-.raid-banner{background:linear-gradient(135deg,rgba(255,107,107,.12),rgba(199,125,255,.08) 60%,rgba(255,215,0,.06));
-  border:1px solid rgba(255,107,107,.22);border-radius:.7rem;padding:.45rem .5rem;margin-bottom:.6rem;cursor:pointer;position:relative;overflow:hidden}
-.raid-banner.rb-locked{filter:saturate(.55)}
-/* 標題和說明擠在同一行，高度才壓得下來（原本兩行讓整塊比上面的按鈕高 1.5 倍） */
-.rb-top{display:flex;align-items:baseline;gap:.35rem;margin-bottom:.35rem}
-.rb-title{font-size:.78rem;font-weight:700;white-space:nowrap;flex-shrink:0}
-.rb-desc{font-size:.52rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rb-lock{margin-left:auto;flex-shrink:0;font-size:.5rem;font-weight:700;letter-spacing:.05em;
-  padding:.14rem .42rem;border-radius:999px;background:rgba(255,255,255,.1);color:var(--text-dim);border:1px solid rgba(255,255,255,.14)}
-.rb-lock.rb-open{background:rgba(0,230,118,.18);color:#7ff5dc;border-color:rgba(127,245,220,.4)}
-.rb-roster{display:grid;grid-template-columns:repeat(5,1fr);gap:.28rem;justify-items:center}
-/* max-height 壓住格子高度，aspect-ratio 會跟著縮寬度，整塊才收得進跟上面按鈕差不多的高度 */
-.rb-slot{aspect-ratio:1/1;max-height:54px;width:100%;border-radius:.4rem;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.1);
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;overflow:hidden}
-.rb-slot-img{position:absolute;inset:0;background-position:center top;background-size:contain;background-repeat:no-repeat}
-.rb-slot-q{font-family:var(--font-display);font-size:1.1rem;font-weight:900;color:rgba(255,255,255,.16);
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.rb-slot-name{position:relative;z-index:2;font-size:.42rem;font-weight:700;padding:1px 2px;width:100%;text-align:center;
-  background:linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,.5) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rb-slot.rb-next{border-color:rgba(255,215,0,.42)}
 /* 大廳 */
 .rl-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:.7rem;padding:.7rem;margin-bottom:.6rem}
 .rl-code{font-family:var(--font-display);font-size:2rem;font-weight:900;letter-spacing:.35em;text-align:center;color:#ffd700;text-shadow:0 0 18px rgba(255,215,0,.35)}
@@ -1020,16 +999,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽</div><div class="action-desc">雙人搶答</div></div></div>
   <div id="raid-entry">
   <div class="section-title">📡 連線模式</div>
-  <div class="raid-banner" id="raid-banner" onclick="raidEntryTap()">
-    <div class="rb-top">
-      <div style="min-width:0">
-        <div class="rb-title">📝 討伐模擬考</div>
-        <div class="rb-desc">多人合作打王 · 建議 4 人</div>
-      </div>
-      <div class="rb-lock" id="rb-lock">尚未開放</div>
-    </div>
-    <div class="rb-roster" id="rb-roster"></div>
-  </div>
+  <div class="action-grid">
+    <div class="action-card" id="raid-card" onclick="raidEntryTap()"><div class="action-icon">📝</div>
+      <div class="action-title">討伐模擬考</div>
+      <div class="action-desc" id="raid-card-desc">多人合作打王</div></div></div>
   </div>
   <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
@@ -5772,31 +5745,15 @@ const RAID_ENABLED=(function(){
 })();
 function raidEnable(){try{localStorage.setItem('wordstar_raid','1')}catch(e){};location.reload()}
 
-// 魔王陣容。有 art 的才是已經做好的，其餘留問號當預告；出新魔王就把 name/art 補上。
-const RAID_ROSTER=[
-  {name:'模擬考',art:'art/boss/0.png'},
-  {},{},{},{}
-];
-// open 可傳入覆寫，方便驗證「未開放」的畫面；平常不傳就讀 RAID_ENABLED
 function raidApplyGate(open){
   if(open===undefined)open=RAID_ENABLED;
-  const banner=document.getElementById('raid-banner');
-  const lock=document.getElementById('rb-lock');
-  const roster=document.getElementById('rb-roster');
-  if(!banner||!roster)return;
-  // 沒開放時仍然顯示（當預告），只是不能點 —— 純顯示不會發出任何連線
-  banner.classList.toggle('rb-locked',!open);
-  if(lock){
-    lock.textContent=open?'可挑戰':'尚未開放';
-    lock.classList.toggle('rb-open',open);
-  }
-  roster.innerHTML=RAID_ROSTER.map((b,i)=>{
-    const ready=!!b.art;
-    return `<div class="rb-slot ${ready?'rb-next':''}">
-      ${ready?`<div class="rb-slot-img" style="background-image:url('${b.art}')"></div>`
-             :'<div class="rb-slot-q">?</div>'}
-      ${b.name?`<div class="rb-slot-name">${b.name}</div>`:''}
-    </div>`}).join('');
+  const card=document.getElementById('raid-card');
+  const desc=document.getElementById('raid-card-desc');
+  if(!card)return;
+  // 未開放時仍然顯示（當預告），只是點了不會連線 —— 純顯示不發出任何請求
+  card.style.opacity=open?'':'.5';
+  if(desc)desc.innerHTML=open?'多人合作打王'
+    :'<span style="color:var(--text-muted)">尚未開放</span>';
 }
 function raidEntryTap(){
   if(!RAID_ENABLED){floatTxt('討伐模擬考 · 尚未開放','var(--text-dim)');return}
@@ -6040,10 +5997,25 @@ function raidTick(){
   // 魔王招式：時間由 startAt 推算，每台機器自己算，不用傳訊息
   const due=RAID.startAt+RAID.nextAtk*gap;
   if(now>=due){
-    const mv=RAID_MOVES[(RAID.nextAtk-1)%RAID_MOVES.length];
-    RAID.nextAtk++;
-    if(mv.cast&&RAID.alive)raidBeginDefense(mv);
-    else raidResolveMove(mv);
+    // 分頁切到背景時 setInterval 會被節流（Chrome 藏超過五分鐘會降到每分鐘一次）。
+    // 原本一次 tick 只處理一招，積欠的招數就這樣消失 —— 等於躲到背景就能跳過魔王攻擊。
+    // 所以要把積欠的招數一次補完，只是不逐招演出（會卡住畫面），合併成一次「缺考」結算。
+    const owed=Math.floor((now-RAID.startAt)/gap)-RAID.nextAtk+1;
+    if(owed>1){
+      let dmg=0;
+      for(let k=0;k<owed;k++){
+        const mv=RAID_MOVES[(RAID.nextAtk-1+k)%RAID_MOVES.length];
+        dmg+=Math.round(RAID.tier.dmg*mv.mul);
+      }
+      RAID.nextAtk+=owed;
+      raidAnnounce('缺考 '+owed+' 次');
+      if(RAID.alive&&dmg>0)raidTakeDamage(dmg);
+    }else{
+      const mv=RAID_MOVES[(RAID.nextAtk-1)%RAID_MOVES.length];
+      RAID.nextAtk++;
+      if(mv.cast&&RAID.alive)raidBeginDefense(mv);
+      else raidResolveMove(mv);
+    }
   }
 
   // 作答倒數
