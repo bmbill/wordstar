@@ -302,6 +302,12 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .action-card:active{transform:scale(.96)}
 .action-icon{font-size:1.4rem;margin-bottom:.2rem}.action-title{font-weight:700;font-size:.8rem}
 .action-desc{color:var(--text-dim);font-size:.75rem;margin-top:.1rem}
+/* 未開放的功能：整顆壓黑，明顯不能按 */
+.action-card.card-disabled{background:#08070c;border-color:rgba(255,255,255,.05);cursor:default}
+.action-card.card-disabled:active{transform:none}
+.action-card.card-disabled .action-icon{filter:grayscale(1) brightness(.45)}
+.action-card.card-disabled .action-title{color:#4a4557}
+.action-card.card-disabled .action-desc{color:#3b3646}
 
 /* Group Collection Section */
 .group-scroll{display:flex;gap:.6rem;overflow-x:auto;padding-bottom:.5rem;-webkit-overflow-scrolling:touch}
@@ -2220,8 +2226,12 @@ function startGame(){loadState();updateTTSBtn();raidApplyGate();goTo('home-scree
 
 // ===== 更新紀錄 =====
 // APP_VERSION 要跟 sw.js 的 CACHE_NAME 同步（sw.js 也放一份摘要，讓更新橫幅在重整前就講得出內容）。
-const APP_VERSION='v20';
+const APP_VERSION='v21';
 const CHANGELOG=[
+  {v:'v21',date:'2026-08-14',title:'錯字清單更好找了',items:[
+    '首頁的「NG 重拍」現在直接顯示還有幾個字待複習，點進去就是完整錯字清單（單字、中文、發音、錯幾次、準度、還差幾次畢業）',
+    '連線模式「討伐模擬考」已完成但尚未開放，首頁可以先看到入口',
+  ]},
   {v:'v20',date:'2026-08-13',title:'動漫卡池新增兩組',items:[
     '草帽海賊團、復仇者聯盟登場，各 10 位，抽卡與圖鑑都吃得到',
     '兩組都有 🎨 SP 繪卡，全 22 組 167 位角色繪卡收集完整度回到 100%',
@@ -5736,9 +5746,13 @@ function raidBossPose(pose,ms){
   },ms);
 }
 
-// 這功能還沒要上線。正式站不顯示入口（config 已經在檔案裡，資料庫規則還沒收緊之前
-// 不能讓外面的人碰到），本機測試自動開啟；要在別的機器試就跑 raidEnable()。
+// ★★★ 對外開放的總開關 ★★★
+// 確認要讓同學玩了，就把這行改成 true 再 push。false 時首頁那顆按鈕是黑的、按不動。
+const RAID_OPEN=false;
+// 本機（localhost / file://）不受開關限制，方便繼續開發測試；
+// 別台機器要試就在 console 跑 raidEnable()。
 const RAID_ENABLED=(function(){
+  if(RAID_OPEN)return true;
   try{if(localStorage.getItem('wordstar_raid')==='1')return true}catch(e){}
   const h=location.hostname;
   return location.protocol==='file:'||h==='localhost'||h==='127.0.0.1'||h===''||h.endsWith('.local');
@@ -5750,10 +5764,9 @@ function raidApplyGate(open){
   const card=document.getElementById('raid-card');
   const desc=document.getElementById('raid-card-desc');
   if(!card)return;
-  // 未開放時仍然顯示（當預告），只是點了不會連線 —— 純顯示不發出任何請求
-  card.style.opacity=open?'':'.5';
-  if(desc)desc.innerHTML=open?'多人合作打王'
-    :'<span style="color:var(--text-muted)">尚未開放</span>';
+  // 未開放時仍然顯示（當預告），但整顆壓黑、按了只跳提示，不會發出任何連線請求
+  card.classList.toggle('card-disabled',!open);
+  if(desc)desc.textContent=open?'多人合作打王':'🔒 尚未開放';
 }
 function raidEntryTap(){
   if(!RAID_ENABLED){floatTxt('討伐模擬考 · 尚未開放','var(--text-dim)');return}

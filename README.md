@@ -70,7 +70,11 @@ icon-192.png     # App icon
 icon-512.png     # App icon
 art/             # 各團體繪卡插圖（art/<團體>/<index>.png）
 audio/           # BGM 與音效（audio/、audio/sfx/）
+tools/           # 資產產生腳本（音效合成、sprite sheet 切割去背）
 ```
+
+> `tools/make_raid_sfx.py` 產生 `audio/sfx/raid-*.wav`，`tools/cutout_sheet.py` 把
+> `art/<id>-sheet.png` 切格去背成 `art/<id>/N.png`。要改音色或重切圖都跑腳本，不要手動編輯產出檔。
 
 ---
 
