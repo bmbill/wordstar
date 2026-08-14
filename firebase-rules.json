@@ -51,7 +51,10 @@
           "hp": {
             // 血量只能往下扣。唯一例外是「還在大廳、而且是房主」的初始設定 ——
             // 這個例外一定要綁時機，否則房主整場都能把魔王補滿。
-            ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() <= data.val() || (root.child('rooms/'+$code+'/meta/state').val() === 'lobby' && root.child('rooms/'+$code+'/meta/host').val() === auth.uid))"
+            // !data.exists() 這段必須放最前面：血量還不存在時 data.val() 是 null，
+            // 拿數字去跟 null 比較會讓整條 validate 判定失敗（不是回傳 false），
+            // 連房主開打寫入初始血量都會被擋掉。
+            ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() <= data.val() || (root.child('rooms/'+$code+'/meta/state').val() === 'lobby' && root.child('rooms/'+$code+'/meta/host').val() === auth.uid))"
           },
           "maxHp": { ".validate": "newData.isNumber() && newData.val() > 0" }
         },

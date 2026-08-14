@@ -5569,6 +5569,9 @@ const RAID_MOVES=[
 ];
 const RAID_MAX_PLAYERS=6, RAID_PARTY_REF=4, RAID_MAX_HP=150;
 const RAID_CAST_MS=1500;
+// 補考要連續答對幾題才救得起來。一題就能救的話，倒地幾乎沒有代價；
+// 連對 3 題代表救人的那位要放掉 3 題的輸出，中間答錯還會歸零重來。
+const RAID_RESCUE_NEED=3;
 
 let RAID=null;
 let RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
@@ -5760,7 +5763,7 @@ function raidStart(meta){
     qi:0,rng:_seededRng((RaidRoom.seed||'s')+'_'+Net.uid),
     word:null,options:[],answered:false,qDeadline:0,
     nextAtk:1,casting:null,scramble:false,blind:false,trap:false,
-    blockedUntil:0,enraged:false,rescueTarget:null,
+    blockedUntil:0,enraged:false,rescueTarget:null,rescueN:0,
     bossHp:1,bossMax:1,tick:null,qTimer:null
   };
   document.getElementById('rd-boss-title').textContent=RAID_BOSS.name;
@@ -5877,7 +5880,7 @@ function raidAnswer(idx){
   if(ok){
     RAID.combo++;if(RAID.combo>RAID.maxCombo)RAID.maxCombo=RAID.combo;
     RAID.blockedUntil=Date.now()+1200;
-    if(RAID.rescueTarget){raidDoRescue()}
+    if(RAID.rescueTarget){raidRescueProgress(true)}
     else{
       const remain=Math.max(0,RAID.qDeadline-Date.now());
       const total=RAID.enraged?RAID.tier.ansMs/2:RAID.tier.ansMs;
@@ -5894,6 +5897,7 @@ function raidAnswer(idx){
     try{btPlayAttack(RAID.combo)}catch(e){}
   }else{
     RAID.combo=0;
+    if(RAID.rescueTarget)raidRescueProgress(false);
     const mul=wasTrap?2:1;   // 「送分題」答錯扣兩倍
     raidTakeDamage(Math.round(RAID.tier.selfDmg*mul));
     if(wasScramble)raidAnnounce('劃錯行了…');
@@ -5928,6 +5932,7 @@ function raidTakeDamage(dmg){
 }
 async function raidDown(){
   RAID.alive=false;RAID.combo=0;
+  raidRescueCancel();   // 自己倒了就沒資格救人，規則那邊也會擋
   raidAnnounce('被當掉了');
   document.getElementById('rd-word').textContent='被當掉了…等補考';
   document.getElementById('rd-ans').innerHTML='';
@@ -5942,25 +5947,69 @@ function raidRenderRescue(){
   const down=Object.entries(ps).filter(([u,p])=>!p.alive&&p.online!==false&&u!==Net.uid);
   const bar=document.getElementById('rd-selfbar');
   let btn=document.getElementById('rd-rescue-btn');
+  // 目標被別人先救走、或自己也倒了，就取消手上的補考
+  if(RAID&&RAID.rescueTarget){
+    const t=ps[RAID.rescueTarget];
+    if(!RAID.alive||!t||t.alive)raidRescueCancel();
+  }
   if(down.length&&RAID&&RAID.alive){
     if(!btn){btn=document.createElement('button');btn.id='rd-rescue-btn';
       btn.style.cssText='background:rgba(255,215,0,.18);border:1px solid #ffd700;color:#ffd700;font-size:.55rem;font-weight:700;border-radius:.4rem;padding:.2rem .4rem;cursor:pointer;white-space:nowrap';
       bar.appendChild(btn)}
     const target=down[0][0];
-    btn.textContent=RAID.rescueTarget?'補考中…':'📝 補考救 '+(down[0][1].name||'隊友');
-    btn.onclick=()=>{RAID.rescueTarget=target;raidRenderRescue();
-      document.getElementById('rd-ans').classList.add('rd-rescue');floatTxt('下一題答對就拉他起來','#ffd700')};
-  }else if(btn){btn.remove();if(RAID)RAID.rescueTarget=null}
+    btn.textContent=RAID.rescueTarget
+      ? '📝 補考 '+RAID.rescueN+'/'+RAID_RESCUE_NEED
+      : '📝 補考救 '+(down[0][1].name||'隊友');
+    btn.onclick=()=>{if(RAID.rescueTarget)return;
+      RAID.rescueTarget=target;RAID.rescueN=0;raidRescueBroadcast();raidRenderRescue();
+      document.getElementById('rd-ans').classList.add('rd-rescue');
+      floatTxt('連續答對 '+RAID_RESCUE_NEED+' 題就拉他起來','#ffd700')};
+  }else if(btn){btn.remove()}
+}
+// 進度寫在自己的節點上（規則只允許改別人的 alive false→true，寫不進對方那格），
+// 倒地的人再從全體名單裡讀出「誰正在救我、救到第幾題」。
+function raidRescueBroadcast(){
+  Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,
+    {rescT:RAID.rescueTarget||null,rescN:RAID.rescueTarget?RAID.rescueN:null}).catch(()=>{});
+}
+function raidRescueCancel(){
+  if(!RAID||!RAID.rescueTarget)return;
+  RAID.rescueTarget=null;RAID.rescueN=0;
+  raidRescueBroadcast();
+  const a=document.getElementById('rd-ans');if(a)a.classList.remove('rd-rescue');
+}
+function raidRescueProgress(ok){
+  if(!RAID||!RAID.rescueTarget)return;
+  if(!ok){
+    // 答錯歸零重來，但補考不取消，還可以繼續拚
+    if(RAID.rescueN>0)raidAnnounce('補考中斷，重來');
+    RAID.rescueN=0;raidRescueBroadcast();raidRenderRescue();return;
+  }
+  RAID.rescueN++;
+  if(RAID.rescueN>=RAID_RESCUE_NEED){raidDoRescue()}
+  else{raidAnnounce('補考 '+RAID.rescueN+'/'+RAID_RESCUE_NEED);raidRescueBroadcast();raidRenderRescue()}
 }
 async function raidDoRescue(){
-  const t=RAID.rescueTarget;RAID.rescueTarget=null;
+  const t=RAID.rescueTarget;
+  RAID.rescueTarget=null;RAID.rescueN=0;raidRescueBroadcast();
   if(!t)return;
   const p=(RaidRoom.players||{})[t];
   if(!p||p.alive){raidRenderRescue();return}
   await Net.update('rooms/'+RaidRoom.code+'/players/'+t,{hp:40,alive:true});
   raidAnnounce('補考過了！');
-  document.getElementById('rd-ans').classList.remove('rd-rescue');
+  const a=document.getElementById('rd-ans');if(a)a.classList.remove('rd-rescue');
   raidRenderRescue();
+}
+// 倒地時顯示「誰正在救我、救到第幾題」，不然乾等很難熬
+function raidRenderDownedNotice(){
+  if(!RAID||RAID.alive)return;
+  const ps=RaidRoom.players||{};
+  const helper=Object.entries(ps).find(([u,p])=>p.rescT===Net.uid&&p.online!==false);
+  const el=document.getElementById('rd-word');
+  if(!el)return;
+  el.textContent=helper
+    ? (helper[1].name||'隊友')+' 補考中 '+(helper[1].rescN||0)+'/'+RAID_RESCUE_NEED
+    : '被當掉了…等補考';
 }
 // 被隊友救起來：自己的 players 節點被改回 alive
 function raidCheckRevived(){
@@ -6018,6 +6067,7 @@ function raidRenderParty(){
     </div>`}).join('');
   raidCheckRevived();
   raidRenderRescue();
+  raidRenderDownedNotice();
 }
 
 function raidStop(){
