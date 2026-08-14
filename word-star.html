@@ -5882,7 +5882,7 @@ function raidStart(meta){
     qi:0,rng:_seededRng((RaidRoom.seed||'s')+'_'+Net.uid),
     word:null,options:[],answered:false,qDeadline:0,
     nextAtk:1,casting:null,trap:false,
-    blockedUntil:0,enraged:false,rescueTarget:null,rescueN:0,
+    blockedUntil:0,enraged:false,rescueTarget:null,rescueN:0,mistakes:[],
     bossHp:1,bossMax:1,tick:null,qTimer:null
   };
   document.getElementById('rd-boss-title').textContent=RAID_BOSS.name;
@@ -5965,6 +5965,7 @@ function raidDefend(idx){
   if(!RAID||!RAID.defense||RAID.defense.answered)return;
   const d=RAID.defense;d.answered=true;
   d.ok=idx>=0&&d.options[idx]===d.word.m;
+  raidRecordAnswer(d.word,d.ok);
   const ci=d.options.indexOf(d.word.m);
   [...document.querySelectorAll('#rd-ans button')].forEach((b,i)=>{b.disabled=true;
     if(i===ci)b.classList.add('rd-ok');else if(i===idx)b.classList.add('rd-no')});
@@ -5972,6 +5973,7 @@ function raidDefend(idx){
 }
 function raidEndDefense(){
   const d=RAID.defense;if(!d)return;
+  if(!d.answered)raidRecordAnswer(d.word,false);   // 超時沒作答也算錯
   RAID.defense=null;
   document.getElementById('rd-boss').classList.remove('rd-casting');raidBossPose(RAID.enraged?'rage':null);
   const wrap=document.querySelector('.rd-wrap');if(wrap)wrap.classList.remove('rd-defmode');
@@ -6013,6 +6015,23 @@ function raidPickWord(){
   const src=pool.length>50?pool:W;
   return src[Math.floor(RAID.rng()*src.length)];
 }
+// 魔王戰的作答一樣要進錯題本 —— 單人打一場一模超過一百題，是全遊戲單次量最大的
+// 作答場合，不記錄等於白答。欄位語意跟 handleRes 一致：答錯累加 wr、答對連續兩次
+// 才把 wr 歸零「畢業」，這樣 NG 重拍和年末大賞才抓得到。
+function raidRecordAnswer(w,ok){
+  if(!w||!w.w)return;
+  if(!S.wordsAnswered[w.w])S.wordsAnswered[w.w]={rv:0,m:false,sp:0,ch:0,re:0,lv:0,wr:0,lastWrong:0,cw:0};
+  const wa=S.wordsAnswered[w.w];
+  if(ok){
+    wa.rv=(wa.rv||0)+1;wa.ch=(wa.ch||0)+1;
+    S.totalCorrect=(S.totalCorrect||0)+1;
+    if((wa.wr||0)>0){wa.cw=(wa.cw||0)+1;if(wa.cw>=2){wa.wr=0;wa.cw=0}}
+  }else{
+    wa.wr=(wa.wr||0)+1;wa.lastWrong=Date.now();wa.cw=0;
+    if(RAID&&!RAID.mistakes.some(m=>m.w===w.w))RAID.mistakes.push({w:w.w,m:w.m,lv:w.lv});
+  }
+  saveState();
+}
 function raidBuildOptions(w){
   const wrongs=[];const seen=new Set([w.m]);let guard=0;
   while(wrongs.length<3&&guard++<200){const c=W[Math.floor(RAID.rng()*W.length)];if(!seen.has(c.m)){seen.add(c.m);wrongs.push(c.m)}}
@@ -6052,6 +6071,7 @@ function raidAnswer(idx){
   if(idx>=0&&!ok)btns[idx]&&btns[idx].classList.add('rd-no');
   const wasTrap=RAID.trap;
   RAID.trap=false;
+  raidRecordAnswer(RAID.word,ok);
   if(ok){
     RAID.combo++;if(RAID.combo>RAID.maxCombo)RAID.maxCombo=RAID.combo;
     if(RAID.rescueTarget){raidRescueProgress(true)}
@@ -6332,7 +6352,7 @@ async function raidFinish(state){
     const pity=(S.raidPity||0)>=8;
     if(pity||Math.random()<rate){chest=raidGrantChest();S.raidPity=0;saveState()}
   }
-  raidShowResult({won,stars,bonuses,share,myDmg,isMvp:mvpBonus,isLastHit,tier,chest,ps,overQuota,progress});
+  raidShowResult({won,stars,bonuses,share,myDmg,isMvp:mvpBonus,isLastHit,tier,chest,ps,overQuota,progress,mistakes:RAID?RAID.mistakes:[]});
 }
 
 // 每日全額配額：同一隻魔王共用，不分難度 —— 這樣「今天這幾次要打哪個難度」本身就是個選擇，
@@ -6399,6 +6419,15 @@ function raidShowResult(r){
     ${r.overQuota?`<div style="font-size:.6rem;color:#ff8a3b;margin-top:.25rem">今日全額次數已用完 · 報酬 ×${RAID_OVER_RATE}</div>`:''}
     ${!r.overQuota&&r.won?`<div style="font-size:.58rem;color:var(--text-dim);margin-top:.2rem">今日全額次數剩 ${Math.max(0,RAID_DAILY_FULL-raidDailyUsed())}/${RAID_DAILY_FULL}</div>`:''}
     ${chestHtml}
+    ${(r.mistakes&&r.mistakes.length)?`
+    <div style="margin-top:.7rem;padding:.6rem;background:rgba(255,255,255,.05);border-radius:.6rem;border:1px solid rgba(255,157,92,.3);text-align:left">
+      <div style="font-size:.7rem;font-weight:700;color:#ff9d5c;margin-bottom:.35rem">🎬 這場錯了 ${r.mistakes.length} 個字，已進 NG 重拍</div>
+      <div style="max-height:132px;overflow-y:auto">
+        ${r.mistakes.slice(0,30).map(m=>`<div style="display:flex;gap:.5rem;font-size:.62rem;padding:.12rem 0;border-bottom:1px solid rgba(255,255,255,.05)">
+          <span style="font-weight:700;min-width:98px">${m.w}</span><span style="color:var(--text-dim)">${m.m}</span></div>`).join('')}
+        ${r.mistakes.length>30?`<div style="font-size:.55rem;color:var(--text-muted);padding-top:.25rem">…另外還有 ${r.mistakes.length-30} 個</div>`:''}
+      </div>
+    </div>`:''}
     <button class="btn btn-primary" style="width:100%;margin-top:.9rem" onclick="raidCloseResult()">回首頁</button>
   </div>`;
   ov.style.display='flex';
