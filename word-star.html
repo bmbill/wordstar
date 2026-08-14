@@ -5554,17 +5554,54 @@ const Net=(function(){
     if(j!==s.last){s.last=j;try{s.cb(nv)}catch(e){console.warn('[Net mock] listener error',e)}}})}
 
   // ---------- firebase backend ----------
-  async function initFirebase(){
-    const [appMod,authMod,dbMod]=await Promise.all([
+  let mods=null, app=null, memApp=null;
+  async function loadMods(){
+    if(!mods)mods=await Promise.all([
       import(FB_SDK+'firebase-app.js'),
       import(FB_SDK+'firebase-auth.js'),
       import(FB_SDK+'firebase-database.js')
     ]);
-    const app=appMod.initializeApp(FIREBASE_CONFIG);
-    const auth=authMod.getAuth(app);
+    return mods;
+  }
+  // 分頁在背景時 IndexedDB 會被瀏覽器暫停，登入必定失敗（Database is closing/hidden），
+  // 所以重試前要先等回到前景，否則只是連續撞同一面牆。
+  function whenVisible(){
+    if(!document.hidden)return Promise.resolve();
+    return new Promise(res=>{
+      const h=()=>{if(!document.hidden){document.removeEventListener('visibilitychange',h);res()}};
+      document.addEventListener('visibilitychange',h);
+    });
+  }
+  async function authOnce(inMemory){
+    const [appMod,authMod,dbMod]=await loadMods();
+    let auth;
+    if(inMemory){
+      // 完全不碰 IndexedDB 的最後手段。initializeAuth 一個 app 只能呼叫一次，
+      // 所以另外開一個具名 app。
+      if(!memApp)memApp=appMod.initializeApp(FIREBASE_CONFIG,'nopersist');
+      auth=authMod.initializeAuth(memApp,{persistence:authMod.inMemoryPersistence});
+      const cred=await authMod.signInAnonymously(auth);
+      fb={db:dbMod.getDatabase(memApp),m:dbMod};
+      return cred.user.uid;
+    }
+    if(!app)app=appMod.initializeApp(FIREBASE_CONFIG);
+    auth=authMod.getAuth(app);
     const cred=await authMod.signInAnonymously(auth);
     fb={db:dbMod.getDatabase(app),m:dbMod};
     return cred.user.uid;
+  }
+  async function initFirebase(onStatus){
+    const waits=[0,700,1600,3000];
+    let lastErr=null;
+    for(let i=0;i<waits.length;i++){
+      if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));
+      await whenVisible();
+      try{return await authOnce(false)}
+      catch(e){lastErr=e;if(onStatus)onStatus(i+1,waits.length+1,e)}
+    }
+    if(onStatus)onStatus(waits.length+1,waits.length+1,lastErr);
+    try{return await authOnce(true)}catch(e){lastErr=e}
+    throw lastErr;
   }
 
   return {
@@ -5572,7 +5609,7 @@ const Net=(function(){
     set backend(v){backend=v},
     get uid(){return uid},
     get ready(){return !!uid},
-    async init(){
+    async init(onStatus){
       if(uid)return uid;
       if(backend==='mock'){
         uid=localStorage.getItem('wordstar_mockuid');
@@ -5581,7 +5618,7 @@ const Net=(function(){
         window.addEventListener('storage',e=>{if(e.key===MK)mkFire()});
         return uid;
       }
-      uid=await initFirebase();
+      uid=await initFirebase(onStatus);
       return uid;
     },
     async get(path){
@@ -5785,9 +5822,14 @@ async function openRaidLobby(){
   goTo('raid-lobby-screen');
   document.getElementById('rl-stars').textContent=S.stars;
   const body=document.getElementById('rl-body');
-  body.innerHTML='<div class="rl-card" style="text-align:center"><div style="font-size:.8rem">連線中…</div></div>';
+  const status=(msg)=>{body.innerHTML=`<div class="rl-card" style="text-align:center"><div style="font-size:.8rem">${msg}</div></div>`};
+  status('連線中…');
   try{
-    await Net.init();
+    await Net.init((n,total,err)=>{
+      // 背景分頁會讓 IndexedDB 暫停，重試前已經等回前景，這裡只是讓使用者知道還在試
+      status(document.hidden?'等待回到前景後重試…':`連線中…（重試 ${n}/${total}）`);
+      console.warn('[Raid] 第 '+n+' 次連線失敗，將自動重試',err&&err.message);
+    });
   }catch(e){
     console.error('[Raid] 連線失敗',e);
     body.innerHTML=`<div class="rl-card"><div style="font-size:.8rem;color:var(--danger);font-weight:700">連線失敗</div>
@@ -5874,6 +5916,15 @@ function enterRaidRoom(code){
   }));
 }
 function raidUnsub(){RaidRoom.unsubs.forEach(u=>{try{u()}catch(e){}});RaidRoom.unsubs=[]}
+
+// 手機鎖屏再回來：onDisconnect 已經把我們標成離線了，RTDB 自己會重連，但那個旗標
+// 不會自己回來 —— 隊友畫面上我們會一直掛著大叉，也會被排除在可救名單外。
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden||!RaidRoom.code||!Net.ready)return;
+  const path='rooms/'+RaidRoom.code+'/players/'+Net.uid;
+  Net.update(path,{online:true}).catch(()=>{});
+  Net.onDisconnectUpdate(path,{online:false});
+});
 
 function renderRaidRoom(){
   if(!RaidRoom.code||!RaidRoom.meta||RaidRoom.meta.state!=='lobby')return;
