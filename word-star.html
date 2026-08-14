@@ -871,6 +871,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-pmem{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:.4rem;padding:.25rem .3rem;text-align:center;position:relative;transition:opacity .3s}
 .rd-pmem.rd-down{opacity:.42;border-color:rgba(255,82,82,.5)}
 .rd-pmem.rd-me{border-color:var(--accent)}
+/* 離線：整格打一個大叉，一眼就知道這個人不在，不用去讀小字 */
+.rd-pmem.rd-off{opacity:.45;border-color:rgba(255,255,255,.12)}
+.rd-pmem.rd-off>*{opacity:.55}
+.rd-pmem.rd-off::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;font-weight:900;line-height:1;color:rgba(255,82,82,.95);text-shadow:0 2px 8px rgba(0,0,0,.95);pointer-events:none}
 .rd-pmem-name{font-size:.58rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rd-pmem-hp{height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;margin:3px 0 2px}
 .rd-pmem-hp span{display:block;height:100%;background:linear-gradient(90deg,#00e676,#7ff5dc);transition:width .3s}
@@ -6145,11 +6150,10 @@ function raidRenderParty(){
   const ps=RaidRoom.players||{};
   const list=Object.entries(ps).sort((a,b)=>(a[1].joinAt||0)-(b[1].joinAt||0));
   document.getElementById('rd-party').innerHTML=list.map(([u,p])=>
-    `<div class="rd-pmem ${p.alive?'':'rd-down'} ${u===Net.uid?'rd-me':''}">
+    `<div class="rd-pmem ${p.alive?'':'rd-down'} ${p.online===false?'rd-off':''} ${u===Net.uid?'rd-me':''}">
       <div class="rd-pmem-name">${p.name||'?'}</div>
       <div class="rd-pmem-hp"><span style="width:${Math.min(100,(p.hp||0)/RAID_MAX_HP*100)}%"></span></div>
-      <div class="rd-pmem-dmg">${p.alive?(p.dmg||0).toLocaleString():(p.online===false?'當掉·離線':'當掉')}</div>
-      ${p.online===false?'<div class="rd-pmem-tag">📵</div>':''}
+      <div class="rd-pmem-dmg">${p.alive?(p.dmg||0).toLocaleString():'當掉'}</div>
     </div>`).join('');
   raidCheckRevived();
   raidRenderRescue();
