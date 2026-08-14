@@ -5629,9 +5629,15 @@ let RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
 // 「一段聲音」，怎麼調層次都補不回那個差距。
 // 沒有對應素材的事件（擋下、倒地、復活、通關、全滅）先用 playbackRate 變速做出
 // 區別 —— 慢速會變低沉厚重，快速會變輕快明亮，音色仍然來自真實素材。
+// raid-* 是 tools/make_raid_sfx.py 算出來的完整波形（1.5~2.5 秒，含卷積殘響尾巴），
+// 要改音色就改那支腳本重跑，不要手動編輯 wav。
 const RAID_SFX={
-  atk1:'audio/sfx/attack-1.mp3', atk2:'audio/sfx/attack-2.mp3',
-  atk4:'audio/sfx/attack-4.mp3', atk6:'audio/sfx/attack-6.mp3',
+  hit1:'audio/sfx/raid-hit-1.wav', hit2:'audio/sfx/raid-hit-2.wav',
+  hit3:'audio/sfx/raid-hit-3.wav', hit4:'audio/sfx/raid-hit-4.wav',
+  block:'audio/sfx/raid-block.wav', down:'audio/sfx/raid-down.wav',
+  revive:'audio/sfx/raid-revive.wav', enrage:'audio/sfx/raid-enrage.wav',
+  win:'audio/sfx/raid-win.wav', wipe:'audio/sfx/raid-wipe.wav',
+  atk2:'audio/sfx/attack-2.mp3', atk6:'audio/sfx/attack-6.mp3',
   dmg:'audio/sfx/damage.mp3'
 };
 function raidSfx(path,vol,rate){
@@ -5643,19 +5649,19 @@ function raidSfx(path,vol,rate){
   }catch(e){}
 }
 const RaidAudio={
-  hit(combo){const c=combo||1;
-    raidSfx(c>=4?RAID_SFX.atk4:c>=2?RAID_SFX.atk2:RAID_SFX.atk1,0.75);},
-  crit(){raidSfx(RAID_SFX.atk6,0.9);},
+  // 命中有四個音高層級，連擊越高聽起來越上揚，連按也不會每次一模一樣
+  hit(combo){const c=Math.max(1,combo||1);
+    raidSfx(RAID_SFX['hit'+Math.min(4,Math.ceil(c/2))],0.8);},
+  crit(){raidSfx(RAID_SFX.hit4,0.95);setTimeout(()=>raidSfx(RAID_SFX.block,0.5),40);},
   hurt(){raidSfx(RAID_SFX.dmg,0.65);},
-  blockOk(){raidSfx(RAID_SFX.atk4,0.85,1.25);},      // 快一點＝清脆，像擋下來的金屬聲
-  blockFail(){raidSfx(RAID_SFX.dmg,0.8,0.9);},
-  cast(){raidSfx(RAID_SFX.atk2,0.35,0.6);},           // 慢速＝低沉，當讀條的壓迫感
-  down(){raidSfx(RAID_SFX.dmg,0.9,0.7);},             // 更慢更重
-  revive(){raidSfx(RAID_SFX.atk6,0.7,1.35);},         // 更快更亮
-  win(){raidSfx(RAID_SFX.atk6,0.9);setTimeout(()=>raidSfx(RAID_SFX.atk4,0.8,1.2),260);},
-  wipe(){raidSfx(RAID_SFX.dmg,0.9,0.6);setTimeout(()=>raidSfx(RAID_SFX.dmg,0.7,0.5),380);},
-  // 狂暴：低速重疊兩聲，當作「收卷鐘響」的宣告
-  enrageBgm(){raidSfx(RAID_SFX.atk6,0.85,0.55);setTimeout(()=>raidSfx(RAID_SFX.dmg,0.6,0.55),420);},
+  blockOk(){raidSfx(RAID_SFX.block,0.9);},
+  blockFail(){raidSfx(RAID_SFX.dmg,0.85);},
+  cast(){raidSfx(RAID_SFX.atk2,0.35,0.6);},      // 讀條：低速的既有素材，當背景壓迫感
+  down(){raidSfx(RAID_SFX.down,0.9);},
+  revive(){raidSfx(RAID_SFX.revive,0.85);},
+  win(){raidSfx(RAID_SFX.win,0.9);},
+  wipe(){raidSfx(RAID_SFX.wipe,0.9);},
+  enrageBgm(){raidSfx(RAID_SFX.enrage,0.9);},
   audition(n){const f=this[n];if(typeof f==='function')f.call(this,6)}
 };
 function raidAudition(n){RaidAudio.audition(n)}
