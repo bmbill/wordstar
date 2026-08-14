@@ -832,6 +832,78 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .card-item.pk-style-card .ci-content{animation:chibiSmDuet 2.8s ease-in-out infinite}
 @keyframes chibiSmDuet{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-4px) rotate(2deg)}50%{transform:translateY(-2px) rotate(-2deg)}75%{transform:translateY(-5px) rotate(1deg)}}
 
+/* ===== 連線魔王戰 (RAID) ===== */
+#raid-screen.active{padding:0;flex-direction:column}
+.rd-wrap{display:flex;flex-direction:column;height:100%;width:100%;background:linear-gradient(180deg,#0d0a18,#1a1226 55%,#241528);overflow:hidden}
+.rd-top{display:flex;align-items:center;gap:.5rem;padding:.45rem .6rem;padding-top:max(.45rem,env(safe-area-inset-top))}
+.rd-exit{background:rgba(255,255,255,.08);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:.75rem;cursor:pointer;flex-shrink:0}
+.rd-boss-name{flex:1;font-weight:900;font-size:.9rem;font-family:var(--font-display);letter-spacing:.05em;color:#ff6b6b;text-shadow:0 0 10px rgba(255,107,107,.4)}
+.rd-tier{font-size:.62rem;color:#ffd700;background:rgba(255,215,0,.12);padding:1px 6px;border-radius:6px;vertical-align:middle}
+.rd-clock{font-family:var(--font-display);font-size:.85rem;font-weight:900;color:var(--text-dim);flex-shrink:0}
+.rd-clock.rd-enraged{color:#ff3b3b;animation:pulse 1s infinite}
+.rd-bosshp-track{position:relative;height:16px;margin:0 .6rem;background:rgba(0,0,0,.55);border:1px solid rgba(255,107,107,.35);border-radius:3px;overflow:hidden}
+.rd-bosshp-ghost{position:absolute;inset:0;background:rgba(255,255,255,.35);transition:width .7s ease .25s;z-index:1}
+.rd-bosshp-fill{position:absolute;inset:0;background:linear-gradient(90deg,#ff3b3b,#ff8a3b);transition:width .22s ease;z-index:2}
+.rd-bosshp-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;font-family:var(--font-display);color:#fff;text-shadow:0 1px 3px #000;z-index:3}
+.rd-stage{position:relative;flex:1;min-height:96px;display:flex;align-items:center;justify-content:center}
+.rd-boss-card{width:92px;height:116px;background:linear-gradient(160deg,#f5f0e6,#ddd4c2);border-radius:4px;box-shadow:0 8px 26px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.15);position:relative;animation:rdBossIdle 3.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+.rd-boss-card::before{content:'';position:absolute;left:8px;right:8px;top:10px;height:1px;background:repeating-linear-gradient(180deg,rgba(0,0,0,.18) 0 1px,transparent 1px 11px);bottom:10px}
+.rd-boss-face{font-size:1.5rem;color:#c2185b;font-weight:900;letter-spacing:.1em;position:relative;z-index:2;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.rd-boss-marks{position:absolute;inset:0;background:radial-gradient(circle at 25% 70%,rgba(220,20,60,.32) 0 6px,transparent 7px),radial-gradient(circle at 72% 32%,rgba(220,20,60,.28) 0 5px,transparent 6px);pointer-events:none}
+@keyframes rdBossIdle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1.5deg)}}
+.rd-boss.rd-hurt .rd-boss-card{animation:rdBossHurt .22s}
+@keyframes rdBossHurt{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.rd-boss.rd-casting .rd-boss-card{box-shadow:0 8px 26px rgba(0,0,0,.55),0 0 30px 6px rgba(255,59,59,.55)}
+.rd-cast{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:74%;max-width:300px}
+.rd-cast-bar{height:11px;background:rgba(0,0,0,.6);border:1px solid rgba(255,59,59,.5);border-radius:3px;overflow:hidden}
+.rd-cast-fill{height:100%;background:linear-gradient(90deg,#ff3b3b,#ffb03b);width:0;transition:width .08s linear}
+.rd-cast-name{font-size:.58rem;text-align:center;color:#ffb03b;font-weight:700;margin-bottom:2px;text-shadow:0 1px 3px #000}
+.rd-floaters{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.rd-dmg{position:absolute;font-family:var(--font-display);font-weight:900;font-size:.9rem;color:#ffd700;text-shadow:0 2px 6px #000;animation:rdDmgUp 1s ease-out forwards;pointer-events:none}
+.rd-dmg.rd-dmg-self{color:#ff5252;font-size:.8rem}
+@keyframes rdDmgUp{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}100%{opacity:0;transform:translateY(-42px) scale(.95)}}
+.rd-party{display:flex;gap:.3rem;padding:.35rem .6rem;overflow-x:auto}
+.rd-pmem{flex:1;min-width:52px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:.45rem;padding:.25rem .2rem;text-align:center;position:relative;transition:opacity .3s}
+.rd-pmem.rd-down{opacity:.42;border-color:rgba(255,82,82,.5)}
+.rd-pmem.rd-me{border-color:var(--accent)}
+.rd-pmem-name{font-size:.5rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rd-pmem-hp{height:4px;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden;margin:2px 0 1px}
+.rd-pmem-hp span{display:block;height:100%;background:linear-gradient(90deg,#00e676,#7ff5dc);transition:width .3s}
+.rd-pmem-dmg{font-size:.44rem;color:var(--text-dim)}
+.rd-pmem-tag{position:absolute;top:-5px;right:-3px;font-size:.5rem}
+.rd-selfbar{display:flex;align-items:center;gap:.4rem;padding:0 .6rem .2rem}
+.rd-selfhp-track{flex:1;height:9px;background:rgba(0,0,0,.55);border-radius:5px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.rd-selfhp-fill{height:100%;background:linear-gradient(90deg,#00e676,#7ff5dc);transition:width .3s}
+.rd-selfhp-fill.rd-low{background:linear-gradient(90deg,#ff3b3b,#ff9800)}
+.rd-selfhp-txt{font-size:.6rem;font-weight:900;font-family:var(--font-display);min-width:26px;text-align:right}
+.rd-combo{font-size:.62rem;font-weight:900;color:#ffd700;min-width:52px;text-align:right;opacity:0;transition:opacity .2s}
+.rd-combo.on{opacity:1}
+.rd-qtimer{height:4px;margin:.15rem .6rem;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden}
+.rd-qtimer-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--accent));width:100%}
+.rd-word{text-align:center;font-size:1.5rem;font-weight:900;font-family:var(--font-display);padding:.5rem .6rem .35rem;letter-spacing:.02em;min-height:2.2rem}
+.rd-word.rd-scrambled{color:#ff8a3b;text-shadow:0 0 12px rgba(255,138,59,.5)}
+.rd-ans{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;padding:0 .6rem;padding-bottom:max(.6rem,env(safe-area-inset-bottom))}
+.rd-ans button{padding:.65rem .3rem;font-size:.72rem;font-weight:700;border-radius:.5rem;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;cursor:pointer;line-height:1.25;min-height:44px}
+.rd-ans button:active{transform:scale(.97)}
+.rd-ans button.rd-ok{background:rgba(0,230,118,.28);border-color:#00e676}
+.rd-ans button.rd-no{background:rgba(255,59,59,.25);border-color:#ff3b3b}
+.rd-ans button:disabled{opacity:.55;cursor:default}
+.rd-ans.rd-rescue button{border-color:rgba(255,215,0,.55);box-shadow:0 0 10px rgba(255,215,0,.15)}
+.rd-announce{position:absolute;top:38%;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:1.5rem;font-weight:900;color:#ffd700;text-shadow:0 3px 14px #000;pointer-events:none;opacity:0}
+.rd-announce.on{animation:rdAnn 1.5s ease-out}
+@keyframes rdAnn{0%{opacity:0;transform:scale(.6)}18%{opacity:1;transform:scale(1.1)}80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+/* 大廳 */
+.rl-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:.7rem;padding:.7rem;margin-bottom:.6rem}
+.rl-code{font-family:var(--font-display);font-size:2rem;font-weight:900;letter-spacing:.35em;text-align:center;color:#ffd700;text-shadow:0 0 18px rgba(255,215,0,.35)}
+.rl-input{width:100%;padding:.6rem;font-size:1.4rem;text-align:center;letter-spacing:.3em;font-family:var(--font-display);background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);border-radius:.5rem;color:#fff}
+.rl-tier{display:flex;gap:.4rem;margin-top:.5rem}
+.rl-tier button{flex:1;padding:.5rem .2rem;border-radius:.5rem;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font-weight:700;font-size:.72rem;cursor:pointer}
+.rl-tier button.on{border-color:#ffd700;background:rgba(255,215,0,.16);color:#ffd700}
+.rl-slot{display:flex;align-items:center;gap:.5rem;padding:.4rem .3rem;border-bottom:1px solid rgba(255,255,255,.06);font-size:.75rem}
+.rl-slot:last-child{border-bottom:none}
+.rl-empty{color:var(--text-muted);font-style:italic}
+.rl-note{font-size:.6rem;color:var(--text-dim);line-height:1.5}
+
 </style>
 </head>
 <body>
@@ -885,6 +957,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   <div class="action-grid">
     <div class="action-card" onclick="startPKSetup()"><div class="action-icon">🎶</div><div class="action-title">同台表演</div><div class="action-desc">雙人合作答題</div></div>
     <div class="action-card" onclick="startBattleSetup()"><div class="action-icon">💣</div><div class="action-title">尬舞對抗賽</div><div class="action-desc">雙人搶答</div></div></div>
+  <div class="section-title">📡 連線模式</div>
+  <div class="action-grid">
+    <div class="action-card" onclick="openRaidLobby()"><div class="action-icon">📝</div><div class="action-title">討伐模擬考</div><div class="action-desc">多人合作打王</div></div></div>
   <div id="ltd-banner" style="display:none;background:linear-gradient(135deg,#1a0033,#4a148c);border-radius:12px;padding:10px 14px;margin-bottom:10px;border:1px solid #ffd70044;cursor:pointer" onclick="goTo('gacha-screen');showGacha()">
     <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem" id="ltd-badge"></span><div><div style="font-weight:700;font-size:.8rem;color:#ffd700" id="ltd-name"></div><div style="font-size:.6rem;color:var(--text-dim)" id="ltd-desc"></div></div><div style="margin-left:auto;font-size:.6rem;color:var(--accent)">去抽卡 →</div></div></div>
 <div class="section-title">🎭 偶像團體收集</div>
@@ -1080,6 +1155,50 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   </div>
   <!-- Announcer overlay -->
   <div class="bt-announcer" id="bt-announcer"></div>
+</div>
+
+<!-- ===== 連線魔王戰：大廳 ===== -->
+<div class="screen" id="raid-lobby-screen">
+  <div class="screen-header"><button class="back-btn" onclick="leaveRaidLobby()">←</button>
+    <div style="font-weight:700;font-size:.95rem">📝 討伐模擬考</div>
+    <div class="coin-box" style="font-size:.7rem">⭐ <span id="rl-stars">0</span></div></div>
+  <div style="padding:.7rem" id="rl-body"></div>
+</div>
+
+<!-- ===== 連線魔王戰：戰鬥 ===== -->
+<div class="screen" id="raid-screen">
+  <div class="rd-wrap">
+    <div class="rd-top">
+      <button class="rd-exit" onclick="raidQuit()">✕</button>
+      <div class="rd-boss-name"><span id="rd-boss-title">模擬考</span> <span class="rd-tier" id="rd-boss-tier">一模</span></div>
+      <div class="rd-clock" id="rd-clock">--:--</div>
+    </div>
+    <div class="rd-bosshp-track">
+      <div class="rd-bosshp-fill" id="rd-bosshp-fill" style="width:100%"></div>
+      <div class="rd-bosshp-ghost" id="rd-bosshp-ghost" style="width:100%"></div>
+      <div class="rd-bosshp-txt" id="rd-bosshp-txt">100%</div>
+    </div>
+    <div class="rd-stage">
+      <div class="rd-boss" id="rd-boss">
+        <div class="rd-boss-card" id="rd-boss-card">
+          <div class="rd-boss-face" id="rd-boss-face">▨ ▨</div>
+          <div class="rd-boss-marks"></div>
+        </div>
+      </div>
+      <div class="rd-cast" id="rd-cast"></div>
+      <div class="rd-floaters" id="rd-floaters"></div>
+    </div>
+    <div class="rd-party" id="rd-party"></div>
+    <div class="rd-selfbar" id="rd-selfbar">
+      <div class="rd-selfhp-track"><div class="rd-selfhp-fill" id="rd-selfhp-fill" style="width:100%"></div></div>
+      <div class="rd-selfhp-txt" id="rd-selfhp-txt">100</div>
+      <div class="rd-combo" id="rd-combo"></div>
+    </div>
+    <div class="rd-qtimer"><div class="rd-qtimer-fill" id="rd-qtimer-fill" style="width:100%"></div></div>
+    <div class="rd-word" id="rd-word">READY</div>
+    <div class="rd-ans" id="rd-ans"></div>
+    <div class="rd-announce" id="rd-announce"></div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="det-modal" onclick="closeMod(event)"><div class="modal-content" id="mod-content"></div></div>
@@ -2044,7 +2163,7 @@ function toggleTTS(){
 
 function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.getElementById('bnav').style.display=(id==='title-screen'||id==='quiz-screen'||id==='pk-screen'||id==='battle-screen')?'none':'flex';
+  document.getElementById('bnav').style.display=(id==='title-screen'||id==='quiz-screen'||id==='pk-screen'||id==='battle-screen'||id==='raid-screen')?'none':'flex';
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   const m={'home-screen':0,'gacha-screen':1,'collection-screen':2,'profile-screen':3};
   if(m[id]!=null)document.querySelectorAll('.nav-item')[m[id]]?.classList.add('active')}
@@ -5312,6 +5431,699 @@ function unlockPKStyle(key){
   S.pkPoints-=cost;card.pkStyle=true;saveState();
   floatTxt('🎶 演出造型已解鎖！','#00e5ff');
   showPKStyleShop()
+}
+
+// ============================================================
+// 連線魔王戰 (RAID) — 「模擬考」
+// 傳輸層可抽換：Net.backend='firebase' 走 Firebase RTDB；'mock' 走
+// localStorage + BroadcastChannel（同一台機器開多個分頁即可測，不碰線上資料庫）。
+// Firebase SDK 只在進入大廳時才動態載入，離線單機模式完全不受影響。
+// ============================================================
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyCRZ88mA8Zy5asN4DlRqfkh7fk9uE_bYwo",
+  authDomain:"wordstar-1ed1d.firebaseapp.com",
+  databaseURL:"https://wordstar-1ed1d-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"wordstar-1ed1d",
+  storageBucket:"wordstar-1ed1d.firebasestorage.app",
+  messagingSenderId:"744907025212",
+  appId:"1:744907025212:web:8dd58e1aefa068cfb50c39"
+};
+const FB_SDK='https://www.gstatic.com/firebasejs/12.17.1/';
+
+const Net=(function(){
+  let backend=(location.protocol==='file:')?'mock':'firebase';
+  let uid=null, fb=null, subs=[];
+
+  // ---------- mock backend（本機多分頁測試用） ----------
+  const MK='wordstar_mockdb';
+  let chan=null, mockSubs=[];
+  const mkRead=()=>{try{return JSON.parse(localStorage.getItem(MK)||'{}')}catch(e){return{}}};
+  const mkWrite=d=>{localStorage.setItem(MK,JSON.stringify(d));if(chan)try{chan.postMessage(1)}catch(e){};mkFire()};
+  const segs=p=>p.split('/').filter(Boolean);
+  function mkGet(p){return segs(p).reduce((o,k)=>(o==null?undefined:o[k]),mkRead())}
+  function mkSet(p,v){const d=mkRead(),ks=segs(p);let o=d;
+    for(let i=0;i<ks.length-1;i++){if(typeof o[ks[i]]!=='object'||o[ks[i]]===null)o[ks[i]]={};o=o[ks[i]]}
+    if(v===null)delete o[ks[ks.length-1]];else o[ks[ks.length-1]]=v;mkWrite(d)}
+  function mkUpdate(p,obj){const d=mkRead(),ks=segs(p);let o=d;
+    for(let i=0;i<ks.length;i++){if(typeof o[ks[i]]!=='object'||o[ks[i]]===null)o[ks[i]]={};o=o[ks[i]]}
+    Object.keys(obj).forEach(k=>{if(obj[k]===null)delete o[k];else o[k]=obj[k]});mkWrite(d)}
+  function mkFire(){mockSubs.slice().forEach(s=>{const v=mkGet(s.path);const nv=(v===undefined?null:v);const j=JSON.stringify(nv);
+    if(j!==s.last){s.last=j;try{s.cb(nv)}catch(e){console.warn('[Net mock] listener error',e)}}})}
+
+  // ---------- firebase backend ----------
+  async function initFirebase(){
+    const [appMod,authMod,dbMod]=await Promise.all([
+      import(FB_SDK+'firebase-app.js'),
+      import(FB_SDK+'firebase-auth.js'),
+      import(FB_SDK+'firebase-database.js')
+    ]);
+    const app=appMod.initializeApp(FIREBASE_CONFIG);
+    const auth=authMod.getAuth(app);
+    const cred=await authMod.signInAnonymously(auth);
+    fb={db:dbMod.getDatabase(app),m:dbMod};
+    return cred.user.uid;
+  }
+
+  return {
+    get backend(){return backend},
+    set backend(v){backend=v},
+    get uid(){return uid},
+    get ready(){return !!uid},
+    async init(){
+      if(uid)return uid;
+      if(backend==='mock'){
+        uid=localStorage.getItem('wordstar_mockuid');
+        if(!uid){uid='mk_'+Math.random().toString(36).slice(2,9);localStorage.setItem('wordstar_mockuid',uid)}
+        if(!chan&&typeof BroadcastChannel!=='undefined'){chan=new BroadcastChannel('wordstar_mock');chan.onmessage=()=>mkFire()}
+        window.addEventListener('storage',e=>{if(e.key===MK)mkFire()});
+        return uid;
+      }
+      uid=await initFirebase();
+      return uid;
+    },
+    async get(path){
+      if(backend==='mock'){const v=mkGet(path);return v===undefined?null:v}
+      return (await fb.m.get(fb.m.ref(fb.db,path))).val();
+    },
+    async set(path,val){
+      if(backend==='mock')return mkSet(path,val);
+      return fb.m.set(fb.m.ref(fb.db,path),val);
+    },
+    async update(path,obj){
+      if(backend==='mock')return mkUpdate(path,obj);
+      return fb.m.update(fb.m.ref(fb.db,path),obj);
+    },
+    // fn(current) -> new value；回傳 {committed, value}
+    async transaction(path,fn){
+      if(backend==='mock'){
+        const cur=mkGet(path);const next=fn(cur===undefined?null:cur);
+        if(next===undefined)return{committed:false,value:cur};
+        mkSet(path,next);return{committed:true,value:next};
+      }
+      const r=await fb.m.runTransaction(fb.m.ref(fb.db,path),fn);
+      return {committed:r.committed,value:r.snapshot?r.snapshot.val():null};
+    },
+    on(path,cb){
+      if(backend==='mock'){
+        const s={path,cb,last:' '};mockSubs.push(s);
+        setTimeout(()=>{const v=mkGet(path);s.last=JSON.stringify(v===undefined?null:v);cb(v===undefined?null:v)},0);
+        const un=()=>{mockSubs=mockSubs.filter(x=>x!==s)};subs.push(un);return un;
+      }
+      const un=fb.m.onValue(fb.m.ref(fb.db,path),snap=>cb(snap.val()));
+      subs.push(un);return un;
+    },
+    // 斷線時自動把某個路徑設成指定值（Firebase 專有，mock 用 unload 模擬）
+    async onDisconnectUpdate(path,obj){
+      if(backend==='mock'){
+        const h=()=>{try{mkUpdate(path,obj)}catch(e){}};
+        window.addEventListener('pagehide',h);return;
+      }
+      return fb.m.onDisconnect(fb.m.ref(fb.db,path)).update(obj);
+    },
+    offAll(){subs.forEach(u=>{try{u()}catch(e){}});subs=[]}
+  };
+})();
+
+// ===== 魔王設定 =====
+// 數值是第一版，實測後要調。星星報酬對照：一般模式約 35⭐/分、年末大賞約 50⭐/分、十連 128⭐。
+const RAID_BOSS={
+  id:'mockexam',name:'模擬考',
+  tiers:[
+    {k:1,name:'一模',hp:5800,atkGap:8000,ansMs:6000,lv:[1,3],dmg:10,selfDmg:14,stars:380,enrage:420000},
+    {k:2,name:'二模',hp:10000,atkGap:7000,ansMs:5000,lv:[3,4],dmg:14,selfDmg:18,stars:700,enrage:480000},
+    {k:3,name:'三模',hp:16000,atkGap:6000,ansMs:4000,lv:[4,6],dmg:18,selfDmg:22,stars:1200,enrage:540000}
+  ]
+};
+// 主要傷害來源是「自己沒答對」，魔王招式多半是機制而不是硬扣血 —— 否則一場 5 分鐘要挨
+// 三四十次攻擊，血條再厚都撐不住，而且會變成跟玩家表現無關的固定傷害。
+const RAID_MOVES=[
+  {n:'這題上課有教過',t:'block',mul:1.0},
+  {n:'這次全班平均 42 分',t:'aoe',mul:0.5},
+  {n:'答案卡劃錯行',t:'scramble',mul:0},
+  {n:'隨堂測驗',t:'quick',mul:0.35},
+  {n:'訂正三遍',t:'aoe',mul:0.5},
+  {n:'這題是送分題',t:'trap',mul:0},
+  {n:'隔壁的不要看',t:'blind',mul:0}
+];
+const RAID_MAX_PLAYERS=6, RAID_PARTY_REF=4, RAID_MAX_HP=150;
+const RAID_CAST_MS=1500;
+
+let RAID=null;
+let RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
+
+// 血量次線性放大：人多打得快一點，但邊際遞減；人少血量降不了太多，所以單人是硬仗。
+function raidHpFor(tier,n){return Math.round(tier.hp*(0.45+0.55*(n/RAID_PARTY_REF)))}
+// 收卷倒數跟著預估通關時間走。單人輸出只有四人隊的 1/4，若沿用同一個時限就是數學上打不完，
+// 不是「難」而是「不可能」，所以時限要按隊伍人數放寬。
+function raidEnrageFor(tier,n){
+  const rel=(0.45+0.55*(n/RAID_PARTY_REF))/(n/RAID_PARTY_REF);
+  return Math.round(Math.min(tier.enrage*rel,900000));
+}
+function raidNick(){
+  if(!S.nick){S.nick='玩家'+String(Math.floor(Math.random()*900)+100);saveState()}
+  return S.nick;
+}
+function raidCode(){let c='';for(let i=0;i<4;i++)c+=Math.floor(Math.random()*10);return c}
+
+// ===== 大廳 =====
+async function openRaidLobby(){
+  goTo('raid-lobby-screen');
+  document.getElementById('rl-stars').textContent=S.stars;
+  const body=document.getElementById('rl-body');
+  body.innerHTML='<div class="rl-card" style="text-align:center"><div style="font-size:.8rem">連線中…</div></div>';
+  try{
+    await Net.init();
+  }catch(e){
+    console.error('[Raid] 連線失敗',e);
+    body.innerHTML=`<div class="rl-card"><div style="font-size:.8rem;color:var(--danger);font-weight:700">連線失敗</div>
+      <div class="rl-note" style="margin-top:.4rem">${(e&&e.message)||e}</div>
+      <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:.6rem" onclick="openRaidLobby()">重試</button></div>`;
+    return;
+  }
+  renderRaidHome();
+}
+function renderRaidHome(){
+  const body=document.getElementById('rl-body');
+  body.innerHTML=`
+    <div class="rl-card">
+      <div style="font-weight:900;font-size:1rem;font-family:var(--font-display);color:#ff6b6b">📝 模擬考</div>
+      <div class="rl-note" style="margin-top:.3rem">全班一起上。答對就扣它的血，答不出來就換它改你。<br>建議 ${RAID_PARTY_REF} 人，最多 ${RAID_MAX_PLAYERS} 人；單人也能打，但沒人能救你。</div>
+    </div>
+    <div class="rl-card">
+      <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.35rem">你的暱稱</div>
+      <div style="display:flex;gap:.4rem">
+        <input id="rl-nick" class="rl-input" style="font-size:.9rem;letter-spacing:normal;text-align:left" value="${raidNick().replace(/"/g,'&quot;')}" maxlength="10">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:.5rem" onclick="raidCreateRoom()">開房間</button>
+    <div class="rl-card">
+      <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.35rem">輸入房號加入</div>
+      <input id="rl-join" class="rl-input" inputmode="numeric" maxlength="4" placeholder="0000">
+      <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:.5rem" onclick="raidJoinRoom()">加入</button>
+    </div>
+    <div class="rl-note" style="text-align:center">連線後端：${Net.backend}${Net.backend==='mock'?'（本機測試模式）':''}</div>`;
+  const ni=document.getElementById('rl-nick');
+  ni.onchange=()=>{const v=ni.value.trim().slice(0,10);if(v){S.nick=v;saveState()}};
+}
+
+async function raidCreateRoom(){
+  const ni=document.getElementById('rl-nick');
+  if(ni&&ni.value.trim()){S.nick=ni.value.trim().slice(0,10);saveState()}
+  let code=null;
+  for(let i=0;i<8;i++){const c=raidCode();if(!(await Net.get('rooms/'+c+'/meta'))){code=c;break}}
+  if(!code){floatTxt('房號都被占用了，稍後再試','var(--danger)');return}
+  const seed='r'+code+'_'+Math.floor(Math.random()*1e9);
+  await Net.set('rooms/'+code,{
+    meta:{boss:RAID_BOSS.id,tier:1,state:'lobby',host:Net.uid,createdAt:Date.now(),startAt:0,locked:false},
+    seed,
+    players:{[Net.uid]:{name:raidNick(),hp:RAID_MAX_HP,alive:true,dmg:0,online:true,joinAt:Date.now()}}
+  });
+  RaidRoom.isHost=true;
+  enterRaidRoom(code);
+}
+async function raidJoinRoom(){
+  const ni=document.getElementById('rl-nick');
+  if(ni&&ni.value.trim()){S.nick=ni.value.trim().slice(0,10);saveState()}
+  const code=(document.getElementById('rl-join').value||'').trim();
+  if(!/^\d{4}$/.test(code)){floatTxt('請輸入 4 位數房號','var(--danger)');return}
+  const meta=await Net.get('rooms/'+code+'/meta');
+  if(!meta){floatTxt('找不到這個房間','var(--danger)');return}
+  const players=(await Net.get('rooms/'+code+'/players'))||{};
+  const already=!!players[Net.uid];
+  // 開打即關門：只放行原本就在名單裡的人（斷線重連）
+  if(meta.locked&&!already){floatTxt('這場已經開打了，進不去','var(--danger)');return}
+  if(!already&&Object.keys(players).length>=RAID_MAX_PLAYERS){floatTxt('房間滿了','var(--danger)');return}
+  if(already){await Net.update('rooms/'+code+'/players/'+Net.uid,{online:true,name:raidNick()})}
+  else{await Net.set('rooms/'+code+'/players/'+Net.uid,{name:raidNick(),hp:RAID_MAX_HP,alive:true,dmg:0,online:true,joinAt:Date.now()})}
+  RaidRoom.isHost=(meta.host===Net.uid);
+  enterRaidRoom(code);
+}
+
+function enterRaidRoom(code){
+  RaidRoom.code=code;
+  Net.onDisconnectUpdate('rooms/'+code+'/players/'+Net.uid,{online:false});
+  raidUnsub();
+  // 出題種子：每個人用 seed+自己的 uid 產生獨立題流，所以不用傳題目，也抄不到隔壁的
+  Net.get('rooms/'+code+'/seed').then(s=>{RaidRoom.seed=s||('r'+code)});
+  RaidRoom.unsubs.push(Net.on('rooms/'+code+'/meta',meta=>{
+    if(!meta){floatTxt('房間已解散','var(--danger)');leaveRaidLobby();return}
+    RaidRoom.meta=meta;RaidRoom.isHost=(meta.host===Net.uid);
+    if(meta.state==='playing'&&(!RAID||!RAID.running))raidStart(meta);
+    else if(meta.state==='lobby')renderRaidRoom();
+    else if((meta.state==='won'||meta.state==='wiped')&&RAID&&RAID.running)raidFinish(meta.state);
+  }));
+  RaidRoom.unsubs.push(Net.on('rooms/'+code+'/players',ps=>{
+    RaidRoom.players=ps||{};
+    if(RAID&&RAID.running)raidRenderParty();
+    else renderRaidRoom();
+  }));
+}
+function raidUnsub(){RaidRoom.unsubs.forEach(u=>{try{u()}catch(e){}});RaidRoom.unsubs=[]}
+
+function renderRaidRoom(){
+  if(!RaidRoom.code||!RaidRoom.meta||RaidRoom.meta.state!=='lobby')return;
+  if(!document.getElementById('raid-lobby-screen').classList.contains('active'))goTo('raid-lobby-screen');
+  const ps=RaidRoom.players||{};
+  const list=Object.entries(ps).sort((a,b)=>(a[1].joinAt||0)-(b[1].joinAt||0));
+  const n=list.length;
+  const tier=RAID_BOSS.tiers.find(t=>t.k===(RaidRoom.meta.tier||1))||RAID_BOSS.tiers[0];
+  const slots=[];
+  for(let i=0;i<RAID_MAX_PLAYERS;i++){
+    if(list[i]){const[u,p]=list[i];
+      slots.push(`<div class="rl-slot"><span>${u===RaidRoom.meta.host?'👑':'🎧'}</span><span style="flex:1">${p.name||'?'}${u===Net.uid?' <span style="color:var(--accent);font-size:.6rem">(你)</span>':''}</span>${p.online===false?'<span style="font-size:.6rem;color:var(--danger)">離線</span>':''}</div>`)}
+    else slots.push(`<div class="rl-slot rl-empty"><span>·</span><span>等待加入…</span></div>`);
+  }
+  document.getElementById('rl-body').innerHTML=`
+    <div class="rl-card" style="text-align:center">
+      <div style="font-size:.65rem;color:var(--text-dim)">房號（報給同學）</div>
+      <div class="rl-code">${RaidRoom.code}</div>
+    </div>
+    <div class="rl-card">
+      <div style="font-size:.72rem;font-weight:700;margin-bottom:.2rem">隊伍 ${n}/${RAID_MAX_PLAYERS}　<span style="font-size:.6rem;color:var(--text-dim)">建議 ${RAID_PARTY_REF} 人</span></div>
+      ${slots.join('')}
+    </div>
+    <div class="rl-card">
+      <div style="font-size:.72rem;font-weight:700">難度</div>
+      <div class="rl-tier">${RAID_BOSS.tiers.map(t=>`<button class="${t.k===tier.k?'on':''}" ${RaidRoom.isHost?`onclick="raidSetTier(${t.k})"`:'disabled'}>${t.name}</button>`).join('')}</div>
+      <div class="rl-note" style="margin-top:.45rem">
+        魔王血量 <b>${raidHpFor(tier,n).toLocaleString()}</b>　·　作答 ${(tier.ansMs/1000).toFixed(0)} 秒　·　收卷倒數 ${Math.round(raidEnrageFor(tier,n)/60000)} 分<br>
+        通關報酬 <b style="color:#ffd700">每人約 ${tier.stars}⭐</b>（貢獻高的拿更多，榜首 ×1.5）${n===1?'<br><span style="color:#ff8a3b">單人：沒人能補考救你，倒下即結束</span>':''}
+      </div>
+    </div>
+    ${RaidRoom.isHost
+      ? `<button class="btn btn-primary" style="width:100%" onclick="raidHostStart()">開始（按下就關門）</button>`
+      : `<div class="rl-card" style="text-align:center;font-size:.75rem;color:var(--text-dim)">等房主開始…</div>`}
+    <div class="rl-note" style="text-align:center;margin-top:.5rem">開打後名單與血量鎖定，中途不能再加入</div>`;
+}
+async function raidSetTier(k){
+  if(!RaidRoom.isHost)return;
+  await Net.update('rooms/'+RaidRoom.code+'/meta',{tier:k});
+}
+async function raidHostStart(){
+  if(!RaidRoom.isHost)return;
+  const ps=RaidRoom.players||{};
+  const n=Object.keys(ps).length;
+  const tier=RAID_BOSS.tiers.find(t=>t.k===(RaidRoom.meta.tier||1))||RAID_BOSS.tiers[0];
+  const hp=raidHpFor(tier,n);
+  await Net.update('rooms/'+RaidRoom.code,{boss:{hp,maxHp:hp}});
+  await Net.update('rooms/'+RaidRoom.code+'/meta',{state:'playing',locked:true,startAt:Date.now(),partyN:n});
+}
+function leaveRaidLobby(){
+  raidUnsub();
+  if(RaidRoom.code&&Net.ready)Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{online:false}).catch(()=>{});
+  RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
+  goTo('home-screen');updateHome();
+}
+
+// ===== 戰鬥 =====
+function raidStart(meta){
+  const tier=RAID_BOSS.tiers.find(t=>t.k===(meta.tier||1))||RAID_BOSS.tiers[0];
+  RAID={
+    running:true,tier,startAt:meta.startAt||Date.now(),
+    partyN:meta.partyN||1,enrageMs:raidEnrageFor(tier,meta.partyN||1),
+    hp:RAID_MAX_HP,alive:true,combo:0,maxCombo:0,myDmg:0,
+    qi:0,rng:_seededRng((RaidRoom.seed||'s')+'_'+Net.uid),
+    word:null,options:[],answered:false,qDeadline:0,
+    nextAtk:1,casting:null,scramble:false,blind:false,trap:false,
+    blockedUntil:0,enraged:false,rescueTarget:null,
+    bossHp:1,bossMax:1,tick:null,qTimer:null
+  };
+  document.getElementById('rd-boss-title').textContent=RAID_BOSS.name;
+  document.getElementById('rd-boss-tier').textContent=tier.name;
+  document.getElementById('rd-ans').innerHTML='';
+  document.getElementById('rd-word').textContent='READY';
+  goTo('raid-screen');
+  try{BattleBgm.start()}catch(e){}
+  RaidRoom.unsubs.push(Net.on('rooms/'+RaidRoom.code+'/boss',b=>{
+    if(!b||!RAID)return;
+    RAID.bossHp=b.hp;RAID.bossMax=b.maxHp||b.hp;raidRenderBossHp();
+  }));
+  raidRenderParty();
+  raidAnnounce('考試開始');
+  RAID.tick=setInterval(raidTick,100);
+  setTimeout(()=>{if(RAID&&RAID.running)raidNextQuestion()},1400);
+}
+
+function raidTick(){
+  if(!RAID||!RAID.running)return;
+  const now=Date.now(), el=now-RAID.startAt, tier=RAID.tier;
+  // 收卷倒數 / 狂暴
+  const left=RAID.enrageMs-el;
+  const clock=document.getElementById('rd-clock');
+  if(left>0){clock.textContent=Math.floor(left/60000)+':'+String(Math.floor(left/1000)%60).padStart(2,'0');}
+  else{clock.textContent='收卷!';clock.classList.add('rd-enraged');
+    if(!RAID.enraged){RAID.enraged=true;raidAnnounce('時間到，筆放下');}}
+  const gap=RAID.enraged?tier.atkGap/2:tier.atkGap;
+  // 魔王招式：時間由 startAt 推算，每台機器自己算，不用傳訊息
+  const due=RAID.startAt+RAID.nextAtk*gap;
+  if(!RAID.casting&&now>=due-RAID_CAST_MS){
+    const mv=RAID_MOVES[(RAID.nextAtk-1)%RAID_MOVES.length];
+    RAID.casting={mv,at:due};
+    raidShowCast(mv);
+  }
+  if(RAID.casting&&now>=RAID.casting.at){
+    const mv=RAID.casting.mv;RAID.casting=null;RAID.nextAtk++;
+    raidHideCast();raidResolveMove(mv);
+  }
+  // 作答倒數
+  if(RAID.word&&!RAID.answered){
+    const rem=RAID.qDeadline-now;
+    const total=RAID.enraged?tier.ansMs/2:tier.ansMs;
+    document.getElementById('rd-qtimer-fill').style.width=Math.max(0,rem/total*100)+'%';
+    if(rem<=0)raidAnswer(-1);
+  }
+}
+
+function raidShowCast(mv){
+  const cast=document.getElementById('rd-cast');
+  document.getElementById('rd-boss').classList.add('rd-casting');
+  cast.innerHTML=`<div class="rd-cast-name">${mv.n}</div><div class="rd-cast-bar"><div class="rd-cast-fill" id="rd-cast-fill"></div></div>`;
+  requestAnimationFrame(()=>{const f=document.getElementById('rd-cast-fill');
+    if(f){f.style.transition='width '+RAID_CAST_MS+'ms linear';f.style.width='100%'}});
+}
+function raidHideCast(){
+  document.getElementById('rd-cast').innerHTML='';
+  document.getElementById('rd-boss').classList.remove('rd-casting');
+}
+function raidResolveMove(mv){
+  if(!RAID||!RAID.running)return;
+  raidAnnounce(mv.n);
+  if(mv.t==='scramble'){RAID.scramble=true}
+  if(mv.t==='blind'){RAID.blind=true;raidRenderParty();setTimeout(()=>{if(RAID){RAID.blind=false;raidRenderParty()}},6000)}
+  if(mv.t==='trap'){RAID.trap=true}
+  if(!RAID.alive)return;
+  // 「這題上課有教過」：讀條期間答對可以擋掉
+  if(mv.t==='block'&&Date.now()<RAID.blockedUntil){raidAnnounce('擋下來了！');return}
+  const dmg=Math.round(RAID.tier.dmg*mv.mul);
+  raidTakeDamage(dmg);
+}
+
+function raidPickWord(){
+  const [lo,hi]=RAID.tier.lv;
+  const pool=W.filter(x=>x.lv>=lo&&x.lv<=hi);
+  const src=pool.length>50?pool:W;
+  return src[Math.floor(RAID.rng()*src.length)];
+}
+function raidNextQuestion(){
+  if(!RAID||!RAID.running)return;
+  if(!RAID.alive){document.getElementById('rd-word').textContent='被當掉了…';document.getElementById('rd-ans').innerHTML='';return}
+  const w=raidPickWord();
+  RAID.word=w;RAID.answered=false;RAID.qi++;
+  const wrongs=[];const seen=new Set([w.m]);
+  let guard=0;
+  while(wrongs.length<3&&guard++<200){const c=W[Math.floor(RAID.rng()*W.length)];if(!seen.has(c.m)){seen.add(c.m);wrongs.push(c.m)}}
+  const opts=[w.m,...wrongs];
+  for(let i=opts.length-1;i>0;i--){const j=Math.floor(RAID.rng()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]]}
+  RAID.options=opts;
+  const total=RAID.enraged?RAID.tier.ansMs/2:RAID.tier.ansMs;
+  RAID.qDeadline=Date.now()+total;
+  const wEl=document.getElementById('rd-word');
+  wEl.textContent=w.w;
+  wEl.classList.toggle('rd-scrambled',!!RAID.scramble);
+  const ansEl=document.getElementById('rd-ans');
+  ansEl.classList.toggle('rd-rescue',!!RAID.rescueTarget);
+  ansEl.innerHTML=opts.map((o,i)=>`<button onclick="raidAnswer(${i})">${o}</button>`).join('');
+  document.getElementById('rd-qtimer-fill').style.width='100%';
+  raidRenderRescue();
+}
+function raidAnswer(idx){
+  if(!RAID||!RAID.running||RAID.answered||!RAID.word)return;
+  RAID.answered=true;
+  // 「答案卡劃錯行」：你按的那格會往下位移一格
+  let eff=idx;
+  if(RAID.scramble&&idx>=0)eff=(idx+1)%RAID.options.length;
+  const ok=idx>=0&&RAID.options[eff]===RAID.word.m;
+  const correctIdx=RAID.options.indexOf(RAID.word.m);
+  const btns=[...document.querySelectorAll('#rd-ans button')];
+  btns.forEach((b,i)=>{b.disabled=true;if(i===correctIdx)b.classList.add('rd-ok');});
+  if(idx>=0&&!ok)btns[idx]&&btns[idx].classList.add('rd-no');
+  const wasScramble=RAID.scramble, wasTrap=RAID.trap;
+  RAID.scramble=false;RAID.trap=false;
+  if(ok){
+    RAID.combo++;if(RAID.combo>RAID.maxCombo)RAID.maxCombo=RAID.combo;
+    RAID.blockedUntil=Date.now()+1200;
+    if(RAID.rescueTarget){raidDoRescue()}
+    else{
+      const remain=Math.max(0,RAID.qDeadline-Date.now());
+      const total=RAID.enraged?RAID.tier.ansMs/2:RAID.tier.ansMs;
+      const base=10+RAID.word.lv*2;
+      const speed=1+0.8*(remain/total);
+      const comboMul=1+Math.min(RAID.combo,10)*0.08;
+      const dmg=Math.max(1,Math.round(base*speed*comboMul));
+      raidHitBoss(dmg);
+    }
+    // 答對穩住陣腳：小額回血，讓「答得好」本身就是續戰能力
+    const heal=RAID.combo>=5?2:1;
+    if(RAID.hp<RAID_MAX_HP){RAID.hp=Math.min(RAID_MAX_HP,RAID.hp+heal);raidRenderSelf();
+      Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:RAID.hp}).catch(()=>{})}
+    try{btPlayAttack(RAID.combo)}catch(e){}
+  }else{
+    RAID.combo=0;
+    const mul=wasTrap?2:1;   // 「送分題」答錯扣兩倍
+    raidTakeDamage(Math.round(RAID.tier.selfDmg*mul));
+    if(wasScramble)raidAnnounce('劃錯行了…');
+  }
+  raidRenderCombo();
+  setTimeout(()=>{if(RAID&&RAID.running)raidNextQuestion()},ok?450:900);
+}
+
+async function raidHitBoss(dmg){
+  RAID.myDmg+=dmg;
+  raidFloat('-'+dmg,false);
+  const boss=document.getElementById('rd-boss');
+  boss.classList.remove('rd-hurt');void boss.offsetWidth;boss.classList.add('rd-hurt');
+  Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{dmg:RAID.myDmg}).catch(()=>{});
+  const r=await Net.transaction('rooms/'+RaidRoom.code+'/boss/hp',cur=>{
+    if(cur===null||cur===undefined)return cur;
+    return Math.max(0,cur-dmg);
+  });
+  // 誰的 transaction 把血壓到 0，誰就宣告勝利（天然只有一個人搶得到）
+  if(r.committed&&r.value===0&&RAID&&RAID.running){
+    await Net.update('rooms/'+RaidRoom.code+'/meta',{state:'won',lastHit:Net.uid,endAt:Date.now()});
+  }
+}
+function raidTakeDamage(dmg){
+  if(!RAID||!RAID.alive)return;
+  RAID.hp=Math.max(0,RAID.hp-dmg);
+  raidFloat('-'+dmg,true);
+  try{playSfx('audio/sfx/damage.mp3',0.6)}catch(e){}
+  raidRenderSelf();
+  Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:RAID.hp}).catch(()=>{});
+  if(RAID.hp<=0)raidDown();
+}
+async function raidDown(){
+  RAID.alive=false;RAID.combo=0;
+  raidAnnounce('被當掉了');
+  document.getElementById('rd-word').textContent='被當掉了…等補考';
+  document.getElementById('rd-ans').innerHTML='';
+  await Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{hp:0,alive:false});
+  // 全班重修判定：沒有任何人還活著且在線
+  const ps=(await Net.get('rooms/'+RaidRoom.code+'/players'))||{};
+  const anyAlive=Object.values(ps).some(p=>p.alive&&p.online!==false);
+  if(!anyAlive){await Net.update('rooms/'+RaidRoom.code+'/meta',{state:'wiped',endAt:Date.now()})}
+}
+function raidRenderRescue(){
+  const ps=RaidRoom.players||{};
+  const down=Object.entries(ps).filter(([u,p])=>!p.alive&&p.online!==false&&u!==Net.uid);
+  const bar=document.getElementById('rd-selfbar');
+  let btn=document.getElementById('rd-rescue-btn');
+  if(down.length&&RAID&&RAID.alive){
+    if(!btn){btn=document.createElement('button');btn.id='rd-rescue-btn';
+      btn.style.cssText='background:rgba(255,215,0,.18);border:1px solid #ffd700;color:#ffd700;font-size:.55rem;font-weight:700;border-radius:.4rem;padding:.2rem .4rem;cursor:pointer;white-space:nowrap';
+      bar.appendChild(btn)}
+    const target=down[0][0];
+    btn.textContent=RAID.rescueTarget?'補考中…':'📝 補考救 '+(down[0][1].name||'隊友');
+    btn.onclick=()=>{RAID.rescueTarget=target;raidRenderRescue();
+      document.getElementById('rd-ans').classList.add('rd-rescue');floatTxt('下一題答對就拉他起來','#ffd700')};
+  }else if(btn){btn.remove();if(RAID)RAID.rescueTarget=null}
+}
+async function raidDoRescue(){
+  const t=RAID.rescueTarget;RAID.rescueTarget=null;
+  if(!t)return;
+  const p=(RaidRoom.players||{})[t];
+  if(!p||p.alive){raidRenderRescue();return}
+  await Net.update('rooms/'+RaidRoom.code+'/players/'+t,{hp:40,alive:true});
+  raidAnnounce('補考過了！');
+  document.getElementById('rd-ans').classList.remove('rd-rescue');
+  raidRenderRescue();
+}
+// 被隊友救起來：自己的 players 節點被改回 alive
+function raidCheckRevived(){
+  if(!RAID||RAID.alive)return;
+  const me=(RaidRoom.players||{})[Net.uid];
+  if(me&&me.alive&&me.hp>0){
+    RAID.alive=true;RAID.hp=me.hp;raidRenderSelf();
+    raidAnnounce('補考通過');
+    raidNextQuestion();
+  }
+}
+
+function raidFloat(txt,self){
+  const box=document.getElementById('rd-floaters');
+  const d=document.createElement('div');
+  d.className='rd-dmg'+(self?' rd-dmg-self':'');
+  d.textContent=txt;
+  d.style.left=(self?18:40)+Math.random()*24+'%';
+  d.style.top=(self?60:26)+Math.random()*14+'%';
+  box.appendChild(d);setTimeout(()=>d.remove(),1000);
+}
+function raidAnnounce(t){
+  const el=document.getElementById('rd-announce');
+  el.textContent=t;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+}
+function raidRenderBossHp(){
+  if(!RAID)return;
+  const pct=Math.max(0,RAID.bossHp/RAID.bossMax*100);
+  document.getElementById('rd-bosshp-fill').style.width=pct+'%';
+  document.getElementById('rd-bosshp-ghost').style.width=pct+'%';
+  document.getElementById('rd-bosshp-txt').textContent=Math.ceil(RAID.bossHp).toLocaleString()+' / '+RAID.bossMax.toLocaleString();
+}
+function raidRenderSelf(){
+  if(!RAID)return;
+  const f=document.getElementById('rd-selfhp-fill');
+  f.style.width=RAID.hp+'%';
+  f.classList.toggle('rd-low',RAID.hp<=30);
+  document.getElementById('rd-selfhp-txt').textContent=RAID.hp;
+}
+function raidRenderCombo(){
+  const el=document.getElementById('rd-combo');
+  if(RAID&&RAID.combo>=2){el.textContent='🔥 '+RAID.combo+' COMBO';el.classList.add('on')}
+  else el.classList.remove('on');
+}
+function raidRenderParty(){
+  const ps=RaidRoom.players||{};
+  const list=Object.entries(ps).sort((a,b)=>(a[1].joinAt||0)-(b[1].joinAt||0));
+  document.getElementById('rd-party').innerHTML=list.map(([u,p])=>{
+    const hid=RAID&&RAID.blind&&u!==Net.uid;
+    return `<div class="rd-pmem ${p.alive?'':'rd-down'} ${u===Net.uid?'rd-me':''}">
+      <div class="rd-pmem-name">${p.name||'?'}</div>
+      <div class="rd-pmem-hp"><span style="width:${hid?0:(p.hp||0)}%"></span></div>
+      <div class="rd-pmem-dmg">${hid?'???':(p.alive?(p.dmg||0).toLocaleString():'當掉')}</div>
+      ${p.online===false?'<div class="rd-pmem-tag">📵</div>':''}
+    </div>`}).join('');
+  raidCheckRevived();
+  raidRenderRescue();
+}
+
+function raidStop(){
+  if(!RAID)return;
+  if(RAID.tick)clearInterval(RAID.tick);
+  RAID.running=false;
+  try{BattleBgm.stop()}catch(e){}
+}
+async function raidQuit(){
+  if(!confirm('離開這場討伐？獎勵會拿不到。'))return;
+  raidStop();
+  if(RaidRoom.code)await Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{online:false,alive:false,hp:0}).catch(()=>{});
+  raidUnsub();
+  RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
+  RAID=null;
+  goTo('home-screen');updateHome();
+}
+
+// ===== 結算 =====
+async function raidFinish(state){
+  if(!RAID||!RAID.running)return;
+  raidStop();
+  const won=state==='won';
+  raidAnnounce(won?'過關！':'全班重修…');
+  const meta=(await Net.get('rooms/'+RaidRoom.code+'/meta'))||{};
+  const ps=(await Net.get('rooms/'+RaidRoom.code+'/players'))||{};
+  const tier=RAID.tier;
+  const total=Object.values(ps).reduce((s,p)=>s+(p.dmg||0),0)||1;
+  const myDmg=(ps[Net.uid]||{}).dmg||RAID.myDmg;
+  const share=myDmg/total;
+  const mvpUid=Object.entries(ps).sort((a,b)=>(b[1].dmg||0)-(a[1].dmg||0))[0];
+  const isMvp=mvpUid&&mvpUid[0]===Net.uid&&myDmg>0;
+  const isLastHit=meta.lastHit===Net.uid;
+  const allAlive=Object.values(ps).every(p=>p.alive);
+  const soloRun=Object.keys(ps).length===1;
+
+  // tier.stars 是「每人」基準而不是一鍋分掉的獎金池 —— 否則人越多每人拿越少，
+  // 單刷反而報酬最高，跟「揪人一起打」的設計目的完全相反。
+  const nPlayers=Math.max(1,Object.keys(ps).length);
+  let stars=Math.round(tier.stars*share*nPlayers);
+  if(!won)stars=Math.round(stars*0.4);
+  const bonuses=[];
+  if(won&&isMvp){stars=Math.round(stars*1.5);bonuses.push('🏅 榜首 ×1.5')}
+  if(won&&isLastHit){const b={1:25,2:40,3:60}[tier.k];stars+=b;bonuses.push('🎯 壓線過 +'+b)}
+  if(won&&allAlive&&!soloRun){const b={1:20,2:30,3:50}[tier.k];stars+=b;bonuses.push('💯 全員存活 +'+b)}
+  if(won&&soloRun){stars=Math.round(stars*1.3);bonuses.push('🔥 單刷 ×1.3')}
+  stars=Math.max(1,stars);
+
+  S.stars+=stars;
+  S.raidClears=(S.raidClears||0)+(won?1:0);
+  S.raidPity=(S.raidPity||0)+1;
+  saveState();
+
+  // 成績單（寶箱）：榜首／壓線過才有機會，難度越高機率越高；打滿 8 場必給一次保底
+  let chest=null;
+  if(won){
+    const rate=(isMvp?{1:.5,2:.62,3:.75}[tier.k]:0)+(isLastHit?{1:.3,2:.38,3:.45}[tier.k]:0);
+    const pity=(S.raidPity||0)>=8;
+    if(pity||Math.random()<rate){chest=raidGrantChest();S.raidPity=0;saveState()}
+  }
+  raidShowResult({won,stars,bonuses,share,myDmg,isMvp,isLastHit,tier,chest,ps});
+}
+
+// 成績單內容：繪卡（平常抽卡只有 1% 掉率）
+function raidGrantChest(){
+  const keyOf=m=>m.groupId+'_'+m.memberIdx;
+  const pool=ALL_MEMBERS.filter(m=>hasCardArt(m,m.group));
+  if(!pool.length)return null;
+  let cands=pool.filter(m=>{const c=S.cards[keyOf(m)];return c&&!c.art});
+  if(!cands.length)cands=pool.filter(m=>!S.cards[keyOf(m)]);
+  if(!cands.length)cands=pool;
+  const m=cands[Math.floor(Math.random()*cands.length)];
+  const key=keyOf(m);
+  if(!S.cards[key]){
+    S.cards[key]={stars:m.rarity==='SSR'?3:m.rarity==='SR'?2:1,dupes:0,fragments:0,t:Date.now(),ltd:null,
+      rarity:m.rarity,shiny:false,flash:false,art:true,isNew:true,newArt:true};
+  }else{S.cards[key].art=true;S.cards[key].newArt=true}
+  saveState();
+  return {m,g:m.group,key};
+}
+
+function raidShowResult(r){
+  let ov=document.getElementById('rd-result-ov');
+  if(!ov){ov=document.createElement('div');ov.id='rd-result-ov';
+    ov.style.cssText='position:fixed;inset:0;z-index:900;background:rgba(8,5,16,.94);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto';
+    document.body.appendChild(ov)}
+  const chestHtml=r.chest?`
+    <div style="margin-top:.7rem;padding:.6rem;border-radius:.6rem;background:linear-gradient(135deg,rgba(255,110,199,.16),rgba(255,215,0,.12));border:1px solid rgba(255,215,0,.4)">
+      <div style="font-size:.72rem;font-weight:900;color:#ffd700">📋 成績單開出來了</div>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-top:.4rem">
+        <div>${chibiSVG(r.chest.m,58,r.chest.g,true)}</div>
+        <div style="text-align:left">
+          <div style="font-size:.8rem;font-weight:900">${r.chest.m.name}</div>
+          <div style="font-size:.6rem;color:var(--text-dim)">${r.chest.m.groupName}</div>
+          <div style="font-size:.65rem;font-weight:900;margin-top:.2rem;background:linear-gradient(90deg,#ff6ec7,#ffd700,#7ff5dc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">🎨 SP 繪卡</div>
+        </div>
+      </div>
+    </div>`:'';
+  ov.innerHTML=`<div style="max-width:340px;width:100%;text-align:center">
+    <div style="font-family:var(--font-display);font-size:2rem;font-weight:900;color:${r.won?'#ffd700':'#ff5252'};text-shadow:0 3px 16px rgba(0,0,0,.7)">${r.won?'過關':'全班重修'}</div>
+    <div style="font-size:.7rem;color:var(--text-dim);margin-top:.15rem">${RAID_BOSS.name} · ${r.tier.name}</div>
+    <div style="margin-top:.8rem;padding:.7rem;background:rgba(255,255,255,.05);border-radius:.7rem;border:1px solid rgba(255,255,255,.1)">
+      <div style="font-size:.65rem;color:var(--text-dim)">你的傷害貢獻</div>
+      <div style="font-size:1.1rem;font-weight:900;font-family:var(--font-display)">${r.myDmg.toLocaleString()} <span style="font-size:.7rem;color:var(--accent)">(${Math.round(r.share*100)}%)</span></div>
+      ${r.won&&r.isMvp?'<div style="font-size:.7rem;color:#ffd700;margin-top:.2rem">🏅 榜首</div>':''}
+      ${r.won&&r.isLastHit?'<div style="font-size:.7rem;color:#ff8a3b;margin-top:.1rem">🎯 壓線過</div>':''}
+    </div>
+    <div style="margin-top:.6rem;font-size:1.6rem;font-weight:900;color:#ffd700;font-family:var(--font-display)">+${r.stars} ⭐</div>
+    ${r.bonuses.length?`<div style="font-size:.6rem;color:var(--text-dim);margin-top:.2rem">${r.bonuses.join('　')}</div>`:''}
+    ${chestHtml}
+    <button class="btn btn-primary" style="width:100%;margin-top:.9rem" onclick="raidCloseResult()">回首頁</button>
+  </div>`;
+  ov.style.display='flex';
+}
+function raidCloseResult(){
+  const ov=document.getElementById('rd-result-ov');if(ov)ov.style.display='none';
+  raidUnsub();
+  if(RaidRoom.code&&Net.ready)Net.update('rooms/'+RaidRoom.code+'/players/'+Net.uid,{online:false}).catch(()=>{});
+  RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
+  RAID=null;
+  goTo('home-screen');updateHome();
 }
 
 </script>
