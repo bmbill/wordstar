@@ -529,3 +529,28 @@ Characters (left to right):
 2. 我用程式偵測白底間隙 → 自動切成單張 → 去背 → 命名為 `art/<groupId>/<index>.png`（index 對應 GROUPS 內成員順序）。
 3. 我在成員資料加 `img` 欄位，並包一層 render 函式：**有圖用圖、沒圖 fallback 回 `chibiSVG`**，所以可以一組一組漸進替換、不會壞。
 4. 更新 `sw.js` 快取清單，讓圖片離線也能顯示。
+
+---
+
+## 📝 boss 模擬考魔王（4 姿勢，非小卡）
+
+> 這張不是小卡，是連線魔王戰的立繪。**2x2 四格**，一格一個姿勢。
+> 拿到圖存成 `art/mockexam-sheet.png`，然後跑：
+> `python tools/cutout_sheet.py art/mockexam-sheet.png art/boss 2 2`
+> 會產生 `art/boss/0~3.png`（0 待機 / 1 受擊 / 2 讀大招 / 3 狂暴），遊戲會自動接上。
+
+```
+Create a single 2x2 sprite sheet image, 1024x1024, of one original monster character in four poses.
+
+CHARACTER: A living Taiwanese standardized-test OMR answer sheet — a tall cream-coloured paper card, slightly worn at the corners, printed with neat rows of small oval bubbles. Two of the bubbles, filled in dark and glossy, serve as its eyes. Angry red proctor's pen marks slash across its body like battle scars, and a faded red "不及格" stamp is printed on its chest. It has no arms or legs; it hovers and bends like a sheet of paper in wind. Menacing but cute — a mascot villain a teenager would want on a sticker, not body horror.
+
+STYLE: Q-version chibi mobile-game asset. Bold clean outlines, flat cel shading with one soft shadow pass, saturated colours, slight rim light. Front-facing, centred in each cell, full body visible with margin around it. Consistent character design, size and lighting across all four cells.
+
+FOUR POSES, in reading order:
+1. IDLE — floating upright, curled slightly, eyes half-lidded and smug.
+2. HURT — recoiling, body creased and folded, eyes squeezed shut, small paper scraps flying off.
+3. CASTING — leaning forward, glowing hot red from within, cracks of red light along the creases, eyes wide and blazing, red pen strokes swirling around it.
+4. ENRAGED — torn along one edge, ink splattering, eyes turned into furious red X marks, whole body crackling with red energy.
+
+BACKGROUND: flat pure white, no gradient, no shadow on the ground, no text labels, no frames or borders between cells.
+```

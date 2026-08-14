@@ -857,15 +857,15 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .rd-boss-face{font-size:clamp(1.6rem,4.5vh,2.8rem);color:#c2185b;font-weight:900;letter-spacing:.1em;position:relative;z-index:2;text-shadow:0 1px 0 rgba(255,255,255,.6)}
 .rd-boss-marks{position:absolute;inset:0;background:radial-gradient(circle at 25% 70%,rgba(220,20,60,.32) 0 6px,transparent 7px),radial-gradient(circle at 72% 32%,rgba(220,20,60,.28) 0 5px,transparent 6px);pointer-events:none}
 @keyframes rdBossIdle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1.5deg)}}
-/* 有立繪時：整張 2x2 精靈圖當背景，靠 background-position 切四格，不用切檔案。
+/* 有立繪時：四個姿勢各一張去背 PNG（跟既有繪卡同一套流程，由 tools/cutout_sheet.py
+   切格去背）。每格去背後裁切的比例都不同，所以不能共用一張精靈圖。
    圖沒放進去（或 404）時 .has-boss-art 不會掛上，自動退回下面 CSS 畫的卡片。 */
-.has-boss-art .rd-boss-card{aspect-ratio:1/1;background:url('art/boss/mockexam.png') no-repeat;
-  background-size:200% 200%;background-position:0% 0%;box-shadow:none;border-radius:0;
-  filter:drop-shadow(0 10px 22px rgba(0,0,0,.55))}
+.has-boss-art .rd-boss-card{aspect-ratio:4/5;background:url('art/boss/0.png') center/contain no-repeat;
+  box-shadow:none;border-radius:0;filter:drop-shadow(0 10px 22px rgba(0,0,0,.55))}
 .has-boss-art .rd-boss-card::before,.has-boss-art .rd-boss-face,.has-boss-art .rd-boss-marks{display:none}
-.has-boss-art .rd-boss-card.rd-art-hurt{background-position:100% 0%}
-.has-boss-art .rd-boss-card.rd-art-cast{background-position:0% 100%}
-.has-boss-art .rd-boss-card.rd-art-rage{background-position:100% 100%}
+.has-boss-art .rd-boss-card.rd-art-hurt{background-image:url('art/boss/1.png')}
+.has-boss-art .rd-boss-card.rd-art-cast{background-image:url('art/boss/2.png')}
+.has-boss-art .rd-boss-card.rd-art-rage{background-image:url('art/boss/3.png')}
 .has-boss-art .rd-boss.rd-casting .rd-boss-card{box-shadow:none;filter:drop-shadow(0 0 26px rgba(255,59,59,.75))}
 .rd-boss.rd-hurt .rd-boss-card{animation:rdBossHurt .22s}
 @keyframes rdBossHurt{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
@@ -5667,13 +5667,14 @@ const RaidAudio={
 function raidAudition(n){RaidAudio.audition(n)}
 
 // ===== 魔王立繪 =====
-// 一張 2x2 精靈圖：左上待機 / 右上受擊 / 左下讀大招 / 右下狂暴。
+// 四張去背 PNG：0 待機 / 1 受擊 / 2 讀大招 / 3 狂暴。
 // 載得到才掛 has-boss-art，載不到就維持 CSS 畫的版本，不會開天窗。
-const RAID_BOSS_ART='art/boss/mockexam.png';
+const RAID_BOSS_ART=['art/boss/0.png','art/boss/1.png','art/boss/2.png','art/boss/3.png'];
 (function(){
   const im=new Image();
-  im.onload=()=>document.documentElement.classList.add('has-boss-art');
-  im.src=RAID_BOSS_ART;
+  im.onload=()=>{document.documentElement.classList.add('has-boss-art');
+    RAID_BOSS_ART.slice(1).forEach(u=>{const p=new Image();p.src=u})};   // 先載好，切姿勢才不會閃
+  im.src=RAID_BOSS_ART[0];
 })();
 function raidBossPose(pose,ms){
   const el=document.getElementById('rd-boss-card');
