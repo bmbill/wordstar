@@ -5623,145 +5623,41 @@ const RAID_DAILY_FULL=3, RAID_OVER_RATE=0.3;
 let RAID=null;
 let RaidRoom={code:null,isHost:false,tier:1,unsubs:[]};
 
-// ===== 魔王戰音效（Tone.js 即時合成，沒有音檔，離線一樣有聲音）=====
-// 單一正弦波的單音聽起來很廉價，所以每個音都是三層疊出來的：
-// 噪音瞬態（打擊感）＋ 音高本體（辨識度）＋ 殘響尾巴（空間感）。
-const RaidAudio=(function(){
-  let I=null, bgm=null, bgmOn=false;
-  function ok(){
-    if(typeof Tone==='undefined')return false;
-    try{
-      if(Tone.context.state!=='running')Tone.context.resume();
-      // 遊戲音效的反應速度比排程精準度重要。預設 lookAhead 是 0.1 秒，
-      // 按下去到聽到聲音差 100ms，手感就是「慢半拍、沒力」。
-      if(Tone.context.lookAhead>0.03)Tone.context.lookAhead=0.02;
-    }catch(e){}
-    return true;
-  }
-  function init(){
-    if(I||!ok())return I;
-    // Tone.Compressor 沒有 .volume，要靠 Tone.Volume 節點控總音量
-    const comp=new Tone.Compressor({threshold:-14,ratio:4,attack:.002,release:.08}).toDestination();
-    const out=new Tone.Volume(-1).connect(comp);
-    const verb=new Tone.Reverb({decay:1.4,wet:.16}).connect(out);
-    // 打擊層專用：輕微飽和會讓瞬態聽起來更「實」，也拉高感知音量
-    const crunch=new Tone.Distortion({distortion:.28,wet:.5}).connect(out);
-    const snapFilter=new Tone.Filter({frequency:1800,type:'highpass',rolloff:-24}).connect(crunch);
-    I={
-      out,verb,
-      // ① 重量：極快的音高下滑，這是「咚」的來源
-      punch:new Tone.MembraneSynth({pitchDecay:.012,octaves:7,oscillator:{type:'sine'},
-        envelope:{attack:.0005,decay:.16,sustain:0,release:.02}}).connect(crunch),
-      // ② 爆點：2ms 的高頻噪音，這是「啪」的來源
-      snap:new Tone.NoiseSynth({noise:{type:'white'},
-        envelope:{attack:.0004,decay:.022,sustain:0}}).connect(snapFilter),
-      // ③ 本體：短促的方波，給辨識度但不留尾巴
-      lead:new Tone.PolySynth(Tone.Synth,{oscillator:{type:'square'},
-        envelope:{attack:.001,decay:.11,sustain:0,release:.09}}).connect(out),
-      bell:new Tone.PolySynth(Tone.Synth,{oscillator:{type:'triangle'},
-        envelope:{attack:.002,decay:.3,sustain:0,release:.3}}).connect(verb),
-      metal:new Tone.MetalSynth({frequency:200,envelope:{attack:.001,decay:.22,release:.08},
-        harmonicity:5.1,modulationIndex:26,resonance:4200,octaves:1.2}).connect(verb),
-      thud:new Tone.MembraneSynth({pitchDecay:.05,octaves:6,
-        envelope:{attack:.001,decay:.34,sustain:0}}).connect(out),
-      sub:new Tone.MonoSynth({oscillator:{type:'sawtooth'},filter:{Q:2,type:'lowpass'},
-        envelope:{attack:.004,decay:.2,sustain:0,release:.16},
-        filterEnvelope:{attack:.002,decay:.14,sustain:0,baseFrequency:160,octaves:2.8}}).connect(out)
-    };
-    // 打擊層要明顯壓過其他層，不然還是軟的
-    I.punch.volume.value=-2;I.snap.volume.value=-9;I.lead.volume.value=-11;
-    I.bell.volume.value=-14;I.metal.volume.value=-24;I.thud.volume.value=-4;I.sub.volume.value=-12;
-    return I;
-  }
-  const SCALE=['C4','D4','Eb4','G4','Ab4','C5','D5','Eb5','G5','C6'];
-  return {
-    // 命中＝重量＋爆點＋音高，三層同時發聲。少了任何一層都會變成「軟」。
-    // 重量刻意放在 150~220Hz 而不是 60Hz —— 手機喇叭發不出 60Hz，低頻只會變成
-    // 量到有、聽不到。手機上的「重」其實來自中低頻加上高頻瞬態。
-    hit(combo){const a=init();if(!a)return;
-      const t=Tone.now();
-      const c=Math.max(1,combo||1);
-      // 打擊層固定，只有音高層隨連擊上行 —— 之前把重量也綁在連擊上，
-      // 結果第一擊只有 -19dB、第六擊 -8dB，開頭幾題聽起來特別軟。
-      a.punch.triggerAttackRelease(180,'16n',t);
-      a.snap.triggerAttackRelease('64n',t);
-      a.thud.triggerAttackRelease('A1','32n',t+.004);
-      a.lead.triggerAttackRelease(SCALE[Math.min(SCALE.length-1,c-1)],'32n',t+.012);
-    },
-    crit(){const a=init();if(!a)return;
-      const t=Tone.now();
-      // 暴擊取代一般命中，所以一定要比它更響，否則連擊到 5 反而聽起來變弱
-      a.punch.triggerAttackRelease(140,'8n',t);
-      a.snap.triggerAttackRelease('32n',t);
-      a.thud.triggerAttackRelease('A1','16n',t+.003);
-      a.lead.triggerAttackRelease(['C5','G5'],'32n',t+.01);
-      a.metal.triggerAttackRelease('32n',t+.02);
-      a.thud.triggerAttackRelease('C2','16n',t+.08);  // 補一記餘震
-    },
-    hurt(){const a=init();if(!a)return;
-      const t=Tone.now();
-      a.snap.triggerAttackRelease('64n',t);
-      a.thud.triggerAttackRelease('F1','8n',t);
-      a.sub.triggerAttackRelease('Db2','16n',t+.01);
-    },
-    // 擋下大招：金屬撞擊 + 往上的兩音
-    blockOk(){const a=init();if(!a)return;
-      const t=Tone.now();
-      a.punch.triggerAttackRelease(90,'32n',t);
-      a.snap.triggerAttackRelease('32n',t);
-      a.metal.triggerAttackRelease('32n',t);
-      a.bell.triggerAttackRelease(['G4','C5'],'16n',t+.03);
-      a.bell.triggerAttackRelease(['E5','G5'],'8n',t+.13);
-    },
-    blockFail(){const a=init();if(!a)return;
-      const t=Tone.now();
-      a.punch.triggerAttackRelease(44,'16n',t);
-      a.thud.triggerAttackRelease('E1','4n',t);
-      a.lead.triggerAttackRelease(['Db3','G3'],'8n',t+.02);   // 減五度，刻意不和諧
-    },
-    // 大招讀條：往上爬的緊張感
-    cast(ms){const a=init();if(!a)return;
-      const steps=['C3','Eb3','G3','Bb3','D4'];
-      steps.forEach((n,i)=>setTimeout(()=>{try{a.sub.triggerAttackRelease(n,'16n')}catch(e){}},i*(ms||1500)/steps.length));
-    },
-    down(){const a=init();if(!a)return;
-      a.thud.triggerAttackRelease('C2','2n');
-      a.snap.triggerAttackRelease('32n');
-      ['G3','Eb3','C3','G2'].forEach((n,i)=>setTimeout(()=>{try{a.bell.triggerAttackRelease(n,'8n')}catch(e){}},i*130));
-    },
-    revive(){const a=init();if(!a)return;
-      ['C4','Eb4','G4','C5'].forEach((n,i)=>setTimeout(()=>{try{a.bell.triggerAttackRelease(n,'16n')}catch(e){}},i*80));
-      setTimeout(()=>{try{a.metal.triggerAttackRelease('16n')}catch(e){}},320);
-    },
-    win(){const a=init();if(!a)return;
-      [['C4','E4','G4'],['D4','F4','A4'],['E4','G4','C5'],['G4','C5','E5']]
-        .forEach((c,i)=>setTimeout(()=>{try{a.bell.triggerAttackRelease(c,'8n');a.punch.triggerAttackRelease(70,'32n');if(i===3)a.metal.triggerAttackRelease('8n')}catch(e){}},i*170));
-    },
-    wipe(){const a=init();if(!a)return;
-      [['C4','Eb4'],['Bb3','Db4'],['Ab3','B3'],['G3','Bb3']]
-        .forEach((c,i)=>setTimeout(()=>{try{a.bell.triggerAttackRelease(c,'4n');a.thud.triggerAttackRelease('C2','8n')}catch(e){}},i*260));
-    },
-    // BGM：低音脈動 + 時鐘滴答，狂暴後變快
-    startBgm(){const a=init();if(!a||bgmOn)return;bgmOn=true;
-      Tone.Transport.bpm.value=96;
-      let step=0;
-      bgm=new Tone.Loop(time=>{
-        const s=step++%8;
-        if(s%2===0)a.thud.triggerAttackRelease('C2','16n',time);        // 心跳
-        a.snap.triggerAttackRelease('64n',time+.001);                    // 秒針
-        if(s===0)a.sub.triggerAttackRelease('C2','8n',time);
-        if(s===4)a.sub.triggerAttackRelease('Ab1','8n',time);
-        if(s===6)a.sub.triggerAttackRelease('Bb1','8n',time);
-      },'8n').start(0);
-      Tone.Transport.start();
-    },
-    enrageBgm(){if(!bgmOn)return;try{Tone.Transport.bpm.rampTo(138,2)}catch(e){}},
-    stopBgm(){if(!bgmOn)return;bgmOn=false;
-      try{if(bgm){bgm.stop();bgm.dispose();bgm=null}Tone.Transport.stop()}catch(e){}},
-    // 試聽用：raidAudition('crit')
-    audition(name){const f=this[name];if(typeof f==='function')f.call(this,6)}
-  };
-})();
+// ===== 魔王戰音效 =====
+// 用專案裡現成的 mp3，不是合成音。實測既有素材長 1.5~3.9 秒，是有頭有尾有殘響的
+// 完整音效；Tone.js 合成的單發音只有 0.1~0.3 秒，聽起來就是「一個音」而不是
+// 「一段聲音」，怎麼調層次都補不回那個差距。
+// 沒有對應素材的事件（擋下、倒地、復活、通關、全滅）先用 playbackRate 變速做出
+// 區別 —— 慢速會變低沉厚重，快速會變輕快明亮，音色仍然來自真實素材。
+const RAID_SFX={
+  atk1:'audio/sfx/attack-1.mp3', atk2:'audio/sfx/attack-2.mp3',
+  atk4:'audio/sfx/attack-4.mp3', atk6:'audio/sfx/attack-6.mp3',
+  dmg:'audio/sfx/damage.mp3'
+};
+function raidSfx(path,vol,rate){
+  try{
+    const el=new Audio(path);
+    el.volume=vol==null?0.8:vol;
+    if(rate)el.playbackRate=rate;
+    el.play().catch(()=>{});
+  }catch(e){}
+}
+const RaidAudio={
+  hit(combo){const c=combo||1;
+    raidSfx(c>=4?RAID_SFX.atk4:c>=2?RAID_SFX.atk2:RAID_SFX.atk1,0.75);},
+  crit(){raidSfx(RAID_SFX.atk6,0.9);},
+  hurt(){raidSfx(RAID_SFX.dmg,0.65);},
+  blockOk(){raidSfx(RAID_SFX.atk4,0.85,1.25);},      // 快一點＝清脆，像擋下來的金屬聲
+  blockFail(){raidSfx(RAID_SFX.dmg,0.8,0.9);},
+  cast(){raidSfx(RAID_SFX.atk2,0.35,0.6);},           // 慢速＝低沉，當讀條的壓迫感
+  down(){raidSfx(RAID_SFX.dmg,0.9,0.7);},             // 更慢更重
+  revive(){raidSfx(RAID_SFX.atk6,0.7,1.35);},         // 更快更亮
+  win(){raidSfx(RAID_SFX.atk6,0.9);setTimeout(()=>raidSfx(RAID_SFX.atk4,0.8,1.2),260);},
+  wipe(){raidSfx(RAID_SFX.dmg,0.9,0.6);setTimeout(()=>raidSfx(RAID_SFX.dmg,0.7,0.5),380);},
+  // 狂暴：低速重疊兩聲，當作「收卷鐘響」的宣告
+  enrageBgm(){raidSfx(RAID_SFX.atk6,0.85,0.55);setTimeout(()=>raidSfx(RAID_SFX.dmg,0.6,0.55),420);},
+  audition(n){const f=this[n];if(typeof f==='function')f.call(this,6)}
+};
 function raidAudition(n){RaidAudio.audition(n)}
 
 // ===== 魔王立繪 =====
