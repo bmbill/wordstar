@@ -18,11 +18,11 @@ WordStar 是一款以**偶像小卡收集**包裝的英文單字學習 PWA。答
 | ⭐ 星光大道 | 拼出單字 |
 | 📢 宣傳通告 | 中文選英文 |
 | 🎬 NG 重拍 | 針對錯題的針對性複習 |
-| 📻 電台放送 | 聽力模式（TTS 發音） |
+| 📻 電台放送 | 聽力模式（真人錄音發音） |
 | 👑 年末大賞 | 複習錯題・高獎勵 |
 
-- **TTS 單字發音**（Web Speech API），可選語音
-- **例句提示**：全 6,574 個單字皆有「簡單／進階」兩句挖空例句，題目下方輪流出現（`sentences.json`）
+- **真人發音**：單字發音優先播放 Longman 字典的真人錄音（`audio/words/<word>.mp3`），比裝置語音清楚；錄音在第一次播放後由 Service Worker 存進離線快取。查不到錄音的字自動退回 **TTS**（Web Speech API，可選語音）。設定頁可切換。
+- **例句提示**：每個單字有「簡單／進階」兩句自製挖空例句，再加上 Longman 字典的真實例句（`x[]`），出題時**隨機挑一句**，同一個字連續出現時會避開上一句（`sentences.json`）
 - **每日任務**與星星經濟、連擊 Combo、等級成長
 
 ### 抽卡 / 小卡收集
@@ -49,10 +49,10 @@ WordStar 是一款以**偶像小卡收集**包裝的英文單字學習 PWA。答
 因為是 PWA（含 Service Worker 與相對路徑資源），建議用本地伺服器開啟：
 
 ```bash
-python -m http.server 8080
+node tools/serve.mjs 8080
 ```
 
-然後瀏覽 <http://localhost:8080/word-star.html>。
+（或任何靜態伺服器，例如 `python -m http.server 8080`）然後瀏覽 <http://localhost:8080/word-star.html>。
 
 > 亦可直接以 `file://` 開啟 `word-star.html` 測試畫面，但 Service Worker 不會註冊、部分行為不完整。
 > 更新後看不到變化時，請 **Ctrl+Shift+R** 強制重整以避開 Service Worker 舊快取。
@@ -63,14 +63,16 @@ python -m http.server 8080
 
 ```
 word-star.html   # 整個遊戲（HTML + CSS + JS 單檔）
-sentences.json   # 全單字例句庫（word → {e:簡單, h:進階} 挖空例句）
+sentences.json   # 全單字例句庫（word → {e:簡單, h:進階, x:[字典真實例句]} 挖空例句）
+prons.json       # word → 音標；有列在這裡就代表 audio/words/ 有該字錄音
 manifest.json    # PWA manifest
 sw.js            # Service Worker（離線快取）
 icon-192.png     # App icon
 icon-512.png     # App icon
 art/             # 各團體繪卡插圖（art/<團體>/<index>.png）
 audio/           # BGM 與音效（audio/、audio/sfx/）
-tools/           # 資產產生腳本（音效合成、sprite sheet 切割去背）
+audio/words/     # 單字真人發音（每字一個 mp3，約 2.6KB）
+tools/           # 資產與資料產生腳本（音效合成、sprite sheet 切割去背、單字發音與例句）
 ```
 
 > `tools/make_raid_sfx.py` 產生 `audio/sfx/raid-*.wav`，`tools/cutout_sheet.py` 把
@@ -83,3 +85,16 @@ tools/           # 資產產生腳本（音效合成、sprite sheet 切割去背
 - 全部程式集中在 `word-star.html`，直接編輯即可，無需 build。
 - 進度儲存在瀏覽器 `localStorage`（`wordstar_save`）。
 - 繪卡插圖已去背處理（移除死切白邊 / 白暈 / 內凹白），透明底可直接疊在卡片背景上。
+
+### 單字發音與例句（`tools/`）
+
+`audio/words/`、`prons.json` 與 `sentences.json` 的 `x[]` 都是離線產生的，遊戲本身不連外。要重跑或補新字：
+
+```bash
+node tools/ldoce-fetch.mjs      # 抓 Longman 字典頁與發音 mp3（可中斷續跑）
+node tools/ldoce-build.mjs      # 產生 prons.json、把例句併回 sentences.json
+```
+
+- `ldoce-fetch.mjs` 以 3 個 worker、每次 500ms 的節奏抓取，抓過的頁面存在 `tools/.ldoce-cache/`（未進版控），所以中斷後直接再執行即可續跑。
+- `ldoce-build.mjs` 只收「字典自己的例句」（有附例句錄音的那些），並過濾掉片語殘句、字義註解與過長／過短的句子，句中的目標單字（含變化形）換成 `___`，每字最多 3 句。
+- 發音與例句內容來自 **Longman Dictionary of Contemporary English**（ldoceonline.com），版權屬 Pearson；此處僅作個人學習用途。

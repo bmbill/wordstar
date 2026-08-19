@@ -1,2 +1,3 @@
 # Claude Code local state / worktrees
 .claude/
+tools/.ldoce-cache/

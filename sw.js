@@ -1,10 +1,10 @@
-const CACHE_NAME = 'wordstar-v21';
+const CACHE_NAME = 'wordstar-v22';
 
 // The update banner runs in the OLD page, so it can't read the new build's CHANGELOG.
 // Keep a one-line summary here — the waiting SW is already the new version and can
 // answer GET_INFO, so the banner can say what the update contains before reloading.
-const APP_VERSION = 'v21';
-const UPDATE_NOTE = '首頁的 NG 重拍會顯示待複習字數，點進去是完整錯字清單';
+const APP_VERSION = 'v22';
+const UPDATE_NOTE = '單字改用 Longman 字典真人錄音（比裝置語音清楚），例句每次隨機換一句，並新增字典真實例句';
 
 self.addEventListener('message', e => {
   // Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
@@ -20,6 +20,7 @@ const CORE_ASSETS = [
   './word-star.html',
   './manifest.json',
   './sentences.json',
+  './prons.json',
   './icon-192.png',
   './icon-512.png',
   './audio/pk-01.mp3',
