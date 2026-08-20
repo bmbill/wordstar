@@ -1536,6 +1536,19 @@ const GROUPS=[
      {name:'布魯克',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'messy',acc:'mic',skin:'#f5f5f5',eyeColor:'#455a64',outfitColor:'#4a148c',outfitStyle:'stripe'},
      {name:'甚平',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'updo',acc:'crescent',skin:'#80cbc4',eyeColor:'#004d40',outfitColor:'#00695c',outfitStyle:'stripe'},
    ]},
+  // ========== 火影忍者 (8人) ==========
+  {id:'naruto',cat:'anime',name:'木葉忍者',concept:'忍者集結',theme:'#ff8f00',
+   bg:'linear-gradient(135deg,#0d1b12,#e65100)',
+   members:[
+     {name:'鳴人',gender:'m',hair:'#ffd54f',hair2:'#ffe082',hairStyle:'spike',acc:'flame',skin:'#f5deb3',eyeColor:'#42a5f5',outfitColor:'#ff6f00',outfitStyle:'cross'},
+     {name:'佐助',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'spike',acc:'bolt',skin:'#fce4ec',eyeColor:'#c62828',outfitColor:'#1a237e',outfitStyle:'stripe'},
+     {name:'小櫻',gender:'f',hair:'#f48fb1',hair2:'#f8bbd0',hairStyle:'long',acc:'ribbon',skin:'#fce4ec',eyeColor:'#2e7d32',outfitColor:'#e91e63',outfitStyle:'sparkle'},
+     {name:'卡卡西',gender:'m',hair:'#e0e0e0',hair2:'#f5f5f5',hairStyle:'messy',acc:'glasses',skin:'#fce4ec',eyeColor:'#455a64',outfitColor:'#37474f',outfitStyle:'stripe'},
+     {name:'雛田',gender:'f',hair:'#3f51b5',hair2:'#5c6bc0',hairStyle:'long',acc:'moon',skin:'#fce4ec',eyeColor:'#d1c4e9',outfitColor:'#7986cb',outfitStyle:'sparkle'},
+     {name:'鹿丸',gender:'m',hair:'#1a1a2e',hair2:'#263238',hairStyle:'updo',acc:'chain',skin:'#f5deb3',eyeColor:'#3e2723',outfitColor:'#455a64',outfitStyle:'stripe'},
+     {name:'我愛羅',gender:'m',hair:'#c62828',hair2:'#e53935',hairStyle:'messy',acc:'gem',skin:'#fce4ec',eyeColor:'#4dd0e1',outfitColor:'#8d6e63',outfitStyle:'cross'},
+     {name:'小李',gender:'m',hair:'#1a1a2e',hair2:'#2c2c44',hairStyle:'bob',acc:'heart',skin:'#f5deb3',eyeColor:'#263238',outfitColor:'#1b5e20',outfitStyle:'cross'},
+   ]},
   // ========== 復仇者聯盟 (10人) ==========
   {id:'avengers',cat:'anime',name:'復仇者聯盟',concept:'地球最強英雄',theme:'#ffab00',
    bg:'linear-gradient(135deg,#0a0f1f,#b71c1c)',
@@ -1639,7 +1652,8 @@ const GROUP_QUOTES={
   seraph1m:{correct:['無所畏懼','FEARNOT 你好','ANTIFRAGILE','天使降臨','5 人齊飛','UNFORGIVEN','翅膀展開'],wrong:['嗯～','再嘗試','畏懼一下下'],combo:['ANTIFRAGILE combo','Smart 音爆','UNFORGIVEN 連擊','翅膀震盪'],lvup:['全球爆紅','5 人完美一體']},
   gidle:{correct:['NEVERLAND','女王駕到','5 人自主製作','TOMBOY','QUEENCARD','I Want That','自作自演女王'],wrong:['還差一個 Level','再練再寫','編曲再改'],combo:['LATATA 連擊','QUEEN CARD','女王大技','5 合 1'],lvup:['創作大獎','世界巡演']},
   wcup26:{correct:['GOOOAL！⚽','進球了！','世界波','傳中精準','過人成功','這腳射門漂亮','門將撲不到','助攻到位','踢得漂亮'],wrong:['射偏了','越位…','被斷球了','再壓上去','門柱救了對手','守住，別急'],combo:['連續進攻！','帽子戲法 🎩','攻勢如潮','全場壓制','大四喜！'],lvup:['晉級淘汰賽 🏆','世界盃之星','金靴候選']},
-  hkstar:{correct:['夠晒醒目！','好戲上演 🎬','呢個 take 過咗','演技滿分','有型！','霓虹燈都為你亮','鏡頭前最閃','一秒入戲'],wrong:['NG，重來一次','慢慢嚟，唔使急','再一 take','導演話再試','失手都係戲嘅一部分'],combo:['一鏡到底！','火力全開 🔥','黃金年代 combo','全場最佳'],lvup:['榮登影帝影后 🏆','星光大道留名','票房大賣']}
+  hkstar:{correct:['夠晒醒目！','好戲上演 🎬','呢個 take 過咗','演技滿分','有型！','霓虹燈都為你亮','鏡頭前最閃','一秒入戲'],wrong:['NG，重來一次','慢慢嚟，唔使急','再一 take','導演話再試','失手都係戲嘅一部分'],combo:['一鏡到底！','火力全開 🔥','黃金年代 combo','全場最佳'],lvup:['榮登影帝影后 🏆','星光大道留名','票房大賣']},
+  naruto:{correct:['說到做到，這就是我的忍道！','螺旋丸命中 🌀','影分身成功','查克拉充滿','火影候補的實力','漂亮的手裏劍','忍術修練有成','小櫻的怪力一擊','卡卡西老師點頭了','寫輪眼看穿了','木葉之葉隨風飛舞'],wrong:['查克拉用完了…','手印結錯了','影分身消失了','可惡…還不夠強','再修練一次','被看破了'],combo:['螺旋手裏劍！','千鳥出擊！','八卦六十四掌！','影子模仿術・成功','八門遁甲・開！','九尾查克拉模式！'],lvup:['晉升中忍了！','新忍術領悟','向火影更近一步 🍥','仙人模式覺醒']},
 };
 // Leader-specific quotes (member idx 0 of each group)
 const LEADER_QUOTES={
@@ -1664,7 +1678,8 @@ const LEADER_QUOTES={
   seraph1m:{correct:['Sakura 來了','天使 leader','我來領隊'],wrong:['再重新一次','我會調整'],combo:['Sakura 上場','絕不後退']},
   gidle:{correct:['Miyeon here','女王門面','5 個公主'],wrong:['再加油','重新來'],combo:['Queens 一起','Nxde！']},
   wcup26:{correct:['再拿一次冠軍','球自己會找到我','安靜地把事做好'],wrong:['站起來，再踢一次','冷靜，還有時間'],combo:['大力神盃在望 🏆','傳奇再現','全隊跟我上'],lvup:['封王時刻','綠茵之神加冕']},
-  hkstar:{correct:['認真，就會贏','小人物也有大場面','這場戲我來扛','演到你信為止'],wrong:['NG！再一 take','導演，我還可以','慢慢嚟，唔使急'],combo:['無厘頭爆發！','全場笑聲爆棚','一人撐起整部戲'],lvup:['喜劇之王 🎬','影帝加冕']}
+  hkstar:{correct:['認真，就會贏','小人物也有大場面','這場戲我來扛','演到你信為止'],wrong:['NG！再一 take','導演，我還可以','慢慢嚟，唔使急'],combo:['無厘頭爆發！','全場笑聲爆棚','一人撐起整部戲'],lvup:['喜劇之王 🎬','影帝加冕']},
+  naruto:{correct:['我要成為火影！','說到做到，這就是我的忍道','一樂拉麵慶祝一下 🍜'],wrong:['可惡…還差一點','我絕不放棄！'],combo:['螺旋丸！','影分身之術！'],lvup:['火影之路前進中 🍥','仙人模式解放']},
 };
 // Per-member classic quotes, keyed by group id then member name (takes priority over group pool).
 const MEMBER_QUOTES={
@@ -1757,7 +1772,7 @@ function hasCardArt(member,group){return !!(group&&member&&CARD_ART[group.id+'::
 // Register sliced AI art for groups that have it. Members of these groups can roll the rare
 // illustrated "art card" (1%); groups without art keep the generated SVG.
 // Value = how many members (from index 0) actually have an image (eighteen only has Sheet A = 7/13).
-const ART_SHEETS={nbahof:10,bt7:7,'4pink':4,thrice:9,lostkidz:8,nudenim:5,aesthe:4,we6:6,eighteen:13,seraph1m:5,gidle:5,kimetsu:8,jjk:7,haikyuu:8,slamdunk:8,hxh:7,spyfam:5,bnha:8,wcup26:10,hkstar:10,onepiece:10,avengers:10};
+const ART_SHEETS={nbahof:10,bt7:7,'4pink':4,thrice:9,lostkidz:8,nudenim:5,aesthe:4,we6:6,eighteen:13,seraph1m:5,gidle:5,kimetsu:8,jjk:7,haikyuu:8,slamdunk:8,hxh:7,spyfam:5,bnha:8,wcup26:10,hkstar:10,onepiece:10,avengers:10,naruto:8};
 Object.entries(ART_SHEETS).forEach(([gid,n])=>{
   if(!GROUPS.find(x=>x.id===gid))return;
   Object.assign(CARD_ART, buildGroupArt(gid, Array.from({length:n},(_,i)=>`art/${gid}/${i}.png`)));
@@ -2297,8 +2312,13 @@ function startGame(){loadState();updateTTSBtn();raidApplyGate();goTo('home-scree
 
 // ===== 更新紀錄 =====
 // APP_VERSION 要跟 sw.js 的 CACHE_NAME 同步（sw.js 也放一份摘要，讓更新橫幅在重整前就講得出內容）。
-const APP_VERSION='v21';
+const APP_VERSION='v23';
 const CHANGELOG=[
+  {v:'v23',date:'2026-08-20',title:'動漫卡池新增木葉忍者',items:[
+    '「木葉忍者」8 位登場（鳴人、佐助、小櫻、卡卡西、雛田、鹿丸、我愛羅、小李），抽卡、圖鑑、動漫池都吃得到',
+    '整組有專屬台詞與隊長台詞，8 張 🎨 SP 繪卡也切好了（1% 機率抽到）',
+    '例句預設一律用字典真實例句（有多句就每次隨機換），只有查不到的字才退回自製的簡單／進階句',
+  ]},
   {v:'v21',date:'2026-08-14',title:'錯字清單更好找了',items:[
     '首頁的「NG 重拍」現在直接顯示還有幾個字待複習，點進去就是完整錯字清單（單字、中文、發音、錯幾次、準度、還差幾次畢業）',
     '連線模式「討伐模擬考」已完成但尚未開放，首頁可以先看到入口',
@@ -2650,23 +2670,26 @@ function startReviewCountdown(){
 function upDot(i,ok){const d=document.getElementById('d'+i);if(d){d.classList.remove('cur');d.classList.add(ok?'done':'wrong')}
   const n=document.getElementById('d'+(i+1));if(n)n.classList.add('cur')}
 
-// 例句：自製的「簡單 / 進階」兩句，加上 sentences.json 的 x[]（Longman 字典真實例句），
-// 每次出題隨機挑一句。同一個字連續出現時避開上次那句，不然感覺像沒換。
+// 例句：預設一律用 sentences.json 的 x[]（Longman 字典真實例句）；有多句就隨機挑一句。
+// 只有查不到字典例句的字，才退回自製的「簡單 / 進階」兩句。
+// 同一個字連續出現時避開上次那句，不然感覺像沒換。
 const _exLast=new Map();
 function pickExample(w){
   const rec=(typeof SENTENCES!=='undefined')?SENTENCES[w]:null;
   if(!rec)return null;
   if(typeof rec==='string')return{sen:rec,tag:'',clr:'var(--text-dim)'};
-  const opts=[];
-  if(rec.e)opts.push({sen:rec.e,tag:'簡單',clr:'#7ff5dc'});
-  if(rec.h)opts.push({sen:rec.h,tag:'進階',clr:'#ff9d5c'});
-  (rec.x||[]).forEach(s=>opts.push({sen:s,tag:'字典',clr:'#c77dff'}));
+  const dict=(rec.x||[]).filter(Boolean).map(s=>({sen:s,tag:'字典',clr:'#c77dff'}));
+  const own=[];
+  if(rec.e)own.push({sen:rec.e,tag:'簡單',clr:'#7ff5dc'});
+  if(rec.h)own.push({sen:rec.h,tag:'進階',clr:'#ff9d5c'});
+  const opts=dict.length?dict:own;   // 字典優先，沒有才用簡單／進階
   if(!opts.length)return null;
   const prev=_exLast.get(w);
   const fresh=opts.length>1?opts.filter(o=>o.sen!==prev):opts;
   const pick=fresh[Math.floor(Math.random()*fresh.length)];
   _exLast.set(w,pick.sen);
-  return opts.length>1?pick:{...pick,tag:''};
+  // 只有一句自製例句時不用標籤；字典例句一律標出來（讓人知道是真實例句）
+  return(dict.length||opts.length>1)?pick:{...pick,tag:''};
 }
 function showQ(){
   if(Q.cur>=Q.qs.length){
