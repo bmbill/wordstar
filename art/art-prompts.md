@@ -1,4 +1,4 @@
-# WordStar 小卡 AI 美術提示詞（全 22 組）
+# WordStar 小卡 AI 美術提示詞（全 23 組）
 
 > 用法：一組 = 一張 sticker sheet。把該組的整段英文貼進 ChatGPT / DALL·E。
 > 每段都已內含排版與切割規則，直接複製即可。
@@ -11,6 +11,33 @@
 > 拿到圖後把檔案放到 `art/<groupId>-sheet.png`（或直接貼給我），我負責切割 + 去背 + 接進遊戲（圖片優先、無圖時 fallback 回原 SVG）。
 > 建議每張 ≤ 10 個角色；超過的組（18-1 有 13 人）我已幫你拆成兩張。
 > 復仇者聯盟也拆成兩張 —— 不是因為人數，是十人同框會被判定成知名英雄陣容而擋圖。
+
+---
+
+## 🍥 naruto 木葉忍者（8 人）— 忍者卷軸和風
+
+> 這組是米黃紙紋背景，切圖要加 `--paper`：
+> `python tools/cutout_sheet.py art/naruto-sheet.png art/naruto 4 2 --paper`
+
+```
+Create ONE sticker sheet image: 8 cute chibi ninja kids in a strict 4 columns x 2
+rows grid, evenly spaced, plain flat pale-beige scroll-paper background with faint
+ink swirls.
+STYLE: adorable glossy chibi anime stickers, big head / small body, soft cel-shading,
+thick clean white die-cut outline, subtle holographic sparkle; all 8 SAME art style
+and SAME scale, front-facing, each fully inside its own cell, generous even gaps,
+no overlap, no cropping, NO text/labels/logos/kanji, wide high-res image.
+Give each a DIFFERENT dynamic ninja pose.
+Characters (left to right, top row then bottom row):
+1. Spiky bright-blonde hair, fair skin, three thin whisker lines on each cheek, dark-blue cloth headband with a blank metal plate, orange-and-black ninja jacket, big thumbs-up with a huge open-mouth grin.
+2. Spiky blue-black hair with long side bangs, fair skin, dark navy high-collar top, one eye glowing crimson, arms crossed with a cool unimpressed stare.
+3. Long pink hair held back by a red cloth band, fair skin, green eyes, red sleeveless ninja tunic, one fist raised with a determined confident smile.
+4. Silver spiky hair, fair skin, dark cloth mask covering the lower face, headband slanted over one eye, dark-green flak vest, lazy one-handed wave while holding a small book.
+5. Long dark-indigo hair, fair skin, very pale lavender pupil-less eyes, lilac-and-cream hooded ninja jacket, shy fingers-together pose with a soft blush.
+6. Black hair in a tall spiky pineapple-shaped ponytail, tan skin, grey-green flak vest, bored half-lidded expression, hands pressed in a single hand-sign.
+7. Short messy dark-red hair, very pale skin, no eyebrows, dark rings around teal eyes, sand-brown robe with a large gourd on the back, arms folded with a cold calm stare.
+8. Glossy black bowl-cut hair, very thick eyebrows, tan skin, bright-green skin-tight jumpsuit with orange leg warmers and bandaged hands, dynamic high-kick pose, fired-up shout.
+```
 
 ---
 
