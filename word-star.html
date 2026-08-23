@@ -2133,7 +2133,9 @@ const TITLES=[
 ];
 
 let S={stars:30,exp:0,level:1,streak:1,cards:{},wordsAnswered:{},recentWords:[],dailyNew:0,totalPulls:0,totalCorrect:0,maxCombo:0,activeTitle:null,duetPlays:0,duetPerfect:false,pkPoints:0,tts:true};
-let Q={qs:[],cur:0,combo:0,maxCombo:0,coins:0,mode:'choice',done:false};
+let Q={qs:[],cur:0,combo:0,maxCombo:0,coins:0,mode:'choice',done:false,nextTimer:null,aborted:false};
+// 排下一題的 setTimeout 漏掉就會在首頁繼續換題、繼續唸單字，所以離開後一律當作已結束
+function quizAlive(){return !Q.aborted&&document.getElementById('quiz-screen').classList.contains('active')}
 
 // === SAVE / LOAD STATE ===
 function saveState(){
@@ -2312,8 +2314,11 @@ function startGame(){loadState();updateTTSBtn();raidApplyGate();goTo('home-scree
 
 // ===== 更新紀錄 =====
 // APP_VERSION 要跟 sw.js 的 CACHE_NAME 同步（sw.js 也放一份摘要，讓更新橫幅在重整前就講得出內容）。
-const APP_VERSION='v23';
+const APP_VERSION='v24';
 const CHANGELOG=[
+  {v:'v24',date:'2026-08-23',title:'修了一些 Bug',items:[
+    '修正了幾個影響遊玩的小問題',
+  ]},
   {v:'v23',date:'2026-08-20',title:'動漫卡池新增木葉忍者',items:[
     '「木葉忍者」8 位登場（鳴人、佐助、小櫻、卡卡西、雛田、鹿丸、我愛羅、小李），抽卡、圖鑑、動漫池都吃得到',
     '整組有專屬台詞與隊長台詞，8 張 🎨 SP 繪卡也切好了（1% 機率抽到）',
@@ -2435,10 +2440,14 @@ function updateDailyMissions(){
   const bonusEl=document.getElementById('dm-bonus');
   if(bonusEl){bonusEl.style.display=allDone&&!S._dmClaimed?'block':'none'}
   // Auto-claim individual rewards
+  let claimed=false;
   missions.forEach(m=>{
     const claimedKey='_dmc_'+m.id;
-    if(m.progress>=m.goal&&!S[claimedKey]){S[claimedKey]=true;S.stars+=m.reward;saveState();floatTxt('+'+m.reward+'⭐ 任務完成！','var(--accent)')}
+    if(m.progress>=m.goal&&!S[claimedKey]){S[claimedKey]=true;S.stars+=m.reward;claimed=true;saveState();floatTxt('+'+m.reward+'⭐ 任務完成！','var(--accent)')}
   });
+  // updateHome 早在呼叫這裡之前就寫過 #coins 了，自動領取的星星要自己補寫一次，
+  // 不然畫面上的數字要離開首頁再回來才會更新。
+  if(claimed){const ce=document.getElementById('coins');if(ce)ce.textContent=S.stars}
   // Restore collapsed state
   const body=document.getElementById('dm-body');const arrow=document.getElementById('dm-arrow');
   if(body&&S._dmCollapsed){body.style.display='none';if(arrow)arrow.textContent='▶'}
@@ -2523,9 +2532,16 @@ function updateHome(){
 
   // Recent cards
   const d=document.getElementById('recent');
-  const rc=Object.entries(S.cards).sort((a,b)=>(b[1].t||0)-(a[1].t||0)).slice(0,6);
+  // 限定卡存成 'ltd_<活動>_<團體>_<編號>'，直接 split('_') 會找不到團體、整格畫成空白；
+  // 而且它跟本體是同一個人，兩筆都排進來會白白吃掉名額（剛抽到的限定卡 t 又最新）。
+  // 收斂到基本 key，取該成員任一版本最新的取得時間來排序。
+  const latest={};
+  Object.entries(S.cards).forEach(([k,c])=>{
+    const b=baseCardKey(k),t=c.t||0;if(!(b in latest)||t>latest[b])latest[b]=t});
+  const rc=Object.keys(latest).filter(b=>S.cards[b]).sort((a,b)=>latest[b]-latest[a]).slice(0,6);
   if(!rc.length){d.innerHTML='<div class="empty-state" style="padding:.6rem;font-size:.75rem">還沒有小卡，去打歌賺⭐再來抽卡！</div>';return}
-  d.innerHTML=rc.map(([key,card])=>{
+  d.innerHTML=rc.map(key=>{
+    const card=S.cards[key];
     const [gid,mi]=key.split('_');const g=GROUPS.find(x=>x.id===gid);if(!g)return'';
     const mem=g.members[parseInt(mi)];if(!mem)return'';
     const starStr='★'.repeat(card.stars)+'☆'.repeat(Math.max(0,5-card.stars));
@@ -2548,7 +2564,8 @@ function pushRecent(words){
 }
 function startQuiz(mode){
   if(mode==='listen'&&!pronAvailable()){floatTxt('此裝置無法發音','var(--danger)');mode='choice'}
-  Q.mode=mode;Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
+  Q.mode=mode;Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;Q.aborted=false;
+  if(Q.nextTimer){clearTimeout(Q.nextTimer);Q.nextTimer=null}
   let pool;
   if(mode==='boss'){
     // Year-end Grand Prize: 3 真錯題 (wr>0) + 7 high-level, always 10
@@ -2592,7 +2609,8 @@ function startQuiz(mode){
   document.getElementById('dots').innerHTML=Q.qs.map((_,i)=>`<div class="pdot${i===0?' cur':''}" id="d${i}"></div>`).join('');
   showQ()}
 function endQuiz(){
-  if(Q.cur<Q.qs.length){goTo('home-screen');updateHome();return}
+  if(Q.nextTimer){clearTimeout(Q.nextTimer);Q.nextTimer=null}
+  if(Q.cur<Q.qs.length){Q.aborted=true;goTo('home-screen');updateHome();return}
   // Track session completion for daily missions
   if(Q.mode==='choice')trackDailyMission('choice_done',1);
   else if(Q.mode==='reverse')trackDailyMission('reverse_done',1);
@@ -2692,6 +2710,7 @@ function pickExample(w){
   return(dict.length||opts.length>1)?pick:{...pick,tag:''};
 }
 function showQ(){
+  if(!quizAlive())return;
   if(Q.cur>=Q.qs.length){
     // Golden overtime: if combo >= 7 at end of normal questions, keep going!
     if(Q.combo>=7&&!Q.overtime){
@@ -2768,7 +2787,7 @@ function showQ(){
       <div style="font-size:.82rem;color:var(--text);line-height:1.6">${sen.replace(/___/g,'<span style="display:inline-block;min-width:2.4em;border-bottom:2px solid var(--accent);vertical-align:baseline">&nbsp;</span>')}</div>
     </div>`:'';
   }
-  if(q._t==='choice'||q._t==='listen')setTimeout(()=>{if(Q.qs[Q.cur]===q&&!Q.done)playWord(q.w,q._t==='listen')},300);
+  if(q._t==='choice'||q._t==='listen')setTimeout(()=>{if(Q.qs[Q.cur]===q&&!Q.done&&quizAlive())playWord(q.w,q._t==='listen')},300);
   preloadPron((Q.qs[Q.cur+1]||{}).w);   // 下一題的錄音先抓好
   const ce=document.getElementById('combo');
   if(Q.combo>=2){ce.classList.add('active');document.getElementById('ccount').textContent=Q.combo}
@@ -2795,7 +2814,8 @@ function chk(btn,sel,cor){if(Q.done)return;Q.done=true;const ok=sel===cor;
     if(b===btn&&!ok)b.classList.add('wrong');b.style.pointerEvents='none'});handleRes(ok)}
 
 function renderSpell(el,q){
-  const lt=q.w.split('');if(lt.length>12){renderChoice(el,q);return}
+  // 太長拆不動；太短（2 字母）首尾提示就把整個字填滿，中間 0 格會讓「確認」永遠鎖住
+  const lt=q.w.split('');if(lt.length>12||lt.length<3){renderChoice(el,q);return}
   const first=lt[0],last=lt[lt.length-1];
   // Middle letters the student must fill in
   const mid=lt.slice(1,-1);
@@ -2886,15 +2906,15 @@ function handleRes(ok){
     // Idol popup: combo 5+ always, otherwise 30% chance
     if(Q.combo>=5)showIdolPopup('combo');
     else if(Math.random()<0.3)showIdolPopup('correct');
-    setTimeout(()=>{Q.cur++;showQ()},1200)}
+    Q.nextTimer=setTimeout(()=>{Q.cur++;showQ()},1200)}
   else{Q.combo=0;document.getElementById('combo').classList.remove('active');
     const q2=Q.qs[Q.cur];Q.mistakes.push({w:q2.w,m:q2.m,lv:q2.lv,type:q2._t});
     if(!S.wordsAnswered[q2.w])S.wordsAnswered[q2.w]={rv:0,m:false,sp:0,ch:0,re:0,lv:0,wr:0,lastWrong:0,cw:0};
     const wa2=S.wordsAnswered[q2.w];wa2.wr=(wa2.wr||0)+1;wa2.lastWrong=Date.now();wa2.cw=0;
     saveState();
     if(Math.random()<0.4)showIdolPopup('wrong');
-    if(Q.overtime){floatTxt('延長賽結束！','#ffd700');setTimeout(()=>{Q.cur++;Q.qs.length=Q.cur;showQ()},1500)}
-    else{floatTxt('再加油！','var(--danger)');setTimeout(()=>{Q.cur++;showQ()},1500)}}}
+    if(Q.overtime){floatTxt('延長賽結束！','#ffd700');Q.nextTimer=setTimeout(()=>{Q.cur++;Q.qs.length=Q.cur;showQ()},1500)}
+    else{floatTxt('再加油！','var(--danger)');Q.nextTimer=setTimeout(()=>{Q.cur++;showQ()},1500)}}}
 
 
 function burst(){const cs=['#ffe66d','#ff6ec7','#c77dff','#7ff5dc','#fff'];
@@ -3264,7 +3284,9 @@ function selectCardStyle(baseKey,styleId,idx){
   const items=gallery.children;
   for(let i=0;i<items.length;i++){
     const ci=items[i].querySelector('.card-item');
-    const label=items[i].querySelector('div:last-child');
+    // 說明文字是外層的最後一個子元素。用 querySelector('div:last-child') 會先命中卡片
+    // 裡面的 .ci-content，於是金色高亮永遠留在原本那張上，看起來像選了沒反應。
+    const label=items[i].lastElementChild;
     if(i===idx){if(ci){ci.style.border='2px solid #ffd700';ci.style.boxShadow='0 0 12px #ffd70066'}if(label)label.style.color='#ffd700'}
     else{if(ci){ci.style.border='2px solid transparent';ci.style.boxShadow='none'}if(label)label.style.color='var(--text-dim)'}}
   // Update preview card above immediately
@@ -3314,10 +3336,15 @@ function upgradeCard(key){
     <button class="btn btn-primary btn-sm" style="margin-top:.8rem" onclick="closePull();showCardDet('${key}')">太棒了！✦</button></div>`;
   burst()}
 function getCardBonus(stars){return stars>=5?15:stars>=4?10:stars>=3?5:0}
+// 一個成員只算一次。限定版跟本體是同一個人，但它存成另一個 key、星等也不會跟著
+// 升星，之前兩筆都進平均的分母 —— 抽到限定卡反而把應援加成稀釋掉（5★ 15% → 7%）。
 function calcCardAura(){
-  const entries=Object.values(S.cards||{});if(!entries.length)return 0;
-  let bonus=0;entries.forEach(c=>{bonus+=getCardBonus(c.stars)});
-  return Math.min(Math.floor(bonus/entries.length),20)}
+  const best={};
+  Object.entries(S.cards||{}).forEach(([k,c])=>{
+    const b=baseCardKey(k);best[b]=Math.max(best[b]||0,c.stars||0)});
+  const keys=Object.keys(best);if(!keys.length)return 0;
+  let bonus=0;keys.forEach(b=>{bonus+=getCardBonus(best[b])});
+  return Math.min(Math.floor(bonus/keys.length),20)}
 
 function closeMod(e){if(!e||e.target===document.getElementById('det-modal')){document.getElementById('det-modal').classList.remove('active');
   if(document.getElementById('collection-screen').classList.contains('active'))showColl(_collFv,_collGid)}}
@@ -3371,7 +3398,8 @@ function startWrongQuiz(){
   const words=es.slice(0,10).map(([word])=>W.find(x=>x.w===word)).filter(Boolean);
   if(words.length<4){floatTxt('錯題不足 4 題','var(--text-dim)');return}
   goTo('quiz-screen');
-  Q.mode='wrong';Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;
+  Q.mode='wrong';Q.cur=0;Q.combo=0;Q.maxCombo=0;Q.coins=0;Q.done=false;Q.overtime=false;Q.aborted=false;
+  if(Q.nextTimer){clearTimeout(Q.nextTimer);Q.nextTimer=null}
   Q.qs=shuf(words.slice());
   Q.origLen=Q.qs.length;
   Q.qs.forEach((q,i)=>{const ts=['choice','reverse','choice','spell','reverse'];q._t=ts[i%ts.length]});
@@ -3881,7 +3909,7 @@ function confirmResetAll(){
       <button class="btn btn-secondary" style="flex:1;font-size:.75rem" onclick="closeMod()">取消</button>
       <button class="btn" style="flex:1;font-size:.75rem;background:#ff4444;color:#fff" onclick="executeResetAll()">確定重置</button>
     </div></div>`;
-  document.getElementById('det-modal').style.display='flex';
+  document.getElementById('det-modal').classList.add('active');
 }
 function executeResetAll(){
   localStorage.removeItem('wordstar_save');
@@ -4524,10 +4552,10 @@ const BattleBgm=(function(){
 })();
 
 // ===== DUET MODE (同台表演) =====
-let PK={p1s:0,p2s:0,round:0,total:10,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,combo:0,maxCombo:0,encore:false,timer:null,timerStart:0,p1times:[],p2times:[],roundResults:[]};
+let PK={p1s:0,p2s:0,round:0,total:10,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,combo:0,maxCombo:0,encore:false,timer:null,timerStart:0,p1times:[],p2times:[],roundResults:[],cdTimer:null,nextTimer:null,aborted:false};
 
 function startPKSetup(){
-  PK={p1s:0,p2s:0,round:1,total:10,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,combo:0,maxCombo:0,encore:false,timer:null,timerStart:0,p1times:[],p2times:[],roundResults:[]};
+  PK={p1s:0,p2s:0,round:1,total:10,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,combo:0,maxCombo:0,encore:false,timer:null,timerStart:0,p1times:[],p2times:[],roundResults:[],cdTimer:null,nextTimer:null,aborted:false};
   const pool=W.filter(x=>!S.wordsAnswered[x.w]||!S.wordsAnswered[x.w].m);
   if(pool.length<10)PK.qs=shuf(W).slice(0,10);else PK.qs=shuf(pool).slice(0,10);
   goTo('pk-screen');
@@ -4550,8 +4578,9 @@ function showPKCountdown(){
   w1.textContent='3';w2.textContent='3';
   w1.style.fontSize='2rem';w2.style.fontSize='2rem';
   w1.style.color='var(--secondary)';w2.style.color='var(--secondary)';
-  const timer=setInterval(()=>{cd--;
-    if(cd<=0){clearInterval(timer);
+  if(PK.cdTimer)clearInterval(PK.cdTimer);
+  PK.cdTimer=setInterval(()=>{cd--;
+    if(cd<=0){clearInterval(PK.cdTimer);PK.cdTimer=null;
       w1.style.fontSize='';w2.style.fontSize='';w1.style.color='';w2.style.color='';
       startPKRound();return}
     const txt=cd+'';w1.textContent=txt;w2.textContent=txt},1000)
@@ -4559,6 +4588,7 @@ function showPKCountdown(){
 
 function startPKRound(){
   if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+  if(!pkAlive())return;
   if(PK.round>PK.total){endPK();return}
   PK.word=PK.qs[PK.cur];
   // 4 options: 1 correct + 3 wrong
@@ -4592,14 +4622,15 @@ function startPKRound(){
 
 function pkTimeUp(){
   if(PK.timer){clearInterval(PK.timer);PK.timer=null}
-  if(PK.done)return;PK.done=true;
+  if(PK.done||!pkAlive())return;PK.done=true;
   const cor=PK.word.m;
   if(!PK.p1picked){PK.p1picked=true;PK.p1ans=null;PK.p1times.push(5000);
     document.querySelectorAll('#pk-p1-answers button').forEach(b=>{if(!b.classList.contains('pk-correct')&&!b.classList.contains('pk-wrong'))b.classList.add('pk-timeout')})}
   if(!PK.p2picked){PK.p2picked=true;PK.p2ans=null;PK.p2times.push(5000);
     document.querySelectorAll('#pk-p2-answers button').forEach(b=>{if(!b.classList.contains('pk-correct')&&!b.classList.contains('pk-wrong'))b.classList.add('pk-timeout')})}
+  // A player who timed out has p1ans/p2ans === null, so anyone correct here already
+  // scored in pkAns() — adding again would double-count them.
   const p1ok=PK.p1ans===cor;const p2ok=PK.p2ans===cor;
-  if(p1ok)PK.p1s++;if(p2ok)PK.p2s++;
   if(p1ok&&p2ok){PK.combo++;if(PK.combo>PK.maxCombo)PK.maxCombo=PK.combo;if(PK.combo>=2){const ce=document.getElementById('pk-combo');ce.textContent=PK.combo+' COMBO 🎵';ce.classList.add('active')}}
   else{PK.combo=0;document.getElementById('pk-combo').classList.remove('active')}
   document.getElementById('pk-p1-score').textContent=PK.p1s;
@@ -4609,7 +4640,7 @@ function pkTimeUp(){
   const p1time=PK.p1times[PK.p1times.length-1]||0;
   const p2time=PK.p2times[PK.p2times.length-1]||0;
   PK.roundResults.push({word:PK.word.w,meaning:PK.word.m,p1ok,p2ok,p1time,p2time});
-  setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},1000)
+  PK.nextTimer=setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},1000)
 }
 
 function playLockSound(player){
@@ -4693,12 +4724,12 @@ function pkAns(idx,player){
     const p1time=PK.p1times[PK.p1times.length-1]||0;
     const p2time=PK.p2times[PK.p2times.length-1]||0;
     PK.roundResults.push({word:PK.word.w,meaning:PK.word.m,p1ok,p2ok,p1time,p2time});
-    setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},800)
+    PK.nextTimer=setTimeout(()=>{PK.round++;PK.cur++;startPKRound()},800)
   }
 }
 
 // ===== 快打旋風 BATTLE MODE =====
-let BT={round:0,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],questionTimer:null,questionTime:5,prevP1hp:100,prevP2hp:100};
+let BT={round:0,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],questionTimer:null,questionTime:5,prevP1hp:100,prevP2hp:100,nextTimer:null,aborted:false};
 
 // === Fighter SVG Generator (larger for SF) ===
 // pose: 'idle','hadouken','shoryuken','guard'
@@ -4924,7 +4955,7 @@ function btAnnounce(text,cls,duration,callback){
   ann.classList.add('active');
   setTimeout(()=>{
     ann.style.animation='btAnnounceFadeOut .3s ease forwards';
-    setTimeout(()=>{ann.classList.remove('active');ann.style.animation='';if(callback)callback()},300);
+    setTimeout(()=>{ann.classList.remove('active');ann.style.animation='';if(callback&&btAlive())callback()},300);
   },duration);
 }
 // === SF Hit Sparks (angular/spiky) ===
@@ -4998,7 +5029,7 @@ function btFighterKO(player){
 }
 
 function startBattleSetup(){
-  BT={round:1,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],questionTimer:null,questionTime:5,prevP1hp:100,prevP2hp:100};
+  BT={round:1,qs:[],cur:0,word:null,options:[],p1picked:false,p2picked:false,p1ans:null,p2ans:null,done:false,p1combo:0,p2combo:0,timer:null,timerStart:0,p1garbage:0,p2garbage:0,maxGarbage:100,p1times:[],p2times:[],questionTimer:null,questionTime:5,prevP1hp:100,prevP2hp:100,nextTimer:null,aborted:false};
   const pool=shuf(W).slice(0,80);
   BT.qs=pool;
   goTo('battle-screen');
@@ -5018,6 +5049,7 @@ function startBattleSetup(){
 }
 function startBattleRound(){
   if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  if(!btAlive())return;
   if(BT.cur>=BT.qs.length){
     BT.qs=BT.qs.concat(shuf(W).slice(0,40));
   }
@@ -5085,19 +5117,19 @@ function btAns(idx,player){
   }
 }
 function btFinishRound(){
-  if(BT.done)return;
+  if(BT.done||!btAlive())return;
   BT.done=true;
   btStopQuestionTimer();
 
   if(BT.p1garbage>=BT.maxGarbage||BT.p2garbage>=BT.maxGarbage){
-    setTimeout(()=>{endBattle()},800);
+    BT.nextTimer=setTimeout(()=>{if(btAlive())endBattle()},800);
   }else{
-    setTimeout(()=>{BT.round++;BT.cur++;startBattleRound()},600);
+    BT.nextTimer=setTimeout(()=>{BT.round++;BT.cur++;startBattleRound()},600);
   }
 }
 function btTimeUp(){
   btStopQuestionTimer();
-  if(BT.done)return;
+  if(BT.done||!btAlive())return;
   if(!BT.p1picked){BT.p1garbage=Math.min(BT.maxGarbage,BT.p1garbage+5);BT.p1combo=0;btFighterHit(1);btVfxDmgNum(1,5)}
   if(!BT.p2picked){BT.p2garbage=Math.min(BT.maxGarbage,BT.p2garbage+5);BT.p2combo=0;btFighterHit(2);btVfxDmgNum(2,5)}
   btPlaySound('wrong');
@@ -5437,9 +5469,17 @@ function btShowBattleResult(winnerLabel,p1hp,p2hp){
     <button class="btn btn-primary" style="clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);border-radius:0;letter-spacing:2px" onclick="closeBattleResult()">CONTINUE</button>
   </div>`;
 }
-function endBattleEarly(){
+// 同 pkAbort：ROUND/FIGHT 宣告的回呼與每題之間的 setTimeout 都要停，
+// 否則按 ✕ 之後整場對戰會在首頁繼續出題、繼續播打擊音效。
+function btAbort(){
   if(BT.timer){clearInterval(BT.timer);BT.timer=null}
+  if(BT.nextTimer){clearTimeout(BT.nextTimer);BT.nextTimer=null}
   btStopQuestionTimer();
+  BT.aborted=true;BT.done=true;
+}
+function btAlive(){return !BT.aborted&&document.getElementById('battle-screen').classList.contains('active')}
+function endBattleEarly(){
+  btAbort();
   BattleBgm.stop();
   goTo('home-screen');updateHome();
 }
@@ -5449,13 +5489,24 @@ function closeBattleResult(){
   goTo('home-screen');updateHome();
 }
 
-function endPKEarly(){
+// 離開對戰要停掉「所有」排程：5 秒答題計時、3-2-1 倒數，以及各處排下一輪的 setTimeout。
+// 少清任何一個，整場比賽都會在首頁背景跑完，最後還會彈出結算並發放獎勵。
+function pkAbort(){
   if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+  if(PK.cdTimer){clearInterval(PK.cdTimer);PK.cdTimer=null}
+  if(PK.nextTimer){clearTimeout(PK.nextTimer);PK.nextTimer=null}
+  PK.aborted=true;PK.done=true;
+}
+// 萬一還有漏網的排程，離開畫面就當這場已經結束，不再往下跑
+function pkAlive(){return !PK.aborted&&document.getElementById('pk-screen').classList.contains('active')}
+function endPKEarly(){
+  pkAbort();
   PKBgm.stop();
   goTo('home-screen');updateHome();
 }
 function endPK(){
   if(PK.timer){clearInterval(PK.timer);PK.timer=null}
+  if(PK.aborted)return;
 
   // === ENCORE check: combo >= 5 and not already in encore ===
   if(PK.combo>=5&&!PK.encore){
@@ -5471,7 +5522,8 @@ function endPK(){
       PK.qs=PK.qs.concat(extra);
       PK.total+=extra.length;
       // Start encore BGM (faster, more intense)
-      setTimeout(()=>{
+      PK.nextTimer=setTimeout(()=>{
+        if(!pkAlive())return;
         PKBgm.start(); // new random BGM
         startPKRound();
       },1500);

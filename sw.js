@@ -1,10 +1,10 @@
-const CACHE_NAME = 'wordstar-v23';
+const CACHE_NAME = 'wordstar-v24';
 
 // The update banner runs in the OLD page, so it can't read the new build's CHANGELOG.
 // Keep a one-line summary here — the waiting SW is already the new version and can
 // answer GET_INFO, so the banner can say what the update contains before reloading.
-const APP_VERSION = 'v23';
-const UPDATE_NOTE = '新增「木葉忍者」小卡組（8 位忍者，含專屬台詞與 SP 繪卡），動漫池可以抽到了；例句預設改用字典真實例句';
+const APP_VERSION = 'v24';
+const UPDATE_NOTE = '修了一些 Bug，玩起來應該更順了';
 
 self.addEventListener('message', e => {
   // Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
