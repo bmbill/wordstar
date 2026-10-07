@@ -1,10 +1,10 @@
-const CACHE_NAME = 'wordstar-v25';
+const CACHE_NAME = 'wordstar-v26';
 
 // The update banner runs in the OLD page, so it can't read the new build's CHANGELOG.
 // Keep a one-line summary here — the waiting SW is already the new version and can
 // answer GET_INFO, so the banner can say what the update contains before reloading.
-const APP_VERSION = 'v25';
-const UPDATE_NOTE = '單字表重新對齊大考中心版本：級別修正、清掉重複字、補上漏掉的字（含發音與例句）';
+const APP_VERSION = 'v26';
+const UPDATE_NOTE = '拼字題修正：2 個字母的字不再出拼字題，長單字也能拼了（格子自動縮小）';
 
 self.addEventListener('message', e => {
   // Let the page trigger activation of a freshly-installed SW ("點擊更新" banner)
